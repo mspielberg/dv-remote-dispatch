@@ -89,7 +89,6 @@ function createCarLabel(carId, carData) {
 }
 
 function createCarOverlay(carId, carData) {
-  const textRotation = (carData.rotation % 180) - 90;
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('id', carId)
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -135,10 +134,13 @@ function updateCars() {
   });
 }
 
+function periodic(f, interval) {
+  f().then(_ => window.setTimeout(periodic(f, interval), interval))
+}
+
 function periodicUpdate() {
-  updateCars();
-  updateJunctions()
-  .then(_ => window.setTimeout(periodicUpdate, 1000));
+  periodic(updateCars, 500);
+  updateJunctions(updateJunctions, 5000);
 }
 
 junctionsReady.then(_ => periodicUpdate())
