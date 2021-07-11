@@ -48,7 +48,7 @@ namespace DvMod.RemoteDispatch
                     return new CarData(
                         trainCar.IsLoco,
                         logicCar.length,
-                        latlon: new World.Position(trainCar.transform.position - WorldMover.currentMove).ToLatLon(),
+                        latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
                         rotation: trainCar.transform.eulerAngles.y);
                 });
         }
