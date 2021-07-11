@@ -26,8 +26,10 @@ namespace DvMod.RemoteDispatch
             }
 
             public (float x, float z) Normalize((float x, float z) p) =>
-                ( Mathf.InverseLerp(minZ, maxZ, p.z), Mathf.InverseLerp(minX, maxX, p.x) );
+                (Mathf.InverseLerp(minZ, maxZ, p.z), Mathf.InverseLerp(minX, maxX, p.x));
         }
+
+        public static (float x, float z) NormalizePosition((float x, float z) p) => Bounds.Normalize(p);
 
         private static readonly MapBounds Bounds = new MapBounds(
                 minX: GetAllTrackPoints().SelectMany(x => x).Min(p => p.Item1),
@@ -36,7 +38,7 @@ namespace DvMod.RemoteDispatch
                 maxZ: GetAllTrackPoints().SelectMany(x => x).Max(p => p.Item2));
 
         private static IEnumerable<(float x, float z)> NormalizeTrackPoints(IEnumerable<(float x, float z)> rawPoints) =>
-            rawPoints.Select(Bounds.Normalize);
+            rawPoints.Select(NormalizePosition);
 
         public static IEnumerable<IEnumerable<(float x, float z)>> GetNormalizedTrackCoordinates() =>
             GetAllTrackPoints().Select(NormalizeTrackPoints);
@@ -72,7 +74,7 @@ namespace DvMod.RemoteDispatch
             JunctionsSaveManager.OrderedJunctions.Select(j =>
             {
                 var moved = j.position - WorldMover.currentMove;
-                var normalized = Bounds.Normalize((moved.x, moved.z));
+                var normalized = NormalizePosition((moved.x, moved.z));
                 return new JArray(normalized.x, normalized.z);
             })
         );

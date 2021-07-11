@@ -58,9 +58,9 @@ namespace DvMod.RemoteDispatch
 
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
-            case "main.js":
-                context.Response.ContentType = "application/javascript";
-                RenderResource(context, "main.js");
+            case "car":
+                context.Response.ContentType = "application/json";
+                Render200(context, CarData.GetAllCarDataJson());
                 break;
             case "junction":
                 HandleJunctionRequest(context);
@@ -68,6 +68,10 @@ namespace DvMod.RemoteDispatch
             case "junctionState":
                 context.Response.ContentType = "application/json";
                 Render200(context, RailTracks.GetJunctionStateJSON());
+                break;
+            case "main.js":
+                context.Response.ContentType = "application/javascript";
+                RenderResource(context, "main.js");
                 break;
             case "track":
                 context.Response.ContentType = "application/json";
