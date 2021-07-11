@@ -10,10 +10,10 @@ namespace DvMod.RemoteDispatch
     public class CarData
     {
         public bool isLoco;
-        public (float x, float z) position;
+        public World.LatLon position;
         public float rotation;
 
-        public CarData(bool isLoco, (float x, float z) position, float rotation)
+        public CarData(bool isLoco, World.LatLon position, float rotation)
         {
             this.isLoco = isLoco;
             this.position = position;
@@ -24,7 +24,7 @@ namespace DvMod.RemoteDispatch
         {
             return new JObject(
                 new JProperty("isLoco", isLoco),
-                new JProperty("position", new JArray(position.x, position.z)),
+                new JProperty("position", position.ToJson()),
                 new JProperty("rotation", rotation)
             );
         }
@@ -42,9 +42,9 @@ namespace DvMod.RemoteDispatch
                 {
                     var trainCar = kvp.Value;
                     var position = trainCar.transform.position - WorldMover.currentMove;
-                    var normalizedPosition = RailTracks.NormalizePosition((position.x, position.z));
+                    var normalizedPosition = new World.Position(position);
                     var rotation = trainCar.transform.eulerAngles.y;
-                    return new CarData(trainCar.IsLoco, normalizedPosition, rotation);
+                    return new CarData(trainCar.IsLoco, normalizedPosition.ToLatLon(), rotation);
                 });
         }
     }

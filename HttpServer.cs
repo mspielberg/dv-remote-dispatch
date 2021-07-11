@@ -67,7 +67,7 @@ namespace DvMod.RemoteDispatch
                 break;
             case "junctionState":
                 context.Response.ContentType = "application/json";
-                Render200(context, RailTracks.GetJunctionStateJSON());
+                Render200(context, Junctions.GetJunctionStateJSON());
                 break;
             case "main.js":
                 context.Response.ContentType = "application/javascript";
@@ -76,13 +76,6 @@ namespace DvMod.RemoteDispatch
             case "track":
                 context.Response.ContentType = "application/json";
                 Render200(context, RailTracks.GetTrackPointJSON());
-                break;
-            case "trackCoordinates":
-                int.TryParse(request.Url.Query.Substring(1), out var resolution);
-                Render200(context, RenderTrackCoordinates(RailTracks.GetAllTrackPoints(resolution)));
-                break;
-            case "normalizedCoordinates":
-                Render200(context, RenderTrackCoordinates(RailTracks.GetNormalizedTrackCoordinates()));
                 break;
             default:
                 Render404(context);
@@ -97,7 +90,7 @@ namespace DvMod.RemoteDispatch
             {
             case 2:
                 context.Response.ContentType = "application/json";
-                Render200(context, RailTracks.GetJunctionPointJSON());
+                Render200(context, Junctions.GetJunctionPointJSON());
                 break;
             case 4:
                 var junctionIdString = url.Segments[2].TrimEnd('/');
