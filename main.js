@@ -22,9 +22,43 @@ function toggleJunction(index) {
   .then(_ => updateJunctions())
 }
 
-function createJunctionMarker(p, index) {
-  return L.circle(p, { radius: 3, fillOpacity: 0.5 })
-    .addEventListener('click', () => toggleJunction(index) )
+const junctionCanvasSize = 30
+
+function createJunctionShape(selectedBranch) {
+  return `<g opacity="50%"><rect x="${-junctionCanvasSize/2}" y="${-junctionCanvasSize}" width="${junctionCanvasSize}" height="${junctionCanvasSize*2}" fill="red"/>` +
+    (
+      selectedBranch == 0 ? `<line x1="${junctionCanvasSize/2}" y1="${junctionCanvasSize}" x2="${-junctionCanvasSize/2}" y2="${-junctionCanvasSize}" stroke="white" stroke-width="10"/>` :
+      selectedBranch == 1 ? `<line x1="${-junctionCanvasSize/2}" y1="${junctionCanvasSize}" x2="${junctionCanvasSize/2}" y2="${-junctionCanvasSize}" stroke="white" stroke-width="10"/>`
+      : ''
+    ) +
+    `<rect x="${-junctionCanvasSize/2}" y="${-junctionCanvasSize}" width="${junctionCanvasSize}" height="${junctionCanvasSize*2}" fill="none" stroke="black" stroke-width="2%"/></g>`;
+}
+
+function createJunctionLabel(junctionId) {
+  return `<text x="${-junctionCanvasSize/2+5}" y="${junctionCanvasSize-5}">${junctionId}</text>`
+}
+
+function createJunctionOverlay(junctionId) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('id', junctionId)
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  svg.setAttribute('viewBox', `${-junctionCanvasSize/2} ${-junctionCanvasSize} ${junctionCanvasSize} ${junctionCanvasSize*2}`);
+  svg.innerHTML = createJunctionShape(null) + createJunctionLabel(junctionId);
+  return svg;
+}
+
+function updateJunctionOverlay(junctionId, selectedBranch) {
+  junctionMarkers[junctionId].getElement().innerHTML = createJunctionShape(selectedBranch) + createJunctionLabel(junctionId);
+}
+
+function getJunctionOverlayBounds(position) {
+  const size = metersToDegrees * 5;
+  return [ [ position[0] - size, position[1] - size/2], [position[0] + size, position[1] + size/2] ];
+}
+
+function createJunctionMarker(p, junctionId) {
+  return L.svgOverlay(createJunctionOverlay(junctionId), getJunctionOverlayBounds(p), { interactive: true })
+    .addEventListener('click', () => toggleJunction(junctionId) )
     .addTo(map);
 }
 
@@ -32,9 +66,7 @@ function updateJunctions() {
   return fetch('/junctionState')
   .then(resp => resp.json())
   .then(states =>
-    states.forEach((state, index) =>
-      junctionMarkers[index].setStyle({ color: state == 0 ? 'blue' : 'orange' })
-    )
+    states.forEach((state, index) => updateJunctionOverlay(index, state))
   );
 }
 
