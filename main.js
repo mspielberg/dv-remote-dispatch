@@ -6,7 +6,7 @@ const map = L.map('map', { maxBounds: [[-0.5, -0.5], [1.5, 1.5]], tap: false });
 fetch('/track')
 .then(resp => resp.json())
 .then(coords => {
-  const poly = L.polyline(coords, { interactive: false }).addTo(map);
+  const poly = L.polyline(coords, { color: 'lightsteelblue', interactive: false }).addTo(map);
   map.fitBounds(poly.getBounds());
 });
 
