@@ -62,6 +62,9 @@ namespace DvMod.RemoteDispatch
                 context.Response.ContentType = "application/json";
                 Render200(context, CarData.GetAllCarDataJson());
                 break;
+            case "eventSource":
+                HandleEventSourceSubscription(context);
+                break;
             case "junction":
                 HandleJunctionRequest(context);
                 break;
@@ -80,6 +83,15 @@ namespace DvMod.RemoteDispatch
             default:
                 Render404(context);
                 break;
+            }
+        }
+
+        private static void HandleEventSourceSubscription(HttpListenerContext context)
+        {
+            var query = context.Request.Url.Query?.TrimStart('?');
+            if (query != null)
+            {
+                EventSource.AddSession(query, context);
             }
         }
 
