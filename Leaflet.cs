@@ -12,12 +12,12 @@ namespace DvMod.RemoteDispatch
   crossorigin=""""/>
 <script src=""https://unpkg.com/leaflet@1.7.1/dist/leaflet.js""
   integrity=""sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==""
-  crossorigin=""""></script>
+  crossorigin=""""/>
 </head>
 <body>
 <div id=""map"" style=""height:100%""/>
 <script>
-var map = L.map('map', { maxBounds: [[-0.5, -0.5], [1.5, 1.5]] });
+var map = L.map('map', { maxBounds: [[-0.5, -0.5], [1.5, 1.5]], tap: false });
 
 fetch('/track')
 .then(resp => resp.json())
