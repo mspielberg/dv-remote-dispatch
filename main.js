@@ -19,7 +19,6 @@ const junctionsReady = fetch('/junction')
 
 function toggleJunction(index) {
   fetch(`/junction/${index}/toggle`, { method: 'POST' })
-  .then(_ => updateJunctions())
 }
 
 const junctionCanvasSize = 30
@@ -140,7 +139,29 @@ function periodic(f, interval) {
 
 function periodicUpdate() {
   periodic(updateCars, 500);
-  updateJunctions(updateJunctions, 5000);
 }
 
-junctionsReady.then(_ => periodicUpdate())
+function uuidv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
+function subscribeForEvents() {
+  const events = new EventSource(`/eventSource?${uuidv4()}`)
+  events.onmessage = e => {
+    const msg = JSON.parse(e.data);
+    switch (msg.type)
+    {
+    case "junctionSwitched":
+      updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
+      break;
+    }
+  };
+}
+
+junctionsReady.then(_ => {
+  subscribeForEvents();
+  updateJunctions();
+  periodicUpdate();
+})
