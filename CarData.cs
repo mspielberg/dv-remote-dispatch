@@ -46,7 +46,7 @@ namespace DvMod.RemoteDispatch
                     var logicCar = kvp.Key;
                     var trainCar = kvp.Value;
                     return new CarData(
-                        trainCar.IsLoco,
+                        CarTypes.IsAnyLocomotiveOrTender(trainCar.carType),
                         logicCar.length,
                         latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
                         rotation: trainCar.transform.eulerAngles.y);
