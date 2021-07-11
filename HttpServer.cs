@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -24,8 +25,14 @@ namespace DvMod.RemoteDispatch
             }
             while (listener.IsListening)
             {
-                var context = await listener.GetContextAsync();
-                HandleRequest(context);
+                try
+                {
+                    var context = await listener.GetContextAsync();
+                    HandleRequest(context);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
             }
         }
 
@@ -44,12 +51,17 @@ namespace DvMod.RemoteDispatch
             var request = context.Request;
             if (request.Url.Segments.Length < 2)
             {
-                Render200(context, LeafletHost.RenderMapPage());
+                context.Response.ContentType = "text/html; charset=UTF-8";
+                RenderResource(context, "index.html");
                 return;
             }
 
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
+            case "main.js":
+                context.Response.ContentType = "application/javascript";
+                RenderResource(context, "main.js");
+                break;
             case "junction":
                 HandleJunctionRequest(context);
                 break;
@@ -69,7 +81,7 @@ namespace DvMod.RemoteDispatch
                 Render200(context, RenderTrackCoordinates(RailTracks.GetNormalizedTrackCoordinates()));
                 break;
             default:
-                Render404(context.Response);
+                Render404(context);
                 break;
             }
         }
@@ -96,10 +108,10 @@ namespace DvMod.RemoteDispatch
                         return;
                     }
                 }
-                Render404(context.Response);
+                Render404(context);
                 break;
             default:
-                Render404(context.Response);
+                Render404(context);
                 break;
             }
 
@@ -121,6 +133,14 @@ namespace DvMod.RemoteDispatch
             rootObject = null;
         }
 
+        private static void RenderResource(HttpListenerContext context, string resourceName)
+        {
+            var assembly = typeof(HttpServer).Assembly;
+            using var stream = assembly.GetManifestResourceStream(typeof(HttpServer), resourceName);
+            stream.CopyTo(context.Response.OutputStream);
+            context.Response.Close();
+        }
+
         private static void Render200(HttpListenerContext context, string s)
         {
             var bytes = Encoding.UTF8.GetBytes(s);
@@ -137,10 +157,10 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private static void Render404(HttpListenerResponse response)
+        private static void Render404(HttpListenerContext context)
         {
-            response.StatusCode = 404;
-            response.Close();
+            context.Response.StatusCode = 404;
+            context.Response.Close();
         }
 
         private static string RenderTrackCoordinates(IEnumerable<IEnumerable<(float x, float z)>> coords)

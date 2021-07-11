@@ -20,10 +20,16 @@
     <Reference Include="0Harmony"/>
     <Reference Include="Assembly-CSharp"/>
     <Reference Include="DV.PointSet"/>
+    <Reference Include="DV.Utils"/>
     <Reference Include="Newtonsoft.JSON"/>
     <Reference Include="UnityEngine.CoreModule"/>
     <Reference Include="UnityEngine.IMGUIModule"/>
     <Reference Include="UnityModManager"/>
     <Reference Include="net.smkd.vector3d"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="index.html"/>
+    <EmbeddedResource Include="main.js"/>
   </ItemGroup>
 </Project>
