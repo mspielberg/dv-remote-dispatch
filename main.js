@@ -114,8 +114,7 @@ function createCarOverlay(carId, carData) {
 }
 
 function updateCarOverlay(carId, carData) {
-  const textRotation = (carData.rotation % 180) - 90;
-  const svg = document.getElementById(carId);
+  const svg = carMarkers[carId].getElement();
   svg.innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
 }
 
@@ -135,8 +134,11 @@ function createNewCar(carId, carData) {
 }
 
 function updateCar(carId, carData) {
+  var marker = carMarkers[carId]
+  if (!marker)
+    return;
   updateCarOverlay(carId, carData);
-  carMarkers[carId].setBounds(getCarOverlayBounds(carData.position));
+  marker.setBounds(getCarOverlayBounds(carData.position));
 }
 
 function removeCar(carId) {
