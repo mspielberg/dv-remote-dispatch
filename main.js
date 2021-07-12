@@ -1,21 +1,29 @@
 const earthCircumference = 40e6;
 const metersToDegrees = 360 / earthCircumference;
 
-const map = L.map('map', { maxBounds: [[-0.5, -0.5], [1.5, 1.5]], tap: false });
+const mapBounds = [[-0.5, -0.5], [1.5, 1.5]]
+const map = L.map('map', { maxBounds: mapBounds, tap: false });
+map.fitBounds(mapBounds);
+
+let trackPolyLines = {}
 
 fetch('/track')
 .then(resp => resp.json())
-.then(coords => {
-  const poly = L.polyline(coords, { color: 'lightsteelblue', interactive: false }).addTo(map);
-  map.fitBounds(poly.getBounds());
+.then(tracks => {
+  Object.entries(tracks).forEach(([trackId, coords]) =>
+    trackPolyLines[trackId] = L.polyline(coords, { color: 'steelblue', interactive: false }).addTo(map)
+  );
 });
 
-let junctionMarkers = [];
+let junctions = [];
 const junctionsReady = fetch('/junction')
 .then(resp => resp.json())
-.then(coords => {
-  junctionMarkers = coords.map((p, index) => createJunctionMarker(p, index))
-});
+.then(allJunctionData =>
+  junctions = allJunctionData.map((data, index) => ({
+    marker: createJunctionMarker(data.position, index),
+    branches: data.branches,
+  }))
+);
 
 function toggleJunction(index) {
   fetch(`/junction/${index}/toggle`, { method: 'POST' })
@@ -47,7 +55,14 @@ function createJunctionOverlay(junctionId) {
 }
 
 function updateJunctionOverlay(junctionId, selectedBranch) {
-  junctionMarkers[junctionId].getElement().innerHTML = createJunctionShape(selectedBranch) + createJunctionLabel(junctionId);
+  const junction = junctions[junctionId]
+  junction.marker.getElement().innerHTML = createJunctionShape(selectedBranch) + createJunctionLabel(junctionId);
+  var selectedTrackId = junction.branches[selectedBranch]
+  trackPolyLines[selectedTrackId].setStyle({ color: 'steelblue', dashArray: null });
+  var unselectedTrackPolyLine = trackPolyLines[junction.branches[1-selectedBranch]]
+  unselectedTrackPolyLine
+    .setStyle({ color: 'lightsteelblue', dashArray: "4" })
+    .bringToBack();
 }
 
 function getJunctionOverlayBounds(position) {

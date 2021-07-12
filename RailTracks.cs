@@ -53,10 +53,11 @@ namespace DvMod.RemoteDispatch
 
         private static IEnumerable<World.LatLon> NormalizeTrackPoints(IEnumerable<World.Position> positions) => positions.Select(p => p.ToLatLon());
 
-        public static IEnumerable<IEnumerable<World.LatLon>> GetNormalizedTrackCoordinates() => GetAllTrackPoints().Select(NormalizeTrackPoints);
+        public static Dictionary<RailTrack, IEnumerable<World.LatLon>> GetNormalizedTrackCoordinates() =>
+            GetAllTrackPoints().ToDictionary(kvp => kvp.Key, kvp => NormalizeTrackPoints(kvp.Value));
 
-        public static IEnumerable<IEnumerable<World.Position>> GetAllTrackPoints(float resolution = SIMPLIFIED_RESOLUTION) =>
-             Component.FindObjectsOfType<RailTrack>().Select(track => GetTrackPoints(track, resolution));
+        public static Dictionary<RailTrack, IEnumerable<World.Position>> GetAllTrackPoints(float resolution = SIMPLIFIED_RESOLUTION) =>
+            Component.FindObjectsOfType<RailTrack>().ToDictionary(track => track, track => GetTrackPoints(track, resolution));
 
         private static IEnumerable<World.Position> GetTrackPoints(RailTrack track, float resolution = SIMPLIFIED_RESOLUTION)
         {
@@ -70,7 +71,9 @@ namespace DvMod.RemoteDispatch
         }
 
         private static readonly string trackPointJSON = JsonConvert.SerializeObject(
-            GetNormalizedTrackCoordinates().Select(trackPoints => trackPoints.Select(ll => ll.ToJson())));
+            GetNormalizedTrackCoordinates().ToDictionary(
+                kvp => kvp.Key.logicTrack.ID,
+                kvp => kvp.Value.Select(ll => ll.ToJson())));
 
         public static string GetTrackPointJSON() => trackPointJSON;
     }
@@ -81,7 +84,10 @@ namespace DvMod.RemoteDispatch
             JunctionsSaveManager.OrderedJunctions.Select(j =>
             {
                 var moved = j.position - WorldMover.currentMove;
-                return new World.Position(moved.x, moved.z).ToLatLon().ToJson();
+                return new JObject(
+                    new JProperty("position", new World.Position(moved.x, moved.z).ToLatLon().ToJson()),
+                    new JProperty("branches", j.outBranches.Select(b => b.track.logicTrack.ID.ToString()))
+                );
             })
         );
         public static string GetJunctionPointJSON() => junctionPointJSON;
