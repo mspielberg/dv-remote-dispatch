@@ -51,7 +51,6 @@ namespace DvMod.RemoteDispatch
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers.Add("Cache-Control", "no-store");
             context.Response.SendChunked = true;
-            context.Response.OutputStream.Flush();
             Main.DebugLog(() => $"New EventSource subscriber: {sessionId}");
         }
 
