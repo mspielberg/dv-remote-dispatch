@@ -22,6 +22,15 @@ namespace DvMod.RemoteDispatch
             this.length = length;
         }
 
+        public CarData(TrainCar trainCar)
+        : this(
+            CarTypes.IsAnyLocomotiveOrTender(trainCar.carType),
+            trainCar.logicCar.length,
+            latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
+            rotation: trainCar.transform.eulerAngles.y)
+        {
+        }
+
         public JObject ToJson()
         {
             return new JObject(
@@ -39,18 +48,9 @@ namespace DvMod.RemoteDispatch
 
         private static Dictionary<string, CarData> GetAllCarData()
         {
-            return SingletonBehaviour<IdGenerator>.Instance.logicCarToTrainCar.ToDictionary(
-                kvp => kvp.Key.ID,
-                kvp =>
-                {
-                    var logicCar = kvp.Key;
-                    var trainCar = kvp.Value;
-                    return new CarData(
-                        CarTypes.IsAnyLocomotiveOrTender(trainCar.carType),
-                        logicCar.length,
-                        latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
-                        rotation: trainCar.transform.eulerAngles.y);
-                });
+            return SingletonBehaviour<IdGenerator>.Instance
+                .logicCarToTrainCar
+                .ToDictionary(kvp => kvp.Key.ID, kvp => new CarData(kvp.Value));
         }
     }
 }
