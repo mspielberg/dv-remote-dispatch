@@ -49,9 +49,11 @@ namespace DvMod.RemoteDispatch
             if (value)
             {
                 harmony.PatchAll();
+                CarUpdater.Create();
             }
             else
             {
+                CarUpdater.Destroy();
                 HttpServer.Destroy();
                 harmony.UnpatchAll(modEntry.Info.Id);
             }

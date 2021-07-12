@@ -61,7 +61,7 @@ function createJunctionMarker(p, junctionId) {
     .addTo(map);
 }
 
-function updateJunctions() {
+function updateAllJunctions() {
   return fetch('/junctionState')
   .then(resp => resp.json())
   .then(states =>
@@ -107,38 +107,37 @@ function getCarOverlayBounds(position) {
   return [ [ position[0] - size, position[1] - size], [position[0] + size, position[1] + size] ];
 }
 
-const carMarkers = {};
-function updateCars() {
+const carMarkers = new Map();
+
+function createNewCar(carId, carData) {
+  // new car
+  carMarkers[carId] = L.svgOverlay(
+    createCarOverlay(carId, carData),
+    getCarOverlayBounds(carData.position))
+    .addTo(map);
+}
+
+function updateCar(carId, carData) {
+  updateCarOverlay(carId, carData);
+  carMarkers[carId].setBounds(getCarOverlayBounds(carData.position));
+}
+
+function removeCar(carId) {
+  const car = carMarkers[carId];
+  if (car) {
+    car.remove();
+    delete carMarkers[carId];
+  }
+}
+
+function updateAllCars() {
   return fetch('/car')
   .then(resp => resp.json())
   .then(cars => {
     Object.entries(cars).forEach(([carId, carData]) => {
-      if (carMarkers[carId]) {
-        updateCarOverlay(carId, carData);
-        carMarkers[carId].setBounds(getCarOverlayBounds(carData.position));
-      } else {
-        // new car
-        carMarkers[carId] = L.svgOverlay(
-          createCarOverlay(carId, carData),
-          getCarOverlayBounds(carData.position))
-          .addTo(map);
-      }
+      createNewCar(carId, carData);
     });
-
-    Object.keys(carMarkers).forEach(carId => {
-      if (!cars[carId]) {
-        carMarkers[carId].remove();
-      }
-    })
   });
-}
-
-function periodic(f, interval) {
-  f().then(_ => window.setTimeout(periodic(f, interval), interval))
-}
-
-function periodicUpdate() {
-  periodic(updateCars, 500);
 }
 
 function uuidv4() {
@@ -153,6 +152,17 @@ function subscribeForEvents() {
     const msg = JSON.parse(e.data);
     switch (msg.type)
     {
+    case "carDeleted":
+      removeCar(msg.carId);
+      break;
+    case "carSpawned":
+      createNewCar(msg.carId, msg.carData);
+      break;
+    case "carsUpdate":
+      Object.entries(msg.cars).forEach(([carId, carData]) => {
+        updateCar(carId, carData);
+      });
+      break;
     case "junctionSwitched":
       updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
       break;
@@ -161,7 +171,7 @@ function subscribeForEvents() {
 }
 
 junctionsReady.then(_ => {
+  updateAllCars();
+  updateAllJunctions();
   subscribeForEvents();
-  updateJunctions();
-  periodicUpdate();
 })
