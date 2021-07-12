@@ -1,9 +1,11 @@
 const earthCircumference = 40e6;
 const metersToDegrees = 360 / earthCircumference;
 
-const mapBounds = [[-0.5, -0.5], [1.5, 1.5]]
-const map = L.map('map', { maxBounds: mapBounds, tap: false });
-map.fitBounds(mapBounds);
+const mapBounds = [[0, 0], [0.15, 0.15]]
+const maxBounds = [[-0.02, -0.02], [0.17, 0.17]]
+const map = L.map('map', { minZoom: 13, maxBounds: maxBounds, tap: false })
+.fitBounds(mapBounds);
+L.control.scale().addTo(map);
 
 let trackPolyLines = {}
 
