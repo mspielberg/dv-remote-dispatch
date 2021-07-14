@@ -101,7 +101,7 @@ function updateJunctionOverlay(junctionId, selectedBranch) {
   trackPolyLines[selectedTrackId].setStyle({ color: 'steelblue', dashArray: null });
   var unselectedTrackPolyLine = trackPolyLines[junction.branches[1-selectedBranch]]
   unselectedTrackPolyLine
-    .setStyle({ color: 'lightsteelblue', dashArray: "4" })
+    .setStyle({ color: 'lightsteelblue', dashArray: "6 12" })
     .bringToBack();
 }
 
@@ -177,7 +177,8 @@ fetch('/player')
 // cars
 
 const carHeight = 20;
-const carColors = ["#52ef99", "#c95e9f", "#b1e632", "#7574f5", "#799d10", "#fd3fbe", "#2cf52b", "#d130ff", "#21a708", "#fd2b31", "#3eeaef", "#ffc4de", "#069668", "#f9793b", "#5884c9", "#e5d75e", "#96ccfe", "#bb8801", "#6a8b7b", "#a8777c"];
+// http://vrl.cs.brown.edu/color
+const carColors = ['#52ef99', '#c95e9f', '#b1e632', '#7574f5', '#799d10', '#fd3fbe', '#2cf52b', '#d130ff', '#21a708', '#fd2b31', '#3eeaef', '#ffc4de', '#069668', '#f9793b', '#5884c9', '#e5d75e', '#96ccfe', '#bb8801', '#6a8b7b', '#a8777c'];
 
 // https://www.npmjs.com/package/string-hash
 function stringHash(str) {
