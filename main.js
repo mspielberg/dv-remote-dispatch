@@ -23,12 +23,33 @@ function setMarkerToFollow(marker) {
 
 let trackPolyLines = {};
 
+function createTrackLabel(trackId, coords) {
+  const size = 0.0001;
+  const start = coords[0];
+  const end = coords[coords.length - 1];
+  const position = coords[2];
+  const angle = ((Math.atan2(end[0] - start[0], end[1] - start[1]) * 180 / Math.PI) + 270) % 180 - 90;
+  const rotation = `rotate(${-angle})`;
+  const bounds = [[position[0] - size, position[1] - size], [position[0] + size, position[1] + size]];
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('id', trackId)
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  svg.setAttribute('viewBox', '-50 -10 100 20');
+  svg.innerHTML =
+    `<text text-anchor="middle" dominant-baseline="central" transform="${rotation}" fill="steelblue" stroke="black" stroke-width="0.05px">${trackId.slice(trackId.indexOf('-') + 1)}</text>`;
+  L.svgOverlay(svg, bounds).addTo(map);
+}
+
 fetch('/track')
 .then(resp => resp.json())
 .then(tracks => {
-  Object.entries(tracks).forEach(([trackId, coords]) =>
-    trackPolyLines[trackId] = L.polyline(coords, { color: 'lightsteelblue', interactive: false }).addTo(map)
-  );
+  Object.entries(tracks).forEach(([trackId, coords]) => {
+    const polyline = L.polyline(coords, { color: 'lightsteelblue', interactive: false }).addTo(map);
+    trackPolyLines[trackId] = polyline;
+    if (!trackId.includes('#'))
+      createTrackLabel(trackId, coords)
+  });
 });
 
 /////////////////////
