@@ -22,7 +22,7 @@ fetch('/track')
 .then(resp => resp.json())
 .then(tracks => {
   Object.entries(tracks).forEach(([trackId, coords]) =>
-    trackPolyLines[trackId] = L.polyline(coords, { color: 'steelblue', interactive: false }).addTo(map)
+    trackPolyLines[trackId] = L.polyline(coords, { color: 'lightsteelblue', interactive: false }).addTo(map)
   );
 });
 
