@@ -155,8 +155,7 @@ fetch('/player')
 /////////////////////
 // cars
 
-const carCanvasSize = 150;
-const carHeight = 10;
+const carHeight = 20;
 const carColors = ["#52ef99", "#c95e9f", "#b1e632", "#7574f5", "#799d10", "#fd3fbe", "#2cf52b", "#d130ff", "#21a708", "#fd2b31", "#3eeaef", "#ffc4de", "#069668", "#f9793b", "#5884c9", "#e5d75e", "#96ccfe", "#bb8801", "#6a8b7b", "#a8777c"];
 
 // https://www.npmjs.com/package/string-hash
@@ -173,8 +172,8 @@ function createCarShape(carData) {
   const lengthPx = carData.length * 6;
   const transform = `rotate(${carData.rotation - 90})`;
   const svg = carData.isLoco
-  ? `<polygon points="${-lengthPx/2},-10 ${-lengthPx/2},10 ${lengthPx/2-5},10 ${lengthPx/2},0 ${lengthPx/2-5},-10" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="goldenrod" stroke-width="1%"/>`
-  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="70%" stroke="${color}" stroke-width="1%"/>`;
+  ? `<polygon points="${-lengthPx/2},-${carHeight/2} ${-lengthPx/2},${carHeight/2} ${lengthPx/2-5},${carHeight/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carHeight/2}" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="goldenrod" stroke-width="1%"/>`
+  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
   return svg;
 }
 
@@ -193,10 +192,12 @@ function createCarLabel(carId, carData) {
 }
 
 function createCarOverlay(carId, carData) {
+  const lengthPx = carData.length * 6;
+  const carCanvasMajor = Math.sqrt(lengthPx / 2 * lengthPx / 2 + carHeight / 2 * carHeight / 2);
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('id', carId);
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.setAttribute('viewBox', `${-carCanvasSize/2} ${-carCanvasSize/2} ${carCanvasSize} ${carCanvasSize}`);
+  svg.setAttribute('viewBox', `${-carCanvasMajor} ${-carCanvasMajor} ${carCanvasMajor*2} ${carCanvasMajor*2}`);
   return svg
 }
 
@@ -205,9 +206,10 @@ function updateCarOverlay(carId, carData) {
   svg.innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
 }
 
-function getCarOverlayBounds(position) {
-  const size = metersToDegrees * 12;
-  return [ [ position[0] - size, position[1] - size], [position[0] + size, position[1] + size] ];
+function getCarOverlayBounds(carData) {
+  const position = carData.position;
+  const length = metersToDegrees * carData.length;
+  return [ [ position[0] - length/2, position[1] - length/2], [position[0] + length/2, position[1] + length/2] ];
 }
 
 const carMarkers = new Map();
@@ -216,7 +218,7 @@ function createNewCar(carId, carData) {
   // new car
   carMarkers[carId] = L.svgOverlay(
     createCarOverlay(carId, carData),
-    getCarOverlayBounds(carData.position),
+    getCarOverlayBounds(carData),
     { interactive: true, bubblingMouseEvents: false })
     .addEventListener('click', e => setMarkerToFollow(e.target))
     .addTo(map);
@@ -228,7 +230,7 @@ function updateCar(carId, carData) {
   if (!marker)
     return;
   updateCarOverlay(carId, carData);
-  marker.setBounds(getCarOverlayBounds(carData.position));
+  marker.setBounds(getCarOverlayBounds(carData));
 }
 
 function removeCar(carId) {
