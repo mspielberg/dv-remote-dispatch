@@ -101,7 +101,7 @@ function createCarShape(carData) {
 function createCarLabel(carId, carData) {
   const lengthPx = carData.length * 6;
   const transform = `rotate(${carData.rotation % 180 - 90},0,0)`;
-  return `<text x="${-lengthPx/2 + 10}" y="5" transform="${transform}" font-weight="bold">${carId}</text>`;
+  return `<text x="${-lengthPx/2 + 7}" y="5" transform="${transform}" font-weight="bold">${carId}</text>`;
 }
 
 function createCarOverlay(carId, carData) {
