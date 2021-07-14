@@ -30,8 +30,9 @@ namespace DvMod.RemoteDispatch
                     var context = await listener.GetContextAsync();
                     HandleRequest(context);
                 }
-                catch (ObjectDisposedException)
+                catch (Exception e)
                 {
+                    Main.DebugLog(() => $"Exception while handling HTTP connection: {e}");
                 }
             }
         }
