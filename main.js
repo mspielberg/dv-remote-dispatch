@@ -10,6 +10,9 @@ const map = L.map('map', { minZoom: 13, maxBounds: maxBounds, tap: false })
 .fitBounds(mapBounds);
 L.control.scale().addTo(map);
 
+let markerToFollow;
+map.addEventListener('mousedown', _ => markerToFollow = null);
+
 /////////////////////
 // track
 
@@ -150,7 +153,9 @@ function createNewCar(carId, carData) {
   // new car
   carMarkers[carId] = L.svgOverlay(
     createCarOverlay(carId, carData),
-    getCarOverlayBounds(carData.position))
+    getCarOverlayBounds(carData.position),
+    { interactive: true, bubblingMouseEvents: false })
+    .addEventListener('click', e => markerToFollow = e.target)
     .addTo(map);
   updateCarOverlay(carId, carData);
 }
@@ -208,6 +213,8 @@ function subscribeForEvents() {
       updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
       break;
     }
+    if (markerToFollow)
+      map.panTo(markerToFollow.getBounds().getCenter());
   };
 }
 
