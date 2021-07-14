@@ -89,12 +89,22 @@ function updateAllJunctions() {
 const carCanvasSize = 150;
 const carHeight = 10;
 
+// https://www.npmjs.com/package/string-hash
+function stringHash(str) {
+  let hash = 5381, i = str.length;
+  while(i) {
+    hash = (hash * 33) ^ str.charCodeAt(--i);
+  }
+  return hash >>> 0;
+}
+
 function createCarShape(carData) {
+  const color = carData.jobId ? `hsl(${stringHash(carData.jobId) % 36 * 10} 40% 50%)` : 'gray';
   const lengthPx = carData.length * 6;
   const transform = `rotate(${carData.rotation - 90},0,0)`;
   const svg = carData.isLoco
   ? `<polygon points="${-lengthPx/2},-10 ${-lengthPx/2},10 ${lengthPx/2-10},10 ${lengthPx/2},0 ${lengthPx/2-10},-10" transform="${transform}" fill="goldenrod" fill-opacity="50%" stroke="goldenrod" stroke-width="1%"/>`
-  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="magenta" fill-opacity="50%" stroke="magenta" stroke-width="1%"/>`;
+  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="50%" stroke="${color}" stroke-width="1%"/>`;
   return svg;
 }
 
@@ -109,7 +119,6 @@ function createCarOverlay(carId, carData) {
   svg.setAttribute('id', carId)
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('viewBox', `${-carCanvasSize/2} ${-carCanvasSize/2} ${carCanvasSize} ${carCanvasSize}`);
-  svg.innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
   return svg
 }
 
@@ -131,10 +140,11 @@ function createNewCar(carId, carData) {
     createCarOverlay(carId, carData),
     getCarOverlayBounds(carData.position))
     .addTo(map);
+  updateCarOverlay(carId, carData);
 }
 
 function updateCar(carId, carData) {
-  var marker = carMarkers[carId]
+  const marker = carMarkers[carId]
   if (!marker)
     return;
   updateCarOverlay(carId, carData);
