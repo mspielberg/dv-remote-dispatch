@@ -1,13 +1,19 @@
 const earthCircumference = 40e6;
 const metersToDegrees = 360 / earthCircumference;
 
-const mapBounds = [[0, 0], [0.15, 0.15]]
-const maxBounds = [[-0.02, -0.02], [0.17, 0.17]]
+/////////////////////
+// map
+
+const mapBounds = [[0, 0], [0.15, 0.15]];
+const maxBounds = [[-0.02, -0.02], [0.17, 0.17]];
 const map = L.map('map', { minZoom: 13, maxBounds: maxBounds, tap: false })
 .fitBounds(mapBounds);
 L.control.scale().addTo(map);
 
-let trackPolyLines = {}
+/////////////////////
+// track
+
+let trackPolyLines = {};
 
 fetch('/track')
 .then(resp => resp.json())
@@ -16,6 +22,9 @@ fetch('/track')
     trackPolyLines[trackId] = L.polyline(coords, { color: 'steelblue', interactive: false }).addTo(map)
   );
 });
+
+/////////////////////
+// junctions
 
 let junctions = [];
 const junctionsReady = fetch('/junction')
@@ -31,7 +40,7 @@ function toggleJunction(index) {
   fetch(`/junction/${index}/toggle`, { method: 'POST' })
 }
 
-const junctionCanvasSize = 30
+const junctionCanvasSize = 30;
 
 function createJunctionShape(selectedBranch) {
   return `<g opacity="50%"><rect x="${-junctionCanvasSize/2}" y="${-junctionCanvasSize}" width="${junctionCanvasSize}" height="${junctionCanvasSize*2}" fill="red"/>` +
@@ -85,6 +94,9 @@ function updateAllJunctions() {
     states.forEach((state, index) => updateJunctionOverlay(index, state))
   );
 }
+
+/////////////////////
+// cars
 
 const carCanvasSize = 150;
 const carHeight = 10;
@@ -203,4 +215,4 @@ junctionsReady.then(_ => {
   updateAllCars();
   updateAllJunctions();
   subscribeForEvents();
-})
+});
