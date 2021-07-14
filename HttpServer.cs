@@ -139,7 +139,8 @@ namespace DvMod.RemoteDispatch
 
         public static void Destroy()
         {
-            GameObject.Destroy(rootObject);
+            // ensure server shuts down immediately, not at the end of the frame
+            GameObject.DestroyImmediate(rootObject);
             rootObject = null;
         }
 
@@ -173,9 +174,5 @@ namespace DvMod.RemoteDispatch
             context.Response.Close();
         }
 
-        private static string RenderTrackCoordinates(IEnumerable<IEnumerable<(float x, float z)>> coords)
-        {
-            return string.Join("\n", coords.Select(trackPoints => string.Join(",", trackPoints)));
-        }
     }
 }
