@@ -13,6 +13,11 @@ namespace DvMod.RemoteDispatch
         private static readonly Dictionary<string, CarData> updatedCarData =
             new Dictionary<string, CarData>();
 
+        public static void MarkCarAsDirty(TrainCar car)
+        {
+            updatedCarData[car.ID] = new CarData(car);
+        }
+
         [HarmonyPatch(typeof(TrainCar), nameof(TrainCar.Update))]
         public static class UpdatePatch
         {
@@ -22,7 +27,7 @@ namespace DvMod.RemoteDispatch
                     return;
                 if (__instance.isStationary)
                     return;
-                updatedCarData[__instance.ID] = new CarData(__instance);
+                MarkCarAsDirty(__instance);
             }
         }
 
