@@ -103,6 +103,7 @@ function updateAllJunctions() {
 
 const carCanvasSize = 150;
 const carHeight = 10;
+const carColors = ["#52ef99", "#c95e9f", "#b1e632", "#7574f5", "#799d10", "#fd3fbe", "#2cf52b", "#d130ff", "#21a708", "#fd2b31", "#3eeaef", "#ffc4de", "#069668", "#f9793b", "#5884c9", "#e5d75e", "#96ccfe", "#bb8801", "#6a8b7b", "#a8777c"];
 
 // https://www.npmjs.com/package/string-hash
 function stringHash(str) {
@@ -114,7 +115,7 @@ function stringHash(str) {
 }
 
 function createCarShape(carData) {
-  const color = carData.jobId ? `hsl(${stringHash(carData.jobId) % 36 * 10} 40% 50%)` : 'gray';
+  const color = carData.jobId ? carColors[stringHash(carData.jobId) % carColors.length] : 'gray';
   const lengthPx = carData.length * 6;
   const transform = `rotate(${carData.rotation - 90},0,0)`;
   const svg = carData.isLoco
