@@ -66,7 +66,7 @@ function createJunctionLabel(junctionId) {
 
 function createJunctionOverlay(junctionId) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', junctionId)
+  svg.setAttribute('id', `J-${junctionId}`)
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('viewBox', `${-junctionCanvasSize/2} ${-junctionCanvasSize} ${junctionCanvasSize} ${junctionCanvasSize*2}`);
   svg.innerHTML = createJunctionShape(null) + createJunctionLabel(junctionId);
@@ -90,9 +90,13 @@ function getJunctionOverlayBounds(position) {
 }
 
 function createJunctionMarker(p, junctionId) {
-  return L.svgOverlay(createJunctionOverlay(junctionId), getJunctionOverlayBounds(p), { interactive: true })
+  return L.svgOverlay(
+    createJunctionOverlay(junctionId),
+    getJunctionOverlayBounds(p),
+    { interactive: true })
     .addEventListener('click', () => toggleJunction(junctionId) )
-    .addTo(map);
+    .addTo(map)
+    .setZIndex(Math.floor(p[0] * 100000 + p[1] * 100000));
 }
 
 function updateAllJunctions() {
