@@ -164,7 +164,7 @@ function createCarShape(carData) {
   const lengthPx = carData.length * 6;
   const transform = `rotate(${carData.rotation - 90})`;
   const svg = carData.isLoco
-  ? `<polygon points="${-lengthPx/2},-10 ${-lengthPx/2},10 ${lengthPx/2-10},10 ${lengthPx/2},0 ${lengthPx/2-10},-10" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="goldenrod" stroke-width="1%"/>`
+  ? `<polygon points="${-lengthPx/2},-10 ${-lengthPx/2},10 ${lengthPx/2-5},10 ${lengthPx/2},0 ${lengthPx/2-5},-10" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="goldenrod" stroke-width="1%"/>`
   : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="70%" stroke="${color}" stroke-width="1%"/>`;
   return svg;
 }
@@ -172,7 +172,7 @@ function createCarShape(carData) {
 function createCarLabel(carId, carData) {
   const lengthPx = carData.length * 6;
   const transform = `rotate(${carData.rotation % 180 - 90},0,0)`;
-  return `<text x="${-lengthPx/2 + 7}" y="5" transform="${transform}" font-weight="bold">${carId}</text>`;
+  return `<text x="${-lengthPx/2 + 5}" y="5" transform="${transform}" font-weight="bold">${carId}</text>`;
 }
 
 function createCarOverlay(carId, carData) {
