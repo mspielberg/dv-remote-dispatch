@@ -171,8 +171,16 @@ function createCarShape(carData) {
 
 function createCarLabel(carId, carData) {
   const lengthPx = carData.length * 6;
-  const transform = `rotate(${carData.rotation % 180 - 90},0,0)`;
-  return `<text x="${-lengthPx/2 + 5}" y="5" transform="${transform}" font-weight="bold">${carId}</text>`;
+  const rotation = `rotate(${carData.rotation % 180 - 90})`;
+  if (carData.isLoco)
+    return `<text x="${-lengthPx/2 + 5}" dominant-baseline="central" transform="${rotation}" font-size="12" font-weight="bold">${carId}</text>`;
+  const jobIdLabel = carData.jobId ? `<text x="${-lengthPx/2 + 5}" dominant-baseline="central" transform="${rotation}" font-size="16">${carData.jobId.slice(-5,-3)}${carData.jobId.slice(-2)}</text>` : "";
+  const carIdLabel =
+    `<text y="-0.5em" y="1" transform="${rotation} translate(${lengthPx/2 - 5})" dominant-baseline="central" text-anchor="end" font-size="8" font-family="monospace" font-weight="bold">` +
+      `<tspan x="0">${carId.slice(0,3)}</tspan>` +
+      `<tspan x="0" dy="1em">${carId.slice(3)}</tspan>` +
+    '</text>';
+  return jobIdLabel + carIdLabel;
 }
 
 function createCarOverlay(carId, carData) {
