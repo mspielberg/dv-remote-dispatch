@@ -46,7 +46,7 @@ function toggleJunction(index) {
 const junctionCanvasSize = 30;
 
 function createJunctionShape(selectedBranch) {
-  return `<g opacity="50%"><rect x="${-junctionCanvasSize/2}" y="${-junctionCanvasSize}" width="${junctionCanvasSize}" height="${junctionCanvasSize*2}" fill="red"/>` +
+  return `<g opacity="70%"><rect x="${-junctionCanvasSize/2}" y="${-junctionCanvasSize}" width="${junctionCanvasSize}" height="${junctionCanvasSize*2}" fill="red"/>` +
     (
       selectedBranch == 0 ? `<line x1="${junctionCanvasSize/2}" y1="${junctionCanvasSize}" x2="${-junctionCanvasSize/2}" y2="${-junctionCanvasSize}" stroke="white" stroke-width="10"/>` :
       selectedBranch == 1 ? `<line x1="${-junctionCanvasSize/2}" y1="${junctionCanvasSize}" x2="${junctionCanvasSize/2}" y2="${-junctionCanvasSize}" stroke="white" stroke-width="10"/>`
@@ -120,7 +120,7 @@ function createPlayerOverlay() {
   svg.setAttribute('id', 'player');
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('viewBox', `${-playerCanvasSize/2*1.5} ${-playerCanvasSize/2*1.5} ${playerCanvasSize*1.5} ${playerCanvasSize*1.5}`);
-  svg.innerHTML = '<polygon id="playerPolygon" color="aqua" fill-opacity="70%" points="0,-10 10,10 0,5 -10,10"/>';
+  svg.innerHTML = '<polygon id="playerPolygon" fill="aqua" fill-opacity="70%" stroke="aqua" stroke-width="2" points="0,-10 10,10 0,5 -10,10"/>';
   return svg;
 }
 
@@ -162,10 +162,10 @@ function stringHash(str) {
 function createCarShape(carData) {
   const color = carData.jobId ? carColors[stringHash(carData.jobId) % carColors.length] : 'gray';
   const lengthPx = carData.length * 6;
-  const transform = `rotate(${carData.rotation - 90},0,0)`;
+  const transform = `rotate(${carData.rotation - 90})`;
   const svg = carData.isLoco
-  ? `<polygon points="${-lengthPx/2},-10 ${-lengthPx/2},10 ${lengthPx/2-10},10 ${lengthPx/2},0 ${lengthPx/2-10},-10" transform="${transform}" fill="goldenrod" fill-opacity="50%" stroke="goldenrod" stroke-width="1%"/>`
-  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="50%" stroke="${color}" stroke-width="1%"/>`;
+  ? `<polygon points="${-lengthPx/2},-10 ${-lengthPx/2},10 ${lengthPx/2-10},10 ${lengthPx/2},0 ${lengthPx/2-10},-10" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="goldenrod" stroke-width="1%"/>`
+  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="70%" stroke="${color}" stroke-width="1%"/>`;
   return svg;
 }
 
@@ -177,7 +177,7 @@ function createCarLabel(carId, carData) {
 
 function createCarOverlay(carId, carData) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', carId)
+  svg.setAttribute('id', carId);
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('viewBox', `${-carCanvasSize/2} ${-carCanvasSize/2} ${carCanvasSize} ${carCanvasSize}`);
   return svg
