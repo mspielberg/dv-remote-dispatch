@@ -13,6 +13,11 @@ L.control.scale().addTo(map);
 let markerToFollow;
 map.addEventListener('mousedown', _ => markerToFollow = null);
 
+function setMarkerToFollow(marker) {
+  markerToFollow = marker;
+  map.panTo(marker.getBounds().getCenter());
+}
+
 /////////////////////
 // track
 
@@ -129,7 +134,7 @@ function createPlayerMarker(playerData) {
     createPlayerOverlay(),
     getPlayerOverlayBounds(playerData.position),
     { interactive: true, bubblingMouseEvents: false })
-    .addEventListener('click', e => markerToFollow = e.target)
+    .addEventListener('click', e => setMarkerToFollow(e.target))
     .addTo(map);
   updatePlayerOverlay(playerData);
 }
@@ -209,7 +214,7 @@ function createNewCar(carId, carData) {
     createCarOverlay(carId, carData),
     getCarOverlayBounds(carData.position),
     { interactive: true, bubblingMouseEvents: false })
-    .addEventListener('click', e => markerToFollow = e.target)
+    .addEventListener('click', e => setMarkerToFollow(e.target))
     .addTo(map);
   updateCarOverlay(carId, carData);
 }
