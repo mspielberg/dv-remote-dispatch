@@ -10,9 +10,6 @@ namespace DvMod.RemoteDispatch
 {
     public static class World
     {
-        private const float EARTH_CIRCUMFERENCE = 40e6f;
-        private const float DEGREES_PER_METER = 360f / EARTH_CIRCUMFERENCE;
-
         public readonly struct Position
         {
             public readonly float x;
@@ -32,6 +29,9 @@ namespace DvMod.RemoteDispatch
 
         public readonly struct LatLon
         {
+            private const float EARTH_CIRCUMFERENCE = 40e6f;
+            private const float DEGREES_PER_METER = 360f / EARTH_CIRCUMFERENCE;
+
             public readonly float latitude;
             public readonly float longitude;
 
