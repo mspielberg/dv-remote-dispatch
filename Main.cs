@@ -50,6 +50,8 @@ namespace DvMod.RemoteDispatch
             {
                 harmony.PatchAll();
                 CarUpdater.Create();
+                if (Main.settings.startServerOnLoad)
+                    HttpServer.Create();
             }
             else
             {

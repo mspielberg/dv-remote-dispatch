@@ -6,9 +6,8 @@ namespace DvMod.RemoteDispatch
 {
     public class Settings : UnityModManager.ModSettings
     {
-        [Draw("Network port", Min = 1024, Max = 65535)]
         public int serverPort = 7245;
-        [Draw("Enable logging")]
+        public bool startServerOnLoad = false;
         public bool enableLogging = false;
 
         public readonly string? version = Main.mod?.Info.Version;
@@ -52,9 +51,8 @@ namespace DvMod.RemoteDispatch
 
             GUILayout.Label(message);
 
-            GUILayout.BeginHorizontal();
+            startServerOnLoad = GUILayout.Toggle(startServerOnLoad, "Start server on load");
             enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
-            GUILayout.EndHorizontal();
         }
 
         override public void Save(UnityModManager.ModEntry entry)
