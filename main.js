@@ -150,7 +150,7 @@ function createPlayerOverlay() {
   svg.setAttribute('id', 'player');
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('viewBox', `${-playerCanvasSize/2*1.5} ${-playerCanvasSize/2*1.5} ${playerCanvasSize*1.5} ${playerCanvasSize*1.5}`);
-  svg.innerHTML = '<polygon id="playerPolygon" fill="aqua" fill-opacity="70%" stroke="aqua" stroke-width="2" points="0,-10 10,10 0,5 -10,10"/>';
+  svg.innerHTML = '<polygon id="playerPolygon" fill="aqua" fill-opacity="70%" stroke="black" stroke-width="1%" points="0,-10 10,10 0,5 -10,10"/>';
   return svg;
 }
 
@@ -193,7 +193,7 @@ function createCarShape(carData) {
   const lengthPx = carData.length * 6;
   const transform = `rotate(${carData.rotation - 90})`;
   const svg = carData.isLoco
-  ? `<polygon points="${-lengthPx/2},-${carHeight/2} ${-lengthPx/2},${carHeight/2} ${lengthPx/2-5},${carHeight/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carHeight/2}" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="goldenrod" stroke-width="1%"/>`
+  ? `<polygon points="${-lengthPx/2},-${carHeight/2} ${-lengthPx/2},${carHeight/2} ${lengthPx/2-5},${carHeight/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carHeight/2}" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
   : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
   return svg;
 }
