@@ -5,7 +5,6 @@ using System.Net;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -13,7 +12,7 @@ namespace DvMod.RemoteDispatch
     public class HttpServer : MonoBehaviour
     {
         private static GameObject? rootObject;
-        private HttpListener listener = new HttpListener();
+        private readonly HttpListener listener = new HttpListener();
 
         public async void Start()
         {
@@ -27,7 +26,7 @@ namespace DvMod.RemoteDispatch
             {
                 try
                 {
-                    var context = await listener.GetContextAsync();
+                    var context = await listener.GetContextAsync().ConfigureAwait(true);
                     HandleRequest(context);
                 }
                 catch (Exception e)
@@ -77,12 +76,20 @@ namespace DvMod.RemoteDispatch
                 context.Response.ContentType = "application/javascript";
                 RenderResource(context, "main.js");
                 break;
+            case "player":
+                context.Response.ContentType = "application/json";
+                var json = PlayerData.GetPlayerDataJson();
+                if (json != null)
+                    Render200(context, json);
+                else
+                    RenderEmpty(context, 500);
+                break;
             case "track":
                 context.Response.ContentType = "application/json";
                 Render200(context, RailTracks.GetTrackPointJSON());
                 break;
             default:
-                Render404(context);
+                RenderEmpty(context, 404);
                 break;
             }
         }
@@ -118,13 +125,12 @@ namespace DvMod.RemoteDispatch
                         return;
                     }
                 }
-                Render404(context);
+                RenderEmpty(context, 404);
                 break;
             default:
-                Render404(context);
+                RenderEmpty(context, 404);
                 break;
             }
-
         }
 
         public static void Create()
@@ -168,11 +174,10 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private static void Render404(HttpListenerContext context)
+        private static void RenderEmpty(HttpListenerContext context, int statusCode)
         {
-            context.Response.StatusCode = 404;
+            context.Response.StatusCode = statusCode;
             context.Response.Close();
         }
-
     }
 }

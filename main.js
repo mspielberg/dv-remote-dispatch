@@ -99,6 +99,51 @@ function updateAllJunctions() {
 }
 
 /////////////////////
+// player
+
+const playerCanvasSize = 20;
+let playerMarker;
+
+function getPlayerOverlayBounds(position) {
+  const size = metersToDegrees * 2;
+  return [ [ position[0] - size, position[1] - size], [position[0] + size, position[1] + size] ];
+}
+
+function updatePlayerOverlay(playerData) {
+  const polygonElem = document.getElementById("playerPolygon");
+  polygonElem.setAttribute('transform', `rotate(${playerData.rotation})`);
+  playerMarker.setBounds(getPlayerOverlayBounds(playerData.position));
+}
+
+function createPlayerOverlay() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('id', 'player');
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  svg.setAttribute('viewBox', `${-playerCanvasSize/2*1.5} ${-playerCanvasSize/2*1.5} ${playerCanvasSize*1.5} ${playerCanvasSize*1.5}`);
+  svg.innerHTML = '<polygon id="playerPolygon" color="aqua" fill-opacity="70%" points="0,-10 10,10 0,5 -10,10"/>';
+  return svg;
+}
+
+function createPlayerMarker(playerData) {
+  playerMarker = L.svgOverlay(
+    createPlayerOverlay(),
+    getPlayerOverlayBounds(playerData.position),
+    { interactive: true, bubblingMouseEvents: false })
+    .addEventListener('click', e => markerToFollow = e.target)
+    .addTo(map);
+  updatePlayerOverlay(playerData);
+}
+
+fetch('/player')
+.then(resp => resp.json())
+.then(playerData => {
+  createPlayerMarker(playerData);
+  map
+  .setZoom(20)
+  .panTo(playerData.position)
+});
+
+/////////////////////
 // cars
 
 const carCanvasSize = 150;
@@ -212,6 +257,9 @@ function subscribeForEvents() {
       break;
     case "junctionSwitched":
       updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
+      break;
+    case "playerUpdate":
+      updatePlayerOverlay(msg);
       break;
     }
     if (markerToFollow)

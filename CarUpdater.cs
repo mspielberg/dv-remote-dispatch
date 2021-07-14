@@ -1,14 +1,12 @@
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
-    public class CarUpdater : MonoBehaviour
+    public static class CarUpdater
     {
         private static readonly Dictionary<string, CarData> updatedCarData =
             new Dictionary<string, CarData>();
@@ -31,35 +29,13 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private static GameObject? rootObject;
-
-        public static void Create()
-        {
-            if (rootObject == null)
-            {
-                rootObject = new GameObject();
-                GameObject.DontDestroyOnLoad(rootObject);
-                rootObject.AddComponent<CarUpdater>();
-            }
-        }
-
-        public static void Destroy()
-        {
-            if (rootObject != null)
-            {
-                GameObject.Destroy(rootObject);
-                rootObject = null;
-            }
-        }
-
-        public void Start()
+        static CarUpdater()
         {
             CarSpawner.CarSpawned += OnCarSpawned;
             CarSpawner.CarAboutToBeDeleted += OnCarAboutToBeDeleted;
-            StartCoroutine(PublishEventsCoro());
         }
 
-        private void OnCarSpawned(TrainCar car)
+        private static void OnCarSpawned(TrainCar car)
         {
             var jsonMessage = new JObject(
                 new JProperty("type", "carSpawned"),
@@ -68,7 +44,7 @@ namespace DvMod.RemoteDispatch
             EventSource.PublishMessage(JsonConvert.SerializeObject(jsonMessage));
         }
 
-        private void OnCarAboutToBeDeleted(TrainCar car)
+        private static void OnCarAboutToBeDeleted(TrainCar car)
         {
             var jsonMessage = new JObject(
                 new JProperty("type", "carDeleted"),
@@ -76,21 +52,17 @@ namespace DvMod.RemoteDispatch
             EventSource.PublishMessage(JsonConvert.SerializeObject(jsonMessage));
         }
 
-        private IEnumerator PublishEventsCoro()
+        public static void PublishUpdatedCars()
         {
-            while (true)
+            if (updatedCarData.Count > 0)
             {
-                yield return WaitFor.Seconds(0.2f);
-                if (updatedCarData.Count > 0)
-                {
-                    var jsonMessage = new JObject(
-                        new JProperty("type", "carsUpdate"),
-                        new JProperty("cars", JObject.FromObject(
-                            updatedCarData.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson())))
-                    );
-                    EventSource.PublishMessage(JsonConvert.SerializeObject(jsonMessage));
-                    updatedCarData.Clear();
-                }
+                var jsonMessage = new JObject(
+                    new JProperty("type", "carsUpdate"),
+                    new JProperty("cars", JObject.FromObject(
+                        updatedCarData.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson())))
+                );
+                EventSource.PublishMessage(JsonConvert.SerializeObject(jsonMessage));
+                updatedCarData.Clear();
             }
         }
     }
