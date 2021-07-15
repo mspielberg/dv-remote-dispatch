@@ -7,6 +7,7 @@ namespace DvMod.RemoteDispatch
     public class Settings : UnityModManager.ModSettings
     {
         public int serverPort = 7245;
+        public string serverPassword = "";
         public bool startServerOnLoad = false;
         public bool enableLogging = false;
 
@@ -27,8 +28,7 @@ namespace DvMod.RemoteDispatch
             bool isValidPort = int.TryParse(uncommittedPort, out var parsed) && parsed >= 1024 && parsed <= 65535;
 
             GUILayout.BeginHorizontal();
-
-            if (GUILayout.Button("Start"))
+            if (GUILayout.Button("Start", GUILayout.ExpandWidth(false)))
             {
                 if (isValidPort)
                 {
@@ -41,15 +41,19 @@ namespace DvMod.RemoteDispatch
                 }
             }
 
-            if (GUILayout.Button("Stop"))
+            if (GUILayout.Button("Stop", GUILayout.ExpandWidth(false)))
             {
                 HttpServer.Destroy();
                 message = "";
             }
-            
-            GUILayout.EndHorizontal();
 
             GUILayout.Label(message);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Password (blank for none)");
+            serverPassword = GUILayout.TextField(serverPassword);
+            GUILayout.EndHorizontal();
 
             startServerOnLoad = GUILayout.Toggle(startServerOnLoad, "Start server on load");
             enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
