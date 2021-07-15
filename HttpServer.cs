@@ -19,6 +19,8 @@ namespace DvMod.RemoteDispatch
             if (!listener.IsListening)
             {
                 listener.Prefixes.Add($"http://*:{Main.settings.serverPort}/");
+                listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous | AuthenticationSchemes.Basic;
+                listener.Realm = "DV Remote Dispatch";
                 Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
                 listener.Start();
             }
@@ -27,7 +29,15 @@ namespace DvMod.RemoteDispatch
                 try
                 {
                     var context = await listener.GetContextAsync().ConfigureAwait(true);
-                    HandleRequest(context);
+                    if (CheckAuthentication(context))
+                    {
+                        HandleRequest(context);
+                    }
+                    else
+                    {
+                        context.Response.Headers.Add("WWW-Authenticate", "Basic");
+                        RenderEmpty(context, 401);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -44,6 +54,13 @@ namespace DvMod.RemoteDispatch
                 listener.Stop();
                 listener.Prefixes.Clear();
             }
+        }
+
+        private static bool CheckAuthentication(HttpListenerContext context)
+        {
+            return Main.settings.serverPassword.Length == 0
+                || (context.User?.Identity is HttpListenerBasicIdentity identity &&
+                    identity.Password == Main.settings.serverPassword);
         }
 
         private static void HandleRequest(HttpListenerContext context)
