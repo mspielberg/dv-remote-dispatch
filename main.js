@@ -4,9 +4,14 @@ const metersToDegrees = 360 / earthCircumference;
 /////////////////////
 // map
 
+const canvasRenderer = L.canvas();
 const mapBounds = [[0, 0], [0.15, 0.15]];
 const maxBounds = [[-0.02, -0.02], [0.17, 0.17]];
-const map = L.map('map', { minZoom: 13, maxBounds: maxBounds, tap: false })
+const map = L.map('map', {
+  minZoom: 13,
+  maxBounds: maxBounds,
+  tap: false,
+})
 .fitBounds(mapBounds);
 L.control.scale().addTo(map);
 
@@ -38,14 +43,18 @@ function createTrackLabel(trackId, coords) {
   svg.setAttribute('viewBox', '-50 -10 100 20');
   svg.innerHTML =
     `<text text-anchor="middle" dominant-baseline="central" transform="${rotation}" fill="steelblue" stroke="black" stroke-width="0.05px">${trackId.slice(trackId.indexOf('-') + 1)}</text>`;
-  L.svgOverlay(svg, bounds).addTo(map);
+  L.svgOverlay(svg, bounds, { renderer: canvasRenderer }).addTo(map);
 }
 
 fetch('/track')
 .then(resp => resp.json())
 .then(tracks => {
   Object.entries(tracks).forEach(([trackId, coords]) => {
-    const polyline = L.polyline(coords, { color: 'lightsteelblue', interactive: false }).addTo(map);
+    const polyline = L.polyline(coords, {
+      color: 'lightsteelblue',
+      interactive: false,
+      renderer: canvasRenderer,
+    }).addTo(map);
     trackPolyLines[trackId] = polyline;
     if (!trackId.includes('#'))
       createTrackLabel(trackId, coords)
@@ -114,7 +123,7 @@ function createJunctionMarker(p, junctionId) {
   return L.svgOverlay(
     createJunctionOverlay(junctionId),
     getJunctionOverlayBounds(p),
-    { interactive: true })
+    { interactive: true, renderer: canvasRenderer })
     .addEventListener('click', () => toggleJunction(junctionId) )
     .addTo(map)
     .setZIndex(Math.floor(p[0] * 100000 + p[1] * 100000));
