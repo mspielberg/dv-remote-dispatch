@@ -24,6 +24,43 @@ function setMarkerToFollow(marker) {
 }
 
 /////////////////////
+// sidebar
+
+const sidebar = L.control.sidebar({ container: 'sidebar' }).addTo(map);
+
+const tablesort = new Tablesort(document.getElementById('carList'));
+const carListBody = document.getElementById('carListBody');
+
+function createCarRow(carId, carData) {
+  const row = document.createElement('tr');
+  row.setAttribute('id', `tr-${carId}`);
+  carListBody.append(row);
+  updateCarRow(carId, carData);
+  row.addEventListener('click', _ => followCar(carId) );
+}
+
+function removeCarRow(carId) {
+  var row = document.getElementById(`tr-${carId}`);
+  if (row)
+    row.remove();
+}
+
+function updateCarRow(carId, carData) {
+  var row = document.getElementById(`tr-${carId}`);
+  row.innerHTML = `<td>${carId}</td><td>${carData.jobId || ''}</td><td>${carData.destinationYardId || ''}</td>`;
+  tablesort.refresh();
+}
+
+function followCar(carId) {
+  setMarkerToFollow(carMarkers[carId]);
+  for (const row of carListBody.children)
+    row.classList.remove('following');
+  const row = document.getElementById(`tr-${carId}`)
+  row.classList.add('following');
+  row.scrollIntoView({ block: 'center' });
+}
+
+/////////////////////
 // track
 
 let trackPolyLines = {};
@@ -247,27 +284,30 @@ function getCarOverlayBounds(carData) {
 }
 
 const carMarkers = new Map();
+const carJobIds = new Map();
 
 function createNewCar(carId, carData) {
   // new car
+  createCarRow(carId, carData);
+  carJobIds[carId] = carData.jobId;
   carMarkers[carId] = L.svgOverlay(
     createCarOverlay(carId, carData),
     getCarOverlayBounds(carData),
     { interactive: true, bubblingMouseEvents: false })
-    .addEventListener('click', e => setMarkerToFollow(e.target))
+    .addEventListener('click', e => followCar(carId))
     .addTo(map);
   updateCarOverlay(carId, carData);
 }
 
 function updateCar(carId, carData) {
-  const marker = carMarkers[carId]
-  if (!marker)
-    return;
   updateCarOverlay(carId, carData);
-  marker.setBounds(getCarOverlayBounds(carData));
+  if (carData.jobId !== carJobIds[carId])
+    updateCarRow(carId, carData);
+  carMarkers[carId].setBounds(getCarOverlayBounds(carData));
 }
 
 function removeCar(carId) {
+  removeCarRow(carId);
   const car = carMarkers[carId];
   if (car) {
     car.remove();
@@ -285,38 +325,60 @@ function updateAllCars() {
   });
 }
 
+/////////////////////
+// events
+
 function uuidv4() {
   return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
 
+function handleEvent(e) {
+  const msg = JSON.parse(e.data);
+  switch (msg.type)
+  {
+  case "carDeleted":
+    removeCar(msg.carId);
+    break;
+  case "carSpawned":
+    createNewCar(msg.carId, msg.carData);
+    break;
+  case "carsUpdate":
+    Object.entries(msg.cars).forEach(([carId, carData]) => {
+      updateCar(carId, carData);
+    });
+    break;
+  case "junctionSwitched":
+    updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
+    break;
+  case "playerUpdate":
+    updatePlayerOverlay(msg);
+    break;
+  }
+  if (markerToFollow)
+    map.panTo(markerToFollow.getBounds().getCenter());
+}
+
 function subscribeForEvents() {
   const events = new EventSource(`/eventSource?${uuidv4()}`)
-  events.onmessage = e => {
-    const msg = JSON.parse(e.data);
-    switch (msg.type)
-    {
-    case "carDeleted":
-      removeCar(msg.carId);
-      break;
-    case "carSpawned":
-      createNewCar(msg.carId, msg.carData);
-      break;
-    case "carsUpdate":
-      Object.entries(msg.cars).forEach(([carId, carData]) => {
-        updateCar(carId, carData);
-      });
-      break;
-    case "junctionSwitched":
-      updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
-      break;
-    case "playerUpdate":
-      updatePlayerOverlay(msg);
-      break;
-    }
-    if (markerToFollow)
-      map.panTo(markerToFollow.getBounds().getCenter());
+  let zoomActive = false;
+  const queuedEvents = [];
+
+  map.addEventListener('zoomstart', _ => zoomActive = true);
+  map.addEventListener('zoomend', _ => {
+    zoomActive = false;
+    queuedEvents.forEach(handleEvent);
+    queuedEvents.length = 0;
+  });
+  events.onerror = function(e) {
+    console.error(e)
+  }
+  events.onmessage = function(e) {
+    if (zoomActive)
+      queuedEvents.push(e);
+    else
+      handleEvent(e);
   };
 }
 
