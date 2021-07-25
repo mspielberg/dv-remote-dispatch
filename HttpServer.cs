@@ -89,6 +89,10 @@ namespace DvMod.RemoteDispatch
                 context.Response.ContentType = "application/json";
                 Render200(context, Junctions.GetJunctionStateJSON());
                 break;
+            case "leaflet.rotatedImageOverlay.js":
+                context.Response.ContentType = "application/json";
+                RenderResource(context, "leaflet.rotatedImageOverlay.js");
+                break;
             case "main.js":
                 context.Response.ContentType = "application/javascript";
                 RenderResource(context, "main.js");

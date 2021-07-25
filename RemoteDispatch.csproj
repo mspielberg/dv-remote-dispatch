@@ -31,5 +31,6 @@
   <ItemGroup>
     <EmbeddedResource Include="index.html"/>
     <EmbeddedResource Include="main.js"/>
+    <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
   </ItemGroup>
 </Project>
