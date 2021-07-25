@@ -176,7 +176,9 @@ fetch('/player')
 /////////////////////
 // cars
 
-const carHeight = 20;
+const carWidthMeters = 3;
+const carWidthPx = 20;
+const svgPixelsPerMeter = carWidthPx / 3;
 // http://vrl.cs.brown.edu/color
 const carColors = ['#52ef99', '#c95e9f', '#b1e632', '#7574f5', '#799d10', '#fd3fbe', '#2cf52b', '#d130ff', '#21a708', '#fd2b31', '#3eeaef', '#ffc4de', '#069668', '#f9793b', '#5884c9', '#e5d75e', '#96ccfe', '#bb8801', '#6a8b7b', '#a8777c'];
 
@@ -191,20 +193,19 @@ function stringHash(str) {
 
 function createCarShape(carData) {
   const color = carData.jobId ? carColors[stringHash(carData.jobId) % carColors.length] : 'gray';
-  const lengthPx = carData.length * 6;
-  const transform = `rotate(${carData.rotation - 90})`;
+  const lengthPx = carData.length * svgPixelsPerMeter;
   const svg = carData.isLoco
-  ? `<polygon points="${-lengthPx/2},-${carHeight/2} ${-lengthPx/2},${carHeight/2} ${lengthPx/2-5},${carHeight/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carHeight/2}" transform="${transform}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
-  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" transform="${transform}" fill="${color}" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
+  ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-5},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
+  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill="${color}" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
   return svg;
 }
 
 function createCarLabel(carId, carData) {
-  const lengthPx = carData.length * 6;
-  const rotation = `rotate(${carData.rotation % 180 - 90})`;
+  const lengthPx = carData.length * svgPixelsPerMeter;
+  const rotation = carData.rotation >= 180 ? 'rotate(180)' : '';
   if (carData.isLoco)
-    return `<text x="${-lengthPx/2 + 5}" dominant-baseline="central" transform="${rotation}" font-size="12" font-weight="bold">${carId}</text>`;
-  const jobIdLabel = carData.jobId ? `<text x="${-lengthPx/2 + 5}" dominant-baseline="central" transform="${rotation}" font-size="16">${carData.jobId.slice(-5,-3)}${carData.jobId.slice(-2)}</text>` : "";
+    return `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
+  const jobIdLabel = carData.jobId ? `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="16">${carData.jobId.slice(-5,-3)}${carData.jobId.slice(-2)}</text>` : "";
   const carIdLabel =
     `<text y="-0.5em" y="1" transform="${rotation} translate(${lengthPx/2 - 5})" dominant-baseline="central" text-anchor="end" font-size="8" font-family="monospace" font-weight="bold">` +
       `<tspan x="0">${carId.slice(0,3)}</tspan>` +
@@ -214,24 +215,26 @@ function createCarLabel(carId, carData) {
 }
 
 function createCarOverlay(carId, carData) {
-  const lengthPx = carData.length * 6;
-  const carCanvasMajor = Math.sqrt(lengthPx / 2 * lengthPx / 2 + carHeight / 2 * carHeight / 2);
+  const lengthPx = carData.length * svgPixelsPerMeter;
+  const carCanvasMajor = Math.sqrt(lengthPx / 2 * lengthPx / 2 + carWidthPx / 2 * carWidthPx / 2);
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('id', carId);
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.setAttribute('viewBox', `${-carCanvasMajor} ${-carCanvasMajor} ${carCanvasMajor*2} ${carCanvasMajor*2}`);
+  svg.setAttribute('viewBox', `${-carCanvasMajor} ${-carWidthPx/2} ${carCanvasMajor*2} ${carWidthPx}`);
   return svg
 }
 
 function updateCarOverlay(carId, carData) {
-  const svg = carMarkers[carId].getElement();
-  svg.innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
+  const marker = carMarkers[carId];
+  marker.setRotationAngle(carData.rotation - 90);
+  marker.getElement().innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
 }
 
 function getCarOverlayBounds(carData) {
   const position = carData.position;
   const length = metersToDegrees * carData.length;
-  return [ [ position[0] - length/2, position[1] - length/2], [position[0] + length/2, position[1] + length/2] ];
+  const width = metersToDegrees * carWidthMeters;
+  return [ [ position[0] - width/2, position[1] - length/2], [position[0] + width/2, position[1] + length/2] ];
 }
 
 const carMarkers = new Map();
