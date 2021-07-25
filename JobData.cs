@@ -16,14 +16,19 @@ namespace DvMod.RemoteDispatch
             return jobId;
         }
 
+        public static Job? JobForCar(TrainCar car)
+        {
+            var jobId = JobIdForCar(car);
+            if (jobId == null)
+                return null;
+            return JobForId(jobId);
+        }
+
         private static Dictionary<TrainCar, string> InitializeJobIdForCar()
         {
-            var dict = new Dictionary<TrainCar, string>();
-            foreach (var (job, cars) in JobChainController.jobToJobCars)
-                foreach (var car in cars)
-                    dict[car] = job.ID;
-            Main.DebugLog(() => $"Initializing jobIdForCar: {string.Join(",", dict)}");
-            return dict;
+            return JobChainController.jobToJobCars
+                .SelectMany(kvp => kvp.Value.Select(car => (car, job: kvp.Key)))
+                .ToDictionary(p => p.car, p => p.job.ID);
         }
 
         public static Job JobForId(string jobId)
@@ -44,7 +49,7 @@ namespace DvMod.RemoteDispatch
                 {
                     foreach (TrainCar car in __instance.trainCarsForJobChain)
                     {
-                        if (jobId == string.Empty)
+                        if (jobId.Length == 0)
                             jobIdForCar.Remove(car);
                         else
                             jobIdForCar[car] = jobId;

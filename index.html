@@ -1,10 +1,31 @@
 <html>
 <head>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" integrity="sha256-BPfK9M5v34c2XP6p0cxVz1mUQLst0gTLk0mlc7kuodA=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.css" integrity="sha256-10dwwxs/pdWEYoC56aJvmY3kbMMa9/3uSWWNkGcrGq8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="./style.css">
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet-src.js" integrity="sha256-dG7rUAec0UN0e3nlMEuYJzsbK0rpoz4hBbNp0ir9iF8=" crossorigin="anonymous"></script>
   <script src="/leaflet.rotatedImageOverlay.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-sidebar-v2@3.2.3/js/leaflet-sidebar.min.js" integrity="sha256-4r81BYKeNxSG+nrK/UPQq75pDlH+GkiZn/zc/xkNMLA=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tablesort@5.2.1/src/tablesort.js" integrity="sha256-ams/0yjSE7HGIRWB/A3VtW3Z24eOT+5z0z9d1pms7T4=" crossorigin="anonymous"></script>
 </head>
 <body>
+<div id="sidebar" class="leaflet-sidebar collapsed">
+  <div class="leaflet-sidebar-tabs">
+    <ul role="tablist">
+      <li><a href="#carsTab" role="tab"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAGJSURBVFiF7dZPS1ZBGAXw3/tqYKZvYlvR0JW4qLUgBAZuXEafQr+AiMvWtgxEodoWGC2DIAza1kYQX0UXLULQEvwDaS1mLg63EVqkd9E9MFzmPM/MeWbuMHOo8b+jEb89eIJp9F2x5ne8xRwOC/I5fl1ze0HYgU78wM0rWvFlOEGriVsZ8TaG8DrhljCCvYR7hMdJ/xuGsZxwr3AXWyWNLvQ2XZyDFF+wi7WE+xAnWU+4d7EVWMd2zC3wETv4nNHRzJHXibqAuoDKC+i8hL+HAUwk3AN8wmjCTaEj6Y9iMOYWmMAq7ueEGsLdv//3Nf9T3Kn8F1ReQPEQjVSkf1CR7gUawttcGSo/A02cV6h/3oFu/BRMQxm7ggHpz8TWsCF4hK/CBVTGluD7bmdi7/Gy6NzAsT992zxmMvwZWslkrciV82axkOGPZG7hsjE9Ea7WobiKNLaaWdGbUs5hHDuG01JsJTNeD55iU9jeySQ2HresjWfy1r0vxtoxdzyJPYxzbmJR8KE1aoDfOYp8ekURMGkAAAAASUVORK5CYII="></a></li>
+    </ul>
+  </div>
+  <div class="leaflet-sidebar-content">
+    <div class="leaflet-sidebar-pane" id="carsTab">
+      <table id="carList">
+        <thead>
+          <tr><th>ID</th><th>Job</th><th>Dest</th></tr>
+        </thead>
+        <tbody id="carListBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 <div id="map" style="height:100%"></div>
 <script src="/main.js"></script>
 </body>

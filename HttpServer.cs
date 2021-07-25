@@ -105,6 +105,10 @@ namespace DvMod.RemoteDispatch
                 else
                     RenderEmpty(context, 500);
                 break;
+            case "style.css":
+                context.Response.ContentType = "text/css";
+                RenderResource(context, "style.css");
+                break;
             case "track":
                 context.Response.ContentType = "application/json";
                 Render200(context, RailTracks.GetTrackPointJSON());
