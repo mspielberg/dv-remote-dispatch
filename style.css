@@ -41,7 +41,7 @@ table {
 }
 table th,
 table td {
-  padding:8px;
+  padding:3px;
   line-height:18px;
   text-align:left;
   border-top:2px solid #ddd;
@@ -80,7 +80,14 @@ table tbody:first-child tr:first-child td {
 }
 .leaflet-sidebar {
   max-height: 100%;
+  width: 300px;
   transition: width .5s, max-height .5s;
+}
+.leaflet-sidebar-pane {
+  min-width: 0;
+}
+.leaflet-sidebar-left~.leaflet-control-container .leaflet-left {
+  left:310px;
 }
 tr {
   cursor: pointer;
