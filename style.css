@@ -95,3 +95,6 @@ tr {
 tr.following {
   background: lightsteelblue;
 }
+img.leaflet-sidebar-tab-icon32 {
+  margin: 4px
+}
