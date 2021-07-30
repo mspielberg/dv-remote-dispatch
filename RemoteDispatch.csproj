@@ -33,5 +33,6 @@
     <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
     <EmbeddedResource Include="main.js"/>
     <EmbeddedResource Include="style.css"/>
+    <EmbeddedResource Include="freight-wagon.png"/>
   </ItemGroup>
 </Project>

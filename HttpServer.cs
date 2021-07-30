@@ -82,6 +82,10 @@ namespace DvMod.RemoteDispatch
             case "eventSource":
                 HandleEventSourceSubscription(context);
                 break;
+            case "freight-wagon.png":
+                context.Response.ContentType = "image/png";
+                RenderResource(context, "freight-wagon.png");
+                break;
             case "junction":
                 HandleJunctionRequest(context);
                 break;
