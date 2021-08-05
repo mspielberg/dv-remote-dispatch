@@ -84,7 +84,8 @@ table tbody:first-child tr:first-child td {
   transition: width .5s, max-height .5s;
 }
 .leaflet-sidebar-pane {
-  min-width: 0;
+  min-width: 250px;
+  max-width: 250px;
 }
 .leaflet-sidebar-left~.leaflet-control-container .leaflet-left {
   left:310px;
