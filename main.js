@@ -66,7 +66,7 @@ function followCar(carId) {
 let trackPolyLines = {};
 
 function createTrackLabel(trackId, coords) {
-  const size = 0.0001;
+  const size = 0.0002;
   const start = coords[0];
   const end = coords[coords.length - 1];
   const position = coords[2];
@@ -79,7 +79,7 @@ function createTrackLabel(trackId, coords) {
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('viewBox', '-50 -10 100 20');
   svg.innerHTML =
-    `<text text-anchor="middle" dominant-baseline="central" transform="${rotation}" fill="steelblue" stroke="black" stroke-width="0.05px">${trackId.slice(trackId.indexOf('-') + 1)}</text>`;
+    `<text text-anchor="middle" dominant-baseline="central" transform="${rotation}" font-family="Arial" font-weight="bold" fill="steelblue" stroke="black" stroke-width="0.25px">${trackId.slice(trackId.indexOf('-') + 1)}</text>`;
   L.svgOverlay(svg, bounds, { renderer: canvasRenderer }).addTo(map);
 }
 
