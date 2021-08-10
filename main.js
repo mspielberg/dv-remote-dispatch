@@ -47,7 +47,8 @@ function removeCarRow(carId) {
 
 function updateCarRow(carId, carData) {
   var row = document.getElementById(`tr-${carId}`);
-  row.innerHTML = `<td>${carId}</td><td>${carData.jobId || ''}</td><td>${carData.destinationYardId || ''}</td>`;
+  const jobId = carData.jobId ? carData.jobId.substring(3) : '';
+  row.innerHTML = `<td>${carId}</td><td>${jobId}</td><td>${carData.destinationYardId || ''}</td>`;
   tablesort.refresh();
 }
 
