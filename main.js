@@ -297,7 +297,7 @@ function createNewCar(carId, carData) {
     createCarOverlay(carId, carData),
     getCarOverlayBounds(carData),
     { interactive: true, bubblingMouseEvents: false })
-    .addEventListener('click', e => followCar(carId))
+    .addEventListener('mouseup', e => followCar(carId))
     .addTo(map);
   updateCarOverlay(carId, carData);
 }
