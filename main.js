@@ -84,7 +84,7 @@ function createTrackLabel(trackId, coords) {
   L.svgOverlay(svg, bounds, { renderer: canvasRenderer }).addTo(map);
 }
 
-fetch('/track')
+const tracksReady = fetch('/track')
 .then(resp => resp.json())
 .then(tracks => {
   Object.entries(tracks).forEach(([trackId, coords]) => {
@@ -104,7 +104,8 @@ fetch('/track')
 // junctions
 
 let junctions = [];
-const junctionsReady = fetch('/junction')
+const junctionsReady = tracksReady
+.then(_ => fetch('/junction'))
 .then(resp => resp.json())
 .then(allJunctionData =>
   junctions = allJunctionData.map((data, index) => ({
