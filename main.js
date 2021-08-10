@@ -26,7 +26,7 @@ function setMarkerToFollow(marker) {
 /////////////////////
 // sidebar
 
-const sidebar = L.control.sidebar({ container: 'sidebar' }).addTo(map);
+const sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
 
 const tablesort = new Tablesort(document.getElementById('carList'));
 const carListBody = document.getElementById('carListBody');
