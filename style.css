@@ -97,5 +97,11 @@ tr.following {
   background: lightsteelblue;
 }
 img.leaflet-sidebar-tab-icon32 {
-  margin: 4px
+  margin: 4px;
+}
+.leaflet-container {
+  background: #222;
+}
+body {
+  margin: 0px;
 }
