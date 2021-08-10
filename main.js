@@ -81,7 +81,9 @@ function createTrackLabel(trackId, coords) {
   svg.setAttribute('viewBox', '-50 -10 100 20');
   svg.innerHTML =
     `<text text-anchor="middle" dominant-baseline="central" transform="${rotation}" font-family="Arial" font-weight="bold" fill="steelblue" stroke="black" stroke-width="0.25px">${trackId.slice(trackId.indexOf('-') + 1)}</text>`;
-  L.svgOverlay(svg, bounds, { renderer: canvasRenderer }).addTo(map);
+  L.svgOverlay(svg, bounds, { renderer: canvasRenderer })
+  .addTo(map)
+  .setZIndex(1000);
 }
 
 const tracksReady = fetch('/track')
