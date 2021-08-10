@@ -87,13 +87,14 @@ fetch('/track')
 .then(resp => resp.json())
 .then(tracks => {
   Object.entries(tracks).forEach(([trackId, coords]) => {
+    const isSiding = !trackId.includes('#');
     const polyline = L.polyline(coords, {
-      color: 'lightsteelblue',
+      color: isSiding ? 'slategray' : 'lightsteelblue',
       interactive: false,
       renderer: canvasRenderer,
     }).addTo(map);
     trackPolyLines[trackId] = polyline;
-    if (!trackId.includes('#'))
+    if (isSiding)
       createTrackLabel(trackId, coords)
   });
 });
