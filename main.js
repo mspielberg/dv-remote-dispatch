@@ -63,8 +63,22 @@ function updateCarRow(carId, carData) {
 const CarsPerRow = 3
 const jobListBody = document.getElementById('jobListBody');
 
+// https://www.npmjs.com/package/string-hash
+function stringHash(str) {
+  let hash = 5381, i = str.length;
+  while(i) {
+    hash = (hash * 33) ^ str.charCodeAt(--i);
+  }
+  return hash >>> 0;
+}
+
+// http://vrl.cs.brown.edu/color
+const carColors = ['#52ef99', '#c95e9f', '#b1e632', '#7574f5', '#799d10', '#fd3fbe', '#2cf52b', '#d130ff', '#21a708', '#fd2b31', '#3eeaef', '#ffc4de', '#069668', '#f9793b', '#5884c9', '#e5d75e', '#96ccfe', '#bb8801', '#6a8b7b', '#a8777c'];
+function colorForJobId(jobId) {
+  return carColors[stringHash(jobId) % carColors.length];
+}
+
 function jobElems(jobId, jobData) {
-  const jobType = jobId.split('-')[1];
   const rows = [];
 
   let row = document.createElement('tr');
@@ -72,7 +86,7 @@ function jobElems(jobId, jobData) {
   jobIdCell.setAttribute('id', `jobList-${jobId}`);
   jobIdCell.setAttribute('colspan', CarsPerRow);
   jobIdCell.classList.add(`jobList-jobHeader`);
-  jobIdCell.classList.add(`jobList-jobHeader-${jobType}`);
+  jobIdCell.style.background = colorForJobId(jobId);
   jobIdCell.textContent = jobId;
   row.appendChild(jobIdCell);
   rows.push(row);
@@ -361,20 +375,9 @@ fetch('/player')
 const carWidthMeters = 3;
 const carWidthPx = 20;
 const svgPixelsPerMeter = carWidthPx / 3;
-// http://vrl.cs.brown.edu/color
-const carColors = ['#52ef99', '#c95e9f', '#b1e632', '#7574f5', '#799d10', '#fd3fbe', '#2cf52b', '#d130ff', '#21a708', '#fd2b31', '#3eeaef', '#ffc4de', '#069668', '#f9793b', '#5884c9', '#e5d75e', '#96ccfe', '#bb8801', '#6a8b7b', '#a8777c'];
-
-// https://www.npmjs.com/package/string-hash
-function stringHash(str) {
-  let hash = 5381, i = str.length;
-  while(i) {
-    hash = (hash * 33) ^ str.charCodeAt(--i);
-  }
-  return hash >>> 0;
-}
 
 function createCarShape(carData) {
-  const color = carData.jobId ? carColors[stringHash(carData.jobId) % carColors.length] : 'gray';
+  const color = carData.jobId ? colorForJobId(carData.jobId) : 'gray';
   const lengthPx = carData.length * svgPixelsPerMeter;
   const svg = carData.isLoco
   ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-5},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
