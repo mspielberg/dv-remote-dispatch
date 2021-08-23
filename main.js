@@ -64,24 +64,34 @@ function followCar(carId) {
 /////////////////////
 // jobs
 
-const CarsPerRow = 5
+const CarsPerRow = 3
 
 function jobElems(jobId, jobData) {
+  const jobType = jobId.split('-')[1];
   const rows = [];
 
-  jobData.forEach(task => {
-    let row = document.createElement('tr');
-    const jobIdCell = document.createElement('th'); 
-    jobIdCell.setAttribute('id', `jobList-${jobId}`);
-    row.appendChild(jobIdCell);
-    rows.push(row);
+  let row = document.createElement('tr');
+  const jobIdCell = document.createElement('th'); 
+  jobIdCell.setAttribute('id', `jobList-${jobId}`);
+  jobIdCell.setAttribute('colspan', CarsPerRow);
+  jobIdCell.classList.add(`jobList-jobHeader`);
+  jobIdCell.classList.add(`jobList-jobHeader-${jobType}`);
+  jobIdCell.textContent = jobId;
+  row.appendChild(jobIdCell);
+  rows.push(row);
 
+  jobData.forEach(task => {
     row = document.createElement('tr');
-    const startTrackCell = document.createElement('td');
+    const startTrackCell = document.createElement('th');
     startTrackCell.textContent = task.startTrack;
     row.appendChild(startTrackCell);
 
-    const destinationTrackCell = document.createElement('td');
+    const arrowCell = document.createElement('th');
+    arrowCell.textContent = "\u279C";
+    arrowCell.classList.add('jobList-trackSeparator');
+    row.appendChild(arrowCell);
+
+    const destinationTrackCell = document.createElement('th');
     destinationTrackCell.textContent = task.destinationTrack;
     row.appendChild(destinationTrackCell);
 
@@ -94,8 +104,11 @@ function jobElems(jobId, jobData) {
       carCell.textContent = task.cars[carIndex];
       row.appendChild(carCell);
     }
-    if (row.firstChild != null)
-      rows.push(row);
+    if (row.children.length < CarsPerRow)
+      // add filler cells
+      for (let i = 0; i < CarsPerRow - (task.cars.length % CarsPerRow); i++)
+        row.appendChild(document.createElement('td'));
+    rows.push(row);
   });
 
   return rows;
