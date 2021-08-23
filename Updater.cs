@@ -11,6 +11,7 @@ namespace DvMod.RemoteDispatch
         }
 
         private static GameObject? rootObject;
+        private static bool jobsDirty = false;
 
         public static void Create()
         {
@@ -38,7 +39,17 @@ namespace DvMod.RemoteDispatch
                 yield return WaitFor.Seconds(0.1f);
                 CarUpdater.PublishUpdatedCars();
                 PlayerData.PublishPlayerData();
+                if (jobsDirty)
+                {
+                    JobData.PublishJobUpdate();
+                    jobsDirty = false;
+                }
             }
+        }
+
+        public static void MarkJobsAsDirty()
+        {
+            jobsDirty = true;
         }
     }
 }

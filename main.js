@@ -133,15 +133,17 @@ function jobElems(jobId, jobData) {
   return rows;
 }
 
-fetch('/job')
-.then(resp => resp.json())
-.then(jobs => {
-  for (const child of jobListBody.children)
-    child.remove();
-  for (const jobId in jobs)
-    for (const elem of jobElems(jobId, jobs[jobId]))
-      jobListBody.appendChild(elem);
-});
+function updateJobList() {
+  fetch('/job')
+  .then(resp => resp.json())
+  .then(jobs => {
+    for (const elem of Array.from(jobListBody.childNodes))
+      elem.remove();
+    for (const jobId in jobs)
+      for (const elem of jobElems(jobId, jobs[jobId]))
+        jobListBody.appendChild(elem);
+  });
+}
 
 /////////////////////
 // track
@@ -488,6 +490,9 @@ function handleEvent(e) {
       updateCar(carId, carData);
     });
     break;
+  case "jobsUpdate":
+    updateJobList();
+    break;
   case "junctionSwitched":
     updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
     break;
@@ -522,7 +527,8 @@ function subscribeForEvents() {
 }
 
 junctionsReady.then(_ => {
-  updateAllCars();
-  updateAllJunctions();
   subscribeForEvents();
+  updateAllCars();
+  updateJobList();
+  updateAllJunctions();
 });
