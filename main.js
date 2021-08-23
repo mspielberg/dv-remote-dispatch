@@ -52,19 +52,11 @@ function updateCarRow(carId, carData) {
   tablesort.refresh();
 }
 
-function followCar(carId) {
-  setMarkerToFollow(carMarkers[carId]);
-  for (const row of carListBody.children)
-    row.classList.remove('following');
-  const row = document.getElementById(`tr-${carId}`)
-  row.classList.add('following');
-  row.scrollIntoView({ block: 'center' });
-}
-
 /////////////////////
 // jobs
 
 const CarsPerRow = 3
+const jobListBody = document.getElementById('jobListBody');
 
 function jobElems(jobId, jobData) {
   const jobType = jobId.split('-')[1];
@@ -100,8 +92,11 @@ function jobElems(jobId, jobData) {
         rows.push(row);
         row = document.createElement('tr');
       }
+      const carId = task.cars[carIndex];
       const carCell = document.createElement('td');
-      carCell.textContent = task.cars[carIndex];
+      carCell.classList.add(`jobList-carCell-${carId}`);
+      carCell.textContent = carId;
+      carCell.addEventListener('click', () => followCar(carId));
       row.appendChild(carCell);
     }
     if (row.children.length < CarsPerRow)
@@ -117,7 +112,6 @@ function jobElems(jobId, jobData) {
 fetch('/job')
 .then(resp => resp.json())
 .then(jobs => {
-  const jobListBody = document.getElementById('jobListBody');
   for (const child of jobListBody.children)
     child.remove();
   for (const jobId in jobs)
@@ -276,6 +270,27 @@ function updateAllJunctions() {
     states.forEach((state, index) => updateJunctionOverlay(index, state))
   );
 }
+
+/////////////////////
+// following
+
+function followCar(carId) {
+  setMarkerToFollow(carMarkers[carId]);
+
+  for (const row of carListBody.children)
+    row.classList.remove('following');
+  const carListRow = document.getElementById(`tr-${carId}`)
+  carListRow.classList.add('following');
+  carListRow.scrollIntoView({ block: 'center' });
+
+  for (const elem of jobListBody.querySelectorAll('.following'))
+    elem.classList.remove('following');
+  const jobListElems = jobListBody.querySelectorAll(`.jobList-carCell-${carId}`);
+  for (const elem of jobListElems)
+    elem.classList.add('following');
+  jobListElems[0].scrollIntoView({ block: 'center' });
+}
+
 
 /////////////////////
 // player

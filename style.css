@@ -92,7 +92,7 @@ table tbody:first-child tr:first-child td {
 tr {
   cursor: pointer;
 }
-tr.following {
+.following {
   background: lightsteelblue;
 }
 img.leaflet-sidebar-tab-icon32 {
