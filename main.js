@@ -16,11 +16,15 @@ const map = L.map('map', {
 L.control.scale().addTo(map);
 
 let markerToFollow;
-map.addEventListener('mousedown', _ => markerToFollow = null);
+map.addEventListener('mousedown', stopFollowing);
 
 function setMarkerToFollow(marker) {
   markerToFollow = marker;
   map.panTo(marker.getBounds().getCenter());
+}
+
+function stopFollowing() {
+  markerToFollow = null;
 }
 
 /////////////////////
@@ -76,7 +80,9 @@ function jobElems(jobId, jobData) {
   jobData.forEach(task => {
     row = document.createElement('tr');
     const startTrackCell = document.createElement('th');
+    startTrackCell.classList.add('interactive');
     startTrackCell.textContent = task.startTrack;
+    startTrackCell.addEventListener('click', () => scrollToTrack(task.startTrack));
     row.appendChild(startTrackCell);
 
     const arrowCell = document.createElement('th');
@@ -85,7 +91,9 @@ function jobElems(jobId, jobData) {
     row.appendChild(arrowCell);
 
     const destinationTrackCell = document.createElement('th');
+    destinationTrackCell.classList.add('interactive');
     destinationTrackCell.textContent = task.destinationTrack;
+    destinationTrackCell.addEventListener('click', () => scrollToTrack(task.destinationTrack));
     row.appendChild(destinationTrackCell);
 
     for (let carIndex = 0; carIndex < task.cars.length; carIndex++) {
@@ -329,6 +337,13 @@ function createPlayerMarker(playerData) {
     .addEventListener('click', e => setMarkerToFollow(e.target))
     .addTo(map);
   updatePlayerOverlay(playerData);
+}
+
+function scrollToTrack(trackId) {
+  stopFollowing();
+  const polyLine = trackPolyLines[trackId];
+  if (polyLine)
+    map.panTo(polyLine.getCenter());
 }
 
 fetch('/player')
