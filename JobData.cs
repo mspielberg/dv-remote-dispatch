@@ -1,5 +1,7 @@
 using DV.Logic.Job;
 using HarmonyLib;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,13 +33,43 @@ namespace DvMod.RemoteDispatch
                 .ToDictionary(p => p.car, p => p.job.ID);
         }
 
-        public static Job JobForId(string jobId)
+        public static Job? JobForId(string jobId)
         {
             if (jobForId.TryGetValue(jobId, out var job))
                 return job;
             jobForId = JobChainController.jobToJobCars.Keys.ToDictionary(job => job.ID);
             jobForId.TryGetValue(jobId, out job);
             return job;
+        }
+
+        public static string GetAllJobDataJson()
+        {
+            static IEnumerable<TaskData> FlattenToTransport(TaskData data)
+            {
+                if (data.type == TaskType.Transport)
+                {
+                    yield return data;
+                }
+                else if (data.nestedTasks != null)
+                {
+                    foreach (var nested in data.nestedTasks)
+                    {
+                        foreach (var task in FlattenToTransport(nested.GetTaskData()))
+                            yield return task;
+                    }
+                }
+            }
+            static IEnumerable<TaskData> FlattenMany(IEnumerable<TaskData> data) => data.SelectMany(FlattenToTransport);
+            static JObject TaskToJson(TaskData data) => new JObject(
+                new JProperty("startTrack", data.startTrack?.ID?.FullDisplayID),
+                new JProperty("destinationTrack", data.destinationTrack?.ID?.FullDisplayID),
+                new JProperty("cars", (data.cars ?? new List<Car>()).Select(car => car.ID))
+            );
+            static IEnumerable<JObject> JobToJson(Job job) => FlattenMany(job.GetJobData()).Select(TaskToJson);
+            JobForId("");
+            return JsonConvert.SerializeObject(jobForId.ToDictionary(
+                kvp => kvp.Key,
+                kvp => JobToJson(kvp.Value)));
         }
 
         public static class JobPatches

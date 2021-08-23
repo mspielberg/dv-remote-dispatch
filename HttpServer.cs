@@ -75,6 +75,10 @@ namespace DvMod.RemoteDispatch
 
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
+            case "book.png":
+                context.Response.ContentType = "image/png";
+                RenderResource(context, "book.png");
+                break;
             case "car":
                 context.Response.ContentType = "application/json";
                 Render200(context, CarData.GetAllCarDataJson());
@@ -85,6 +89,10 @@ namespace DvMod.RemoteDispatch
             case "freight-wagon.png":
                 context.Response.ContentType = "image/png";
                 RenderResource(context, "freight-wagon.png");
+                break;
+            case "job":
+                context.Response.ContentType = "application/json";
+                Render200(context, JobData.GetAllJobDataJson());
                 break;
             case "junction":
                 HandleJunctionRequest(context);

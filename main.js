@@ -62,18 +62,69 @@ function followCar(carId) {
 }
 
 /////////////////////
+// jobs
+
+const CarsPerRow = 5
+
+function jobElems(jobId, jobData) {
+  const rows = [];
+  function rowsForTask(task) { return Math.max(2, Math.ceil(task.cars.length / CarsPerRow)); }
+  const numRows = jobData.reduce((accu, task) => accu + rowsForTask(task), 0);
+
+  for (let i = 0; i < numRows; i++)
+    rows.push(document.createElement('tr'));
+
+  const jobIdCell = document.createElement('td'); 
+  jobIdCell.setAttribute('id', `jobList-${jobId}`);
+  jobIdCell.setAttribute('rowspan', numRows);
+  jobIdCell.textContent = jobId;
+  rows[0].appendChild(jobIdCell);
+  
+  let rowIndex = 0;
+  jobData.forEach(task => {
+    const startTrackCell = document.createElement('td');
+    startTrackCell.textContent = task.startTrack;
+    rows[rowIndex].appendChild(startTrackCell);
+
+    const destinationTrackCell = document.createElement('td');
+    destinationTrackCell.textContent = task.destinationTrack;
+    rows[rowIndex + 1].appendChild(destinationTrackCell);
+
+    for (let carIndex = 0; carIndex < task.cars.length; carIndex++) {
+      const row = rows[rowIndex + Math.floor(carIndex / CarsPerRow)];
+      if (!row.firstChild)
+        row.appendChild(document.createElement('td'));
+      const carCell = document.createElement('td');
+      carCell.textContent = task.cars[carIndex];
+      row.appendChild(carCell);
+    }
+
+    rowIndex += rowsForTask(task);
+  });
+
+  return rows;
+}
+
+fetch('/job')
+.then(resp => resp.json())
+.then(jobs => {
+  const jobListBody = document.getElementById('jobListBody');
+  for (const child of jobListBody.children)
+    child.remove();
+  for (const jobId in jobs)
+    for (const elem of jobElems(jobId, jobs[jobId]))
+      jobListBody.appendChild(elem);
+});
+
+/////////////////////
 // track
 
 let trackPolyLines = {};
 
-function createTrackLabel(trackId, coords) {
+function createTrackLabel(trackId, position, angle) {
   const size = 0.0002;
-  const start = coords[0];
-  const end = coords[coords.length - 1];
-  const position = coords[2];
-  const angle = ((Math.atan2(end[0] - start[0], end[1] - start[1]) * 180 / Math.PI) + 270) % 180 - 90;
-  const rotation = `rotate(${-angle})`;
   const bounds = [[position[0] - size, position[1] - size], [position[0] + size, position[1] + size]];
+  const rotation = `rotate(${-angle})`;
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('id', trackId)
@@ -84,6 +135,44 @@ function createTrackLabel(trackId, coords) {
   L.svgOverlay(svg, bounds, { renderer: canvasRenderer })
   .addTo(map)
   .setZIndex(1000);
+}
+
+function pointDistance(p1, p2) {
+  const d0 = p1[0] - p2[0];
+  const d1 = p1[1] - p2[1];
+  return Math.sqrt(d0 * d0 + d1 * d1);
+}
+
+function pointLerp(p1, p2, a) {
+  return [
+    (p2[0] - p1[0]) * a + p1[0],
+    (p2[1] - p1[1]) * a + p1[1]
+  ];
+}
+
+function createLocation(start, end, mid, a) {
+  return [
+    (end[0] - start[0]) * a + mid[0],
+    (end[1] - start[1]) * a + mid[1]
+  ];
+}
+
+function createTrackLabels(trackId, coords) {
+  const length = pointDistance(coords[0], coords[coords.length - 1]);
+  const midIndex = Math.floor(coords.length / 2); 
+  const beforeMid = (midIndex % 2 == 1) ? coords[midIndex] : coords[midIndex - 1];
+  const mid = (midIndex % 2 == 1) ? coords[midIndex] : pointLerp(coords[midIndex - 1], coords[midIndex], 0.5);
+  const afterMid = (midIndex % 2 == 1) ? coords[midIndex + 1] : coords[midIndex];
+  const midGap = pointDistance(beforeMid, afterMid);
+
+  const angle = ((Math.atan2(afterMid[0] - beforeMid[0], afterMid[1] - beforeMid[1]) * 180 / Math.PI) + 270) % 180 - 90;
+
+  if (coords.length > 5) {
+    createTrackLabel(trackId, createLocation(beforeMid, afterMid, mid, length / midGap *  0.3), angle);
+    createTrackLabel(trackId, createLocation(beforeMid, afterMid, mid, length / midGap * -0.3), angle);
+  } else {
+    createTrackLabel(trackId, mid, angle);
+  }
 }
 
 const tracksReady = fetch('/track')
@@ -98,7 +187,7 @@ const tracksReady = fetch('/track')
     }).addTo(map);
     trackPolyLines[trackId] = polyline;
     if (isSiding)
-      createTrackLabel(trackId, coords)
+      createTrackLabels(trackId, coords)
   });
 });
 
