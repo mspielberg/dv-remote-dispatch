@@ -36,7 +36,7 @@ function createCarRow(carId, carData) {
   row.setAttribute('id', `tr-${carId}`);
   carListBody.append(row);
   updateCarRow(carId, carData);
-  row.addEventListener('click', _ => followCar(carId) );
+  row.addEventListener('click', _ => followCar(carId, false) );
 }
 
 function removeCarRow(carId) {
@@ -96,7 +96,7 @@ function jobElems(jobId, jobData) {
       const carCell = document.createElement('td');
       carCell.classList.add(`jobList-carCell-${carId}`);
       carCell.textContent = carId;
-      carCell.addEventListener('click', () => followCar(carId));
+      carCell.addEventListener('click', () => followCar(carId, false));
       row.appendChild(carCell);
     }
     if (row.children.length < CarsPerRow)
@@ -274,21 +274,23 @@ function updateAllJunctions() {
 /////////////////////
 // following
 
-function followCar(carId) {
+function followCar(carId, shouldScroll) {
   setMarkerToFollow(carMarkers[carId]);
 
   for (const row of carListBody.children)
     row.classList.remove('following');
   const carListRow = document.getElementById(`tr-${carId}`)
   carListRow.classList.add('following');
-  carListRow.scrollIntoView({ block: 'center' });
+  if (shouldScroll)
+    carListRow.scrollIntoView({ block: 'center' });
 
   for (const elem of jobListBody.querySelectorAll('.following'))
     elem.classList.remove('following');
   const jobListElems = jobListBody.querySelectorAll(`.jobList-carCell-${carId}`);
   for (const elem of jobListElems)
     elem.classList.add('following');
-  jobListElems[0].scrollIntoView({ block: 'center' });
+  if (shouldScroll)
+    jobListElems[0].scrollIntoView({ block: 'center' });
 }
 
 
@@ -412,7 +414,7 @@ function createNewCar(carId, carData) {
     createCarOverlay(carId, carData),
     getCarOverlayBounds(carData),
     { interactive: true, bubblingMouseEvents: false })
-    .addEventListener('mouseup', e => followCar(carId))
+    .addEventListener('mouseup', e => followCar(carId, true))
     .addTo(map);
   updateCarOverlay(carId, carData);
 }
