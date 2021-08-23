@@ -33,20 +33,21 @@ const carListBody = document.getElementById('carListBody');
 
 function createCarRow(carId, carData) {
   const row = document.createElement('tr');
-  row.setAttribute('id', `tr-${carId}`);
+  row.setAttribute('id', `carList-${carId}`);
+  row.classList.add('interactive');
   carListBody.append(row);
   updateCarRow(carId, carData);
   row.addEventListener('click', _ => followCar(carId, false) );
 }
 
 function removeCarRow(carId) {
-  var row = document.getElementById(`tr-${carId}`);
+  var row = document.getElementById(`carList-${carId}`);
   if (row)
     row.remove();
 }
 
 function updateCarRow(carId, carData) {
-  var row = document.getElementById(`tr-${carId}`);
+  var row = document.getElementById(`carList-${carId}`);
   const jobId = carData.jobId ? carData.jobId.substring(3) : '';
   row.innerHTML = `<td>${carId}</td><td>${jobId}</td><td>${carData.destinationYardId || ''}</td>`;
   tablesort.refresh();
@@ -95,6 +96,7 @@ function jobElems(jobId, jobData) {
       const carId = task.cars[carIndex];
       const carCell = document.createElement('td');
       carCell.classList.add(`jobList-carCell-${carId}`);
+      carCell.classList.add('interactive');
       carCell.textContent = carId;
       carCell.addEventListener('click', () => followCar(carId, false));
       row.appendChild(carCell);
@@ -277,9 +279,9 @@ function updateAllJunctions() {
 function followCar(carId, shouldScroll) {
   setMarkerToFollow(carMarkers[carId]);
 
-  for (const row of carListBody.children)
+  for (const row of carListBody.querySelectorAll('.following'))
     row.classList.remove('following');
-  const carListRow = document.getElementById(`tr-${carId}`)
+  const carListRow = document.getElementById(`carList-${carId}`)
   carListRow.classList.add('following');
   if (shouldScroll)
     carListRow.scrollIntoView({ block: 'center' });
@@ -292,7 +294,6 @@ function followCar(carId, shouldScroll) {
   if (shouldScroll)
     jobListElems[0].scrollIntoView({ block: 'center' });
 }
-
 
 /////////////////////
 // player

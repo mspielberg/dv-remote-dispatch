@@ -89,7 +89,7 @@ table tbody:first-child tr:first-child td {
 .leaflet-sidebar-left~.leaflet-control-container .leaflet-left {
   left:310px;
 }
-tr {
+.interactive {
   cursor: pointer;
 }
 .following {
