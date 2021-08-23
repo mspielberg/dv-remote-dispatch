@@ -68,38 +68,34 @@ const CarsPerRow = 5
 
 function jobElems(jobId, jobData) {
   const rows = [];
-  function rowsForTask(task) { return Math.max(2, Math.ceil(task.cars.length / CarsPerRow)); }
-  const numRows = jobData.reduce((accu, task) => accu + rowsForTask(task), 0);
 
-  for (let i = 0; i < numRows; i++)
-    rows.push(document.createElement('tr'));
-
-  const jobIdCell = document.createElement('td'); 
-  jobIdCell.setAttribute('id', `jobList-${jobId}`);
-  jobIdCell.setAttribute('rowspan', numRows);
-  jobIdCell.textContent = jobId;
-  rows[0].appendChild(jobIdCell);
-  
-  let rowIndex = 0;
   jobData.forEach(task => {
+    let row = document.createElement('tr');
+    const jobIdCell = document.createElement('th'); 
+    jobIdCell.setAttribute('id', `jobList-${jobId}`);
+    row.appendChild(jobIdCell);
+    rows.push(row);
+
+    row = document.createElement('tr');
     const startTrackCell = document.createElement('td');
     startTrackCell.textContent = task.startTrack;
-    rows[rowIndex].appendChild(startTrackCell);
+    row.appendChild(startTrackCell);
 
     const destinationTrackCell = document.createElement('td');
     destinationTrackCell.textContent = task.destinationTrack;
-    rows[rowIndex + 1].appendChild(destinationTrackCell);
+    row.appendChild(destinationTrackCell);
 
     for (let carIndex = 0; carIndex < task.cars.length; carIndex++) {
-      const row = rows[rowIndex + Math.floor(carIndex / CarsPerRow)];
-      if (!row.firstChild)
-        row.appendChild(document.createElement('td'));
+      if (carIndex % CarsPerRow == 0) {
+        rows.push(row);
+        row = document.createElement('tr');
+      }
       const carCell = document.createElement('td');
       carCell.textContent = task.cars[carIndex];
       row.appendChild(carCell);
     }
-
-    rowIndex += rowsForTask(task);
+    if (row.firstChild != null)
+      rows.push(row);
   });
 
   return rows;
