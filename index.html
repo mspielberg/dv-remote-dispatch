@@ -12,7 +12,8 @@
 <div id="sidebar" class="leaflet-sidebar collapsed">
   <div class="leaflet-sidebar-tabs">
     <ul role="tablist">
-      <li><a href="#carsTab" role="tab"><img class="leaflet-sidebar-tab-icon32" src="/freight-wagon.png"></a></li>
+      <li><a href="#carsTab" role="tab"><img class="leaflet-sidebar-tab-icon32" src="/freight-wagon.png" alt="Cars"></a></li>
+      <li><a href="#jobsTab" role="tab"><img class="leaflet-sidebar-tab-icon32" src="/book.png" alt="Jobs"></a></li>
     </ul>
   </div>
   <div class="leaflet-sidebar-content">
@@ -22,6 +23,14 @@
           <tr><th>ID</th><th>Job</th><th>Dest</th></tr>
         </thead>
         <tbody id="carListBody"></tbody>
+      </table>
+    </div>
+    <div class="leaflet-sidebar-pane" id="jobsTab">
+      <table id="jobList">
+        <thead>
+          <tr><th>ID</th><th>Origin</th><th>Dest</th></tr>
+        </thead>
+        <tbody id="jobListBody"></tbody>
       </table>
     </div>
   </div>

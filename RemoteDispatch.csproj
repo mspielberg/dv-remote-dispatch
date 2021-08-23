@@ -29,10 +29,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="book.png"/>
+    <EmbeddedResource Include="freight-wagon.png"/>
     <EmbeddedResource Include="index.html"/>
     <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
     <EmbeddedResource Include="main.js"/>
     <EmbeddedResource Include="style.css"/>
-    <EmbeddedResource Include="freight-wagon.png"/>
   </ItemGroup>
 </Project>
