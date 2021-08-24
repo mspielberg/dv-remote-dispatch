@@ -99,7 +99,7 @@ table tbody:first-child tr:first-child td {
 img.leaflet-sidebar-tab-icon32 {
   margin: 4px;
 }
-.leaflet-container {
+.leaflet-container.dark {
   background: #222;
 }
 body {
