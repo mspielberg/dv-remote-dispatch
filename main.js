@@ -105,24 +105,7 @@ function colorForJobDestination(jobId) {
   const jobData = allJobData[jobId];
   if (!jobData)
     return 'gray';
-  switch (jobData.destinationYardId) {
-  case 'SM' : return '#9899a3';
-  case 'FM' : return '#ffcb69';
-  case 'FF' : return '#9ac9f9';
-  case 'GF' : return '#f09ebb';
-  case 'CSW': return '#c7c1b7';
-  case 'HB' : return '#9b7fa0';
-  case 'MF' : return '#ffa96e';
-  case 'CM' : return '#807b73';
-  case 'IME': return '#d97f73';
-  case 'IMW': return '#b76e59';
-  case 'FRC': return '#afd57b';
-  case 'FRS': return '#7caa6f';
-  case 'SW' : return '#f6ce9f';
-  case 'OWN': return '#786f61';
-  case 'OWC': return '#6c6c6f';
-  case 'MB' : return '#b6a46f';
-  }
+  return colorForYardId(jobData.destinationYardId);
 }
 
 function colorForJobType(jobId) {
@@ -224,6 +207,27 @@ function updateJobList() {
 // track
 
 let trackPolyLines = {};
+
+function colorForYardId(yardId) {
+  switch (yardId) {
+  case 'SM' : return '#9899a3';
+  case 'FM' : return '#ffcb69';
+  case 'FF' : return '#9ac9f9';
+  case 'GF' : return '#f09ebb';
+  case 'CSW': return '#c7c1b7';
+  case 'HB' : return '#9b7fa0';
+  case 'MF' : return '#ffa96e';
+  case 'CM' : return '#807b73';
+  case 'IME': return '#d97f73';
+  case 'IMW': return '#b76e59';
+  case 'FRC': return '#afd57b';
+  case 'FRS': return '#7caa6f';
+  case 'SW' : return '#f6ce9f';
+  case 'OWN': return '#786f61';
+  case 'OWC': return '#6c6c6f';
+  case 'MB' : return '#b6a46f';
+  }
+}
 
 function createTrackLabel(trackId, position, angle) {
   const size = 0.0002;
