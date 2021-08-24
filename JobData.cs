@@ -65,7 +65,12 @@ namespace DvMod.RemoteDispatch
                 new JProperty("destinationTrack", data.destinationTrack?.ID?.FullDisplayID),
                 new JProperty("cars", (data.cars ?? new List<Car>()).Select(car => car.ID))
             );
-            static IEnumerable<JObject> JobToJson(Job job) => FlattenMany(job.GetJobData()).Select(TaskToJson);
+            static JObject JobToJson(Job job) => new JObject(
+                new JProperty("originYardId", job.chainData.chainOriginYardId),
+                new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
+                new JProperty("tasks", FlattenMany(job.GetJobData()).Select(TaskToJson)));
+
+            // ensure cache is updated
             JobForId("");
             return JsonConvert.SerializeObject(jobForId.ToDictionary(
                 kvp => kvp.Key,

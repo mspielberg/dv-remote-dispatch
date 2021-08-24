@@ -73,12 +73,15 @@ namespace DvMod.RemoteDispatch
                 return;
             }
 
+            if (request.Url.Segments[1].EndsWith(".png"))
+            {
+                context.Response.ContentType = "image/png";
+                RenderResource(context, request.Url.Segments[1]);
+                return;
+            }
+
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
-            case "book.png":
-                context.Response.ContentType = "image/png";
-                RenderResource(context, "book.png");
-                break;
             case "car":
                 context.Response.ContentType = "application/json";
                 Render200(context, CarData.GetAllCarDataJson());
@@ -86,9 +89,9 @@ namespace DvMod.RemoteDispatch
             case "eventSource":
                 HandleEventSourceSubscription(context);
                 break;
-            case "freight-wagon.png":
-                context.Response.ContentType = "image/png";
-                RenderResource(context, "freight-wagon.png");
+            case "icon.svg":
+                context.Response.ContentType = "image/svg+xml";
+                RenderResource(context, "icon.svg");
                 break;
             case "job":
                 context.Response.ContentType = "application/json";
@@ -191,8 +194,15 @@ namespace DvMod.RemoteDispatch
         {
             var assembly = typeof(HttpServer).Assembly;
             using var stream = assembly.GetManifestResourceStream(typeof(HttpServer), resourceName);
-            stream.CopyTo(context.Response.OutputStream);
-            context.Response.Close();
+            if (stream == null)
+            {
+                RenderEmpty(context, 404);
+            }
+            else
+            {
+                stream.CopyTo(context.Response.OutputStream);
+                context.Response.Close();
+            }
         }
 
         private static void Render200(HttpListenerContext context, string s)

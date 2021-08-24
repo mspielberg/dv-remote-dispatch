@@ -31,9 +31,11 @@
   <ItemGroup>
     <EmbeddedResource Include="book.png"/>
     <EmbeddedResource Include="freight-wagon.png"/>
+    <EmbeddedResource Include="icon.svg"/>
     <EmbeddedResource Include="index.html"/>
     <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
     <EmbeddedResource Include="main.js"/>
+    <EmbeddedResource Include="settings.png"/>
     <EmbeddedResource Include="style.css"/>
   </ItemGroup>
 </Project>
