@@ -400,7 +400,7 @@ function followCar(carId, shouldScroll) {
   const jobListElems = jobListBody.querySelectorAll(`.jobList-carCell-${carId}`);
   for (const elem of jobListElems)
     elem.classList.add('following');
-  if (shouldScroll)
+  if (shouldScroll && jobListElems.length > 0)
     jobListElems[0].scrollIntoView({ block: 'center' });
 }
 
