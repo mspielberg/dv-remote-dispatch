@@ -30,6 +30,15 @@ function stopFollowing() {
 /////////////////////
 // settings
 
+document.getElementById('themeDropdown')
+  .addEventListener('input', e => {
+    if (e.target.value === 'dark') {
+      document.getElementById('map').classList.add('dark');
+    } else {
+      document.getElementById('map').classList.remove('dark');
+    }
+  });
+
 function getCarColorMode() {
   return document.getElementById('carColorDropdown').value;
 }
