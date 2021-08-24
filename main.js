@@ -28,6 +28,19 @@ function stopFollowing() {
 }
 
 /////////////////////
+// settings
+
+function getCarColorMode() {
+  return document.getElementById('carColorDropdown').value;
+}
+
+document.getElementById('carColorDropdown')
+  .addEventListener('input', () => {
+    updateAllCarColors();
+    updateJobListColors();
+  });
+
+/////////////////////
 // sidebar
 
 const sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo(map);
@@ -61,6 +74,7 @@ function updateCarRow(carId, carData) {
 // jobs
 
 const CarsPerRow = 3
+let allJobData = {};
 const jobListBody = document.getElementById('jobListBody');
 
 // https://www.npmjs.com/package/string-hash
@@ -74,8 +88,53 @@ function stringHash(str) {
 
 // http://vrl.cs.brown.edu/color
 const carColors = ['#52ef99', '#c95e9f', '#b1e632', '#7574f5', '#799d10', '#fd3fbe', '#2cf52b', '#d130ff', '#21a708', '#fd2b31', '#3eeaef', '#ffc4de', '#069668', '#f9793b', '#5884c9', '#e5d75e', '#96ccfe', '#bb8801', '#6a8b7b', '#a8777c'];
+function colorByHashing(str) {
+  return carColors[stringHash(str) % carColors.length];
+}
+
+function colorForJobDestination(jobId) {
+  const jobData = allJobData[jobId];
+  if (!jobData)
+    return 'gray';
+  switch (jobData.destinationYardId) {
+  case 'SM' : return '#9899a3';
+  case 'FM' : return '#ffcb69';
+  case 'FF' : return '#9ac9f9';
+  case 'GF' : return '#f09ebb';
+  case 'CSW': return '#c7c1b7';
+  case 'HB' : return '#9b7fa0';
+  case 'MF' : return '#ffa96e';
+  case 'CM' : return '#807b73';
+  case 'IME': return '#d97f73';
+  case 'IMW': return '#b76e59';
+  case 'FRC': return '#afd57b';
+  case 'FRS': return '#7caa6f';
+  case 'SW' : return '#f6ce9f';
+  case 'OWN': return '#786f61';
+  case 'OWC': return '#6c6c6f';
+  case 'MB' : return '#b6a46f';
+  }
+}
+
+function colorForJobType(jobId) {
+  const jobType = jobId.split('-')[1]
+  switch (jobType) {
+  case 'FH': return 'lightgreen';
+  case 'LH': return 'khaki';
+  case 'PC':
+  case 'PE': return 'cornflowerblue';
+  case 'SL':
+  case 'SU': return 'lightcoral';
+  }
+}
+
 function colorForJobId(jobId) {
-  return carColors[stringHash(jobId) % carColors.length];
+  switch (getCarColorMode()) {
+    case 'jobId': return colorByHashing(jobId);
+    case 'carType':
+    case 'jobType': return colorForJobType(jobId);
+    case 'destination': return colorForJobDestination(jobId);
+  }
 }
 
 function jobElems(jobId, jobData) {
@@ -133,14 +192,21 @@ function jobElems(jobId, jobData) {
   return rows;
 }
 
+function updateJobListColors() {
+  for (const elem of jobListBody.querySelectorAll('th.jobList-jobHeader')) {
+    elem.style.background = colorForJobId(elem.textContent);
+  }
+}
+
 function updateJobList() {
   fetch('/job')
   .then(resp => resp.json())
   .then(jobs => {
+    allJobData = jobs;
     for (const elem of Array.from(jobListBody.childNodes))
       elem.remove();
     for (const jobId in jobs)
-      for (const elem of jobElems(jobId, jobs[jobId]))
+      for (const elem of jobElems(jobId, jobs[jobId].tasks))
         jobListBody.appendChild(elem);
   });
 }
@@ -378,12 +444,38 @@ const carWidthMeters = 3;
 const carWidthPx = 20;
 const svgPixelsPerMeter = carWidthPx / 3;
 
+function getCarColor(carId) {
+  const jobId = carJobIds[carId];
+
+  switch (getCarColorMode()) {
+  case 'jobId':
+    return jobId ? colorByHashing(jobId) : 'gray';
+  case 'jobType':
+    return jobId ? colorForJobType(jobId) : 'gray';
+  case 'destination':
+    return jobId ? colorForJobDestination(jobId) : 'gray';
+  case 'carType':
+    return colorByHashing(carId.substring(0,3));
+  }
+}
+
+function updateCarColor(carId) {
+  const carMarker = carMarkers[carId];
+  const rect = carMarker.getElement().querySelector('rect');
+  if (rect)
+    rect.setAttribute('fill', getCarColor(carId));
+}
+
+function updateAllCarColors() {
+  for (carId in carMarkers)
+    updateCarColor(carId);
+}
+
 function createCarShape(carData) {
-  const color = carData.jobId ? colorForJobId(carData.jobId) : 'gray';
   const lengthPx = carData.length * svgPixelsPerMeter;
   const svg = carData.isLoco
   ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-5},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
-  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill="${color}" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
+  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
   return svg;
 }
 
@@ -415,6 +507,7 @@ function updateCarOverlay(carId, carData) {
   const marker = carMarkers[carId];
   marker.setRotationAngle(carData.rotation - 90);
   marker.getElement().innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
+  updateCarColor(carId);
 }
 
 function getCarOverlayBounds(carData) {

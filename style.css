@@ -75,7 +75,7 @@ table tbody:first-child tr:first-child td {
   border-top:0;
 }
 .leaflet-sidebar.collapsed {
-  max-height: 80px;
+  max-height: 120px;
 }
 .leaflet-sidebar {
   max-height: 100%;

@@ -15,6 +15,7 @@
     <ul role="tablist">
       <li><a href="#carsTab" role="tab"><img class="leaflet-sidebar-tab-icon32" src="/freight-wagon.png" alt="Cars"></a></li>
       <li><a href="#jobsTab" role="tab"><img class="leaflet-sidebar-tab-icon32" src="/book.png" alt="Jobs"></a></li>
+      <li><a href="#settingsTab" role="tab"><img class="leaflet-sidebar-tab-icon32" src="/settings.png" alt="Settings"></a></li>
     </ul>
   </div>
   <div class="leaflet-sidebar-content">
@@ -29,6 +30,30 @@
     <div class="leaflet-sidebar-pane" id="jobsTab">
       <table id="jobList">
         <tbody id="jobListBody"></tbody>
+      </table>
+    </div>
+    <div class="leaflet-sidebar-pane" id="settingsTab">
+      <table>
+        <tr>
+          <th><label for="themeDropdown">Theme</label></th>
+          <td>
+            <select name="theme" id="themeDropdown">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="carColorDropdown">Car color</label></th>
+          <td>
+            <select name="carColor" id="carColorDropdown">
+              <option value="jobId">by job ID</option>
+              <option value="jobType">by job type</option>
+              <option value="destination">by destination</option>
+              <option value="carType">by car type</option>
+            </select>
+          </td>
+        </tr>
       </table>
     </div>
   </div>
