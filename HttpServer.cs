@@ -73,13 +73,6 @@ namespace DvMod.RemoteDispatch
                 return;
             }
 
-            if (request.Url.Segments[1].EndsWith(".png"))
-            {
-                context.Response.ContentType = "image/png";
-                RenderResource(context, request.Url.Segments[1]);
-                return;
-            }
-
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
             case "car":
