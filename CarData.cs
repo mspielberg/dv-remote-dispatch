@@ -1,6 +1,7 @@
 using DV.Logic.Job;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,16 +9,14 @@ namespace DvMod.RemoteDispatch
 {
     public class CarData
     {
-        public readonly bool isLoco;
         public readonly float length;
         public readonly World.LatLon latlon;
         public readonly float rotation;
         public readonly string? jobId;
         public readonly string? destinationYardId;
 
-        public CarData(bool isLoco, float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId)
+        public CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId)
         {
-            this.isLoco = isLoco;
             this.latlon = latlon;
             this.rotation = rotation;
             this.length = length;
@@ -27,7 +26,6 @@ namespace DvMod.RemoteDispatch
 
         public CarData(TrainCar trainCar)
         : this(
-            CarTypes.IsAnyLocomotiveOrTender(trainCar.carType),
             trainCar.InterCouplerDistance,
             latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
             rotation: trainCar.transform.eulerAngles.y,
@@ -39,10 +37,9 @@ namespace DvMod.RemoteDispatch
         public JObject ToJson()
         {
             return new JObject(
-                new JProperty("isLoco", isLoco),
-                new JProperty("length", length),
+                new JProperty("length", (int)length),
                 new JProperty("position", latlon.ToJson()),
-                new JProperty("rotation", rotation)
+                new JProperty("rotation", Math.Round(rotation, 2))
             );
         }
 
