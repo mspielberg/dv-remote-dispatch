@@ -520,19 +520,21 @@ function updateAllCarColors() {
   carMarkers.forEach((_, carId) => updateCarColor(carId));
 }
 
-function createCarShape(carData) {
+function createCarShape(carId, carData) {
+  const isSpecial = carId.indexOf('-') > 0;
   const lengthPx = carData.length * svgPixelsPerMeter;
-  const svg = carData.isLoco
-  ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-5},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
-  : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
+  const svg = isSpecial
+    ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-5},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
+    : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
   return svg;
 }
 
 function createCarLabel(carId, carData) {
+  const isSpecial = carId.indexOf('-') > 0;
   const jobId = carJobIds.get(carId);
   const lengthPx = carData.length * svgPixelsPerMeter;
   const rotation = carData.rotation >= 180 ? 'rotate(180)' : '';
-  if (carData.isLoco)
+  if (isSpecial)
     return `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
   const jobIdLabel = jobId ? `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="16">${jobId.slice(-5,-3)}${jobId.slice(-2)}</text>` : "";
   const carIdLabel =
@@ -558,10 +560,10 @@ function updateCarMarker(carId) {
   if (!marker)
     return;
   const carData = allCarData.get(carId);
-  marker.setRotationAngle(carData.rotation - 90);
-  marker.getElement().innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
-  updateCarColor(carId);
   marker.setBounds(getCarOverlayBounds(carData));
+  marker.setRotationAngle(carData.rotation - 90);
+  marker.getElement().innerHTML = createCarShape(carId, carData) + createCarLabel(carId, carData);
+  updateCarColor(carId);
 }
 
 function getCarOverlayBounds(carData) {
