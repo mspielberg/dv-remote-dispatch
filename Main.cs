@@ -55,6 +55,7 @@ namespace DvMod.RemoteDispatch
             }
             else
             {
+                EventSource.Shutdown();
                 Updater.Destroy();
                 HttpServer.Destroy();
                 harmony.UnpatchAll(modEntry.Info.Id);

@@ -39,6 +39,10 @@ namespace DvMod.RemoteDispatch
                         RenderEmpty(context, 401);
                     }
                 }
+                catch (ObjectDisposedException e) when (e.ObjectName == "listener")
+                {
+                    // ignore when OnDestroy() is called to shutdown the server
+                }
                 catch (Exception e)
                 {
                     Main.DebugLog(() => $"Exception while handling HTTP connection: {e}");
@@ -98,7 +102,7 @@ namespace DvMod.RemoteDispatch
                 Render200(context, Junctions.GetJunctionStateJSON());
                 break;
             case "leaflet.rotatedImageOverlay.js":
-                context.Response.ContentType = "application/json";
+                context.Response.ContentType = "application/javascript";
                 RenderResource(context, "leaflet.rotatedImageOverlay.js");
                 break;
             case "main.js":

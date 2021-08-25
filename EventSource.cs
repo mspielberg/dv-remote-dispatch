@@ -11,25 +11,25 @@ namespace DvMod.RemoteDispatch
         private static readonly byte[] MessagePrefix = Encoding.UTF8.GetBytes("data: ");
         private static readonly byte[] MessageTerminator = Encoding.UTF8.GetBytes("\n\n");
 
-        private const int QueueLimit = 10;
-        private static readonly BlockingCollection<string> messageQueue =
-            new BlockingCollection<string>(QueueLimit);
+        private const int QueueLimit = 100;
+        private static BlockingCollection<string>? messageQueue;
 
         private static readonly Dictionary<string, HttpListenerContext> activeContexts =
             new Dictionary<string, HttpListenerContext>();
 
-        static EventSource()
-        {
-            new Thread(PublisherMain).Start();
-        }
-
         public static void PublishMessage(string message)
         {
+            if (messageQueue == null)
+            {
+                messageQueue = new BlockingCollection<string>(QueueLimit);
+                new Thread(() => PublisherMain(messageQueue)).Start();
+                Main.DebugLog(() => "EventSource publisher thread started");
+            }
             if (!messageQueue.TryAdd(message))
                 Main.mod?.Logger.Warning("Messages are being dropped due to one or more slow clients");
         }
 
-        private static void PublisherMain()
+        private static void PublisherMain(BlockingCollection<string> messageQueue)
         {
             while (!messageQueue.IsCompleted)
             {
@@ -63,6 +63,7 @@ namespace DvMod.RemoteDispatch
                     }
                 }
             }
+            Main.DebugLog(() => "EventSource publisher thread shutting down");
         }
 
         public static void AddSession(string sessionId, HttpListenerContext context)
@@ -79,7 +80,8 @@ namespace DvMod.RemoteDispatch
 
         public static void Shutdown()
         {
-            messageQueue.CompleteAdding();
+            messageQueue?.CompleteAdding();
+            messageQueue = null;
             foreach (var (sessionId, context) in activeContexts)
             {
                 Main.DebugLog(() => $"Closing connection to EventSource subscriber: {sessionId}");
