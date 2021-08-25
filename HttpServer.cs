@@ -128,6 +128,9 @@ namespace DvMod.RemoteDispatch
                 context.Response.ContentType = "application/json";
                 Render200(context, RailTracks.GetTrackPointJSON());
                 break;
+            case "trainset":
+                HandleTrainsetRequest(context);
+                break;
             default:
                 RenderEmpty(context, 404);
                 break;
@@ -171,6 +174,20 @@ namespace DvMod.RemoteDispatch
                 RenderEmpty(context, 404);
                 break;
             }
+        }
+
+        public static void HandleTrainsetRequest(HttpListenerContext context)
+        {
+            context.Response.ContentType = "application/json";
+            var request = context.Request;
+            if (request.Url.Segments.Length < 3)
+            {
+                RenderEmpty(context, 404);
+                return;
+            }
+            var trainsetId = int.Parse(request.Url.Segments[2]);
+            var carsJson = CarData.GetTrainsetDataJson(trainsetId);
+            Render200(context, carsJson);
         }
 
         public static void Create()

@@ -57,33 +57,37 @@ const sidebar = L.control.sidebar({ autopan: true, container: 'sidebar' }).addTo
 const tablesort = new Tablesort(document.getElementById('carList'));
 const carListBody = document.getElementById('carListBody');
 
-function createCarRow(carId, carData) {
+function createCarRow(carId) {
   const row = document.createElement('tr');
   row.setAttribute('id', `carList-${carId}`);
   row.classList.add('interactive');
   carListBody.append(row);
-  updateCarRow(carId, carData);
+  updateCarRow(carId);
   row.addEventListener('click', _ => followCar(carId, false) );
 }
 
 function removeCarRow(carId) {
-  var row = document.getElementById(`carList-${carId}`);
+  const row = document.getElementById(`carList-${carId}`);
   if (row)
     row.remove();
 }
 
-function updateCarRow(carId, carData) {
-  var row = document.getElementById(`carList-${carId}`);
-  const jobId = carData.jobId ? carData.jobId.substring(3) : '';
-  row.innerHTML = `<td>${carId}</td><td>${jobId}</td><td>${carData.destinationYardId || ''}</td>`;
+function updateCarRow(carId) {
+  const row = document.getElementById(`carList-${carId}`);
+  if (!row)
+    return;
+  const jobId = carJobIds.has(carId) ? carJobIds.get(carId) : '';
+  const destinationYardId = allJobData.has(jobId) ? allJobData.get(jobId).destinationYardId : '';
+  row.innerHTML = `<td>${carId}</td><td>${jobId}</td><td>${destinationYardId}</td>`;
   tablesort.refresh();
 }
 
 /////////////////////
 // jobs
 
-const CarsPerRow = 3
-let allJobData = {};
+const CarsPerRow = 3;
+const allJobData = new Map();
+const carJobIds = new Map();
 const jobListBody = document.getElementById('jobListBody');
 
 // https://www.npmjs.com/package/string-hash
@@ -96,13 +100,17 @@ function stringHash(str) {
 }
 
 // http://vrl.cs.brown.edu/color
-const carColors = ['#52ef99', '#c95e9f', '#b1e632', '#7574f5', '#799d10', '#fd3fbe', '#2cf52b', '#d130ff', '#21a708', '#fd2b31', '#3eeaef', '#ffc4de', '#069668', '#f9793b', '#5884c9', '#e5d75e', '#96ccfe', '#bb8801', '#6a8b7b', '#a8777c'];
+const carColors = [
+  '#52ef99', '#c95e9f', '#b1e632', '#7574f5', '#799d10', '#fd3fbe', '#2cf52b', '#d130ff', '#21a708', '#fd2b31',
+  '#3eeaef', '#ffc4de', '#069668', '#f9793b', '#5884c9', '#e5d75e', '#96ccfe', '#bb8801', '#6a8b7b', '#a8777c',
+];
+
 function colorByHashing(str) {
   return carColors[stringHash(str) % carColors.length];
 }
 
 function colorForJobDestination(jobId) {
-  const jobData = allJobData[jobId];
+  const jobData = allJobData.get(jobId);
   if (!jobData)
     return 'gray';
   return colorForYardId(jobData.destinationYardId);
@@ -190,6 +198,19 @@ function jobElems(jobId, jobData) {
   return rows;
 }
 
+function updateCarJobs() {
+  carJobIds.clear();
+  allJobData.forEach((jobData, jobId) => {
+    jobData.tasks.forEach(task => {
+      task.cars.forEach(carId => {
+        carJobIds.set(carId, jobId);
+        updateCarRow(carId);
+        updateCarMarker(carId);
+      });
+    })
+  });
+}
+
 function updateJobListColors() {
   for (const elem of jobListBody.querySelectorAll('th.jobList-jobHeader')) {
     elem.style.background = colorForJobId(elem.textContent);
@@ -197,22 +218,29 @@ function updateJobListColors() {
 }
 
 function updateJobList() {
+  for (const elem of Array.from(jobListBody.childNodes))
+    elem.remove();
+  allJobData.forEach((jobData, jobId) => {
+    for (const elem of jobElems(jobId, jobData.tasks))
+      jobListBody.appendChild(elem);
+  });
+}
+
+function updateJobs() {
   fetch('/job')
   .then(resp => resp.json())
   .then(jobs => {
-    allJobData = jobs;
-    for (const elem of Array.from(jobListBody.childNodes))
-      elem.remove();
-    for (const jobId in jobs)
-      for (const elem of jobElems(jobId, jobs[jobId].tasks))
-        jobListBody.appendChild(elem);
+    allJobData.clear();
+    Object.entries(jobs).forEach(([jobId, jobData]) => allJobData.set(jobId, jobData));
+    updateJobList();
+    updateCarJobs();
   });
 }
 
 /////////////////////
 // track
 
-let trackPolyLines = {};
+const trackPolyLines = new Map();
 
 function colorForYardId(yardId) {
   switch (yardId) {
@@ -299,7 +327,7 @@ const tracksReady = fetch('/track')
       interactive: false,
       renderer: canvasRenderer,
     }).addTo(map);
-    trackPolyLines[trackId] = polyline;
+    trackPolyLines.set(trackId, polyline);
     if (isSiding)
       createTrackLabels(trackId, coords)
   });
@@ -351,9 +379,9 @@ function createJunctionOverlay(junctionId) {
 function updateJunctionOverlay(junctionId, selectedBranch) {
   const junction = junctions[junctionId]
   junction.marker.getElement().innerHTML = createJunctionShape(selectedBranch) + createJunctionLabel(junctionId);
-  var selectedTrackId = junction.branches[selectedBranch]
-  trackPolyLines[selectedTrackId].setStyle({ color: 'steelblue', dashArray: null });
-  var unselectedTrackPolyLine = trackPolyLines[junction.branches[1-selectedBranch]]
+  const selectedTrackId = junction.branches[selectedBranch]
+  trackPolyLines.get(selectedTrackId).setStyle({ color: 'steelblue', dashArray: null });
+  const unselectedTrackPolyLine = trackPolyLines.get(junction.branches[1-selectedBranch]);
   unselectedTrackPolyLine
     .setStyle({ color: 'lightsteelblue', dashArray: "6 12" })
     .bringToBack();
@@ -386,7 +414,7 @@ function updateAllJunctions() {
 // following
 
 function followCar(carId, shouldScroll) {
-  setMarkerToFollow(carMarkers[carId]);
+  setMarkerToFollow(carMarkers.get(carId));
 
   for (const row of carListBody.querySelectorAll('.following'))
     row.classList.remove('following');
@@ -442,7 +470,7 @@ function createPlayerMarker(playerData) {
 
 function scrollToTrack(trackId) {
   stopFollowing();
-  const polyLine = trackPolyLines[trackId];
+  const polyLine = trackPolyLines.get(trackId);
   if (polyLine)
     map.panTo(polyLine.getCenter());
 }
@@ -463,8 +491,11 @@ const carWidthMeters = 3;
 const carWidthPx = 20;
 const svgPixelsPerMeter = carWidthPx / 3;
 
+const allCarData = new Map();
+const carMarkers = new Map();
+
 function getCarColor(carId) {
-  const jobId = carJobIds[carId];
+  const jobId = carJobIds.get(carId);
 
   switch (getCarColorMode()) {
   case 'jobId':
@@ -479,15 +510,14 @@ function getCarColor(carId) {
 }
 
 function updateCarColor(carId) {
-  const carMarker = carMarkers[carId];
+  const carMarker = carMarkers.get(carId);
   const rect = carMarker.getElement().querySelector('rect');
   if (rect)
     rect.setAttribute('fill', getCarColor(carId));
 }
 
 function updateAllCarColors() {
-  for (carId in carMarkers)
-    updateCarColor(carId);
+  carMarkers.forEach((_, carId) => updateCarColor(carId));
 }
 
 function createCarShape(carData) {
@@ -499,11 +529,12 @@ function createCarShape(carData) {
 }
 
 function createCarLabel(carId, carData) {
+  const jobId = carJobIds.get(carId);
   const lengthPx = carData.length * svgPixelsPerMeter;
   const rotation = carData.rotation >= 180 ? 'rotate(180)' : '';
   if (carData.isLoco)
     return `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
-  const jobIdLabel = carData.jobId ? `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="16">${carData.jobId.slice(-5,-3)}${carData.jobId.slice(-2)}</text>` : "";
+  const jobIdLabel = jobId ? `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="16">${jobId.slice(-5,-3)}${jobId.slice(-2)}</text>` : "";
   const carIdLabel =
     `<text y="-0.5em" y="1" transform="${rotation} translate(${lengthPx/2 - 5})" dominant-baseline="central" text-anchor="end" font-size="8" font-family="monospace" font-weight="bold">` +
       `<tspan x="0">${carId.slice(0,3)}</tspan>` +
@@ -522,11 +553,15 @@ function createCarOverlay(carId, carData) {
   return svg
 }
 
-function updateCarOverlay(carId, carData) {
-  const marker = carMarkers[carId];
+function updateCarMarker(carId) {
+  const marker = carMarkers.get(carId);
+  if (!marker)
+    return;
+  const carData = allCarData.get(carId);
   marker.setRotationAngle(carData.rotation - 90);
   marker.getElement().innerHTML = createCarShape(carData) + createCarLabel(carId, carData);
   updateCarColor(carId);
+  marker.setBounds(getCarOverlayBounds(carData));
 }
 
 function getCarOverlayBounds(carData) {
@@ -536,35 +571,31 @@ function getCarOverlayBounds(carData) {
   return [ [ position[0] - width/2, position[1] - length/2], [position[0] + width/2, position[1] + length/2] ];
 }
 
-const carMarkers = new Map();
-const carJobIds = new Map();
-
 function createNewCar(carId, carData) {
-  // new car
-  createCarRow(carId, carData);
-  carJobIds[carId] = carData.jobId;
-  carMarkers[carId] = L.svgOverlay(
+  allCarData.set(carId, carData);
+  createCarRow(carId);
+  const overlay = L.svgOverlay(
     createCarOverlay(carId, carData),
     getCarOverlayBounds(carData),
     { interactive: true, bubblingMouseEvents: false })
     .addEventListener('mouseup', e => followCar(carId, true))
     .addTo(map);
-  updateCarOverlay(carId, carData);
+  carMarkers.set(carId, overlay);
+  updateCarMarker(carId);
 }
 
 function updateCar(carId, carData) {
-  updateCarOverlay(carId, carData);
-  if (carData.jobId !== carJobIds[carId])
-    updateCarRow(carId, carData);
-  carMarkers[carId].setBounds(getCarOverlayBounds(carData));
+  allCarData.set(carId, carData);
+  updateCarRow(carId);
+  updateCarMarker(carId);
 }
 
 function removeCar(carId) {
   removeCarRow(carId);
-  const car = carMarkers[carId];
-  if (car) {
-    car.remove();
-    delete carMarkers[carId];
+  const marker = carMarkers.get(carId);
+  if (marker) {
+    marker.remove();
+    carMarkers.delete(carId);
   }
 }
 
@@ -576,6 +607,23 @@ function updateAllCars() {
       createNewCar(carId, carData);
     });
   });
+}
+
+const trainsetFetchesInProgress = new Set();
+
+function updateTrainsets(trainsetIds) {
+  for (const trainsetId of trainsetIds) {
+    if (trainsetFetchesInProgress.has(trainsetId))
+      continue;
+
+    trainsetFetchesInProgress.add(trainsetId);
+    fetch(`/trainset/${trainsetId}`)
+    .then(resp => resp.json())
+    .then(cars =>
+      Object.entries(cars).forEach(([carId, carData]) =>
+        updateCar(carId, carData)))
+    .then(_ => trainsetFetchesInProgress.delete(trainsetId));
+  }
 }
 
 /////////////////////
@@ -597,19 +645,17 @@ function handleEvent(e) {
   case "carSpawned":
     createNewCar(msg.carId, msg.carData);
     break;
-  case "carsUpdate":
-    Object.entries(msg.cars).forEach(([carId, carData]) => {
-      updateCar(carId, carData);
-    });
-    break;
   case "jobsUpdate":
-    updateJobList();
+    updateJobs();
     break;
   case "junctionSwitched":
     updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
     break;
   case "playerUpdate":
     updatePlayerOverlay(msg);
+    break;
+  case "trainsetsUpdate":
+    updateTrainsets(msg.trainsetIds);
     break;
   }
   if (markerToFollow)
@@ -640,7 +686,7 @@ function subscribeForEvents() {
 
 junctionsReady.then(_ => {
   subscribeForEvents();
+  updateJobs();
   updateAllCars();
-  updateJobList();
   updateAllJunctions();
 });
