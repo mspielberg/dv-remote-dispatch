@@ -8,12 +8,11 @@ namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
-        private static readonly Dictionary<string, CarData> updatedCarData =
-            new Dictionary<string, CarData>();
+        private static readonly HashSet<int> dirtyTrainsetIds = new HashSet<int>();
 
-        public static void MarkCarAsDirty(TrainCar car)
+        public static void MarkTrainsetAsDirty(Trainset trainset)
         {
-            updatedCarData[car.ID] = new CarData(car);
+            dirtyTrainsetIds.Add(trainset.id);
         }
 
         [HarmonyPatch(typeof(TrainCar), nameof(TrainCar.Update))]
@@ -25,7 +24,7 @@ namespace DvMod.RemoteDispatch
                     return;
                 if (__instance.isStationary)
                     return;
-                MarkCarAsDirty(__instance);
+                MarkTrainsetAsDirty(__instance.trainset);
             }
         }
 
@@ -54,15 +53,13 @@ namespace DvMod.RemoteDispatch
 
         public static void PublishUpdatedCars()
         {
-            if (updatedCarData.Count > 0)
+            if (dirtyTrainsetIds.Count > 0)
             {
                 var jsonMessage = new JObject(
-                    new JProperty("type", "carsUpdate"),
-                    new JProperty("cars", JObject.FromObject(
-                        updatedCarData.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson())))
-                );
+                    new JProperty("type", "trainsetsUpdate"),
+                    new JProperty("trainsetIds", dirtyTrainsetIds.ToArray()));
                 EventSource.PublishMessage(JsonConvert.SerializeObject(jsonMessage));
-                updatedCarData.Clear();
+                dirtyTrainsetIds.Clear();
             }
         }
     }

@@ -1,5 +1,4 @@
 using DV.Logic.Job;
-using DV.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
@@ -29,7 +28,7 @@ namespace DvMod.RemoteDispatch
         public CarData(TrainCar trainCar)
         : this(
             CarTypes.IsAnyLocomotiveOrTender(trainCar.carType),
-            trainCar.logicCar.length,
+            trainCar.InterCouplerDistance,
             latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
             rotation: trainCar.transform.eulerAngles.y,
             jobId: JobData.JobIdForCar(trainCar),
@@ -43,15 +42,14 @@ namespace DvMod.RemoteDispatch
                 new JProperty("isLoco", isLoco),
                 new JProperty("length", length),
                 new JProperty("position", latlon.ToJson()),
-                new JProperty("rotation", rotation),
-                new JProperty("jobId", jobId),
-                new JProperty("destinationYardId", destinationYardId)
+                new JProperty("rotation", rotation)
             );
         }
 
         public static string GetAllCarDataJson()
         {
-            return JsonConvert.SerializeObject(GetAllCarData().ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson()));
+            return JsonConvert.SerializeObject(
+                GetAllCarData().ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson()));
         }
 
         private static Dictionary<string, CarData> GetAllCarData()
@@ -59,6 +57,15 @@ namespace DvMod.RemoteDispatch
             return SingletonBehaviour<IdGenerator>.Instance
                 .logicCarToTrainCar
                 .ToDictionary(kvp => kvp.Key.ID, kvp => new CarData(kvp.Value));
+        }
+
+        public static string GetTrainsetDataJson(int id)
+        {
+            var trainset = Trainset.allSets.Find(set => set.id == id);
+            if (trainset == null)
+                return JsonConvert.SerializeObject(new JObject());
+            return JsonConvert.SerializeObject(
+                trainset.cars.ToDictionary(car => car.ID, car => new CarData(car).ToJson()));
         }
     }
 }

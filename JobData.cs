@@ -96,7 +96,6 @@ namespace DvMod.RemoteDispatch
                             jobIdForCar.Remove(car);
                         else
                             jobIdForCar[car] = jobId;
-                        CarUpdater.MarkCarAsDirty(car);
                         Updater.MarkJobsAsDirty();
                     }
                 }
