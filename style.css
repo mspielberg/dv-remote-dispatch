@@ -92,6 +92,15 @@ table tbody:first-child tr:first-child td {
   left:310px;
 }
 
+.leaflet-sidebar-tabs a {
+  font: bold 32px "Lucida Console","Monaco",monospace;
+}
+.leaflet-sidebar-tabs svg {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 .leaflet-touch .leaflet-bar a {
   height: 36px;
   width: 36px;
