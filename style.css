@@ -74,6 +74,7 @@ table tbody:first-child tr:first-child th,
 table tbody:first-child tr:first-child td {
   border-top:0;
 }
+
 .leaflet-sidebar.collapsed {
   max-height: 120px;
 }
@@ -90,6 +91,21 @@ table tbody:first-child tr:first-child td {
 .leaflet-sidebar-left~.leaflet-control-container .leaflet-left {
   left:310px;
 }
+
+.leaflet-touch .leaflet-bar a {
+  height: 36px;
+  width: 36px;
+  line-height: 36px;
+}
+.gin-control-zoom {
+  font: bold 24px "Lucida Console","Monaco",monospace;
+}
+.gin-control-zoom svg {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%)
+}
+
 .interactive {
   cursor: pointer;
 }
