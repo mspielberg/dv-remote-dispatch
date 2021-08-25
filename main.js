@@ -1,3 +1,4 @@
+const initialZoom = 20;
 const earthCircumference = 40e6;
 const metersToDegrees = 360 / earthCircumference;
 
@@ -11,9 +12,17 @@ const map = L.map('map', {
   minZoom: 13,
   maxBounds: maxBounds,
   tap: false,
+  zoomControl: false,
 })
 .fitBounds(mapBounds);
 L.control.scale().addTo(map);
+const zoomHome = new L.Control.ZoomHome({
+  position: 'topleft',
+  zoomInText: '<i class="fas fa-search-plus"></i>',
+  zoomHomeText: '<i class="fas fa-user"></i>',
+  zoomHomeTitle: 'Zoom to player',
+  zoomOutText: '<i class="fas fa-search-minus"></i>',
+}).addTo(map);
 
 let markerToFollow;
 map.addEventListener('mousedown', stopFollowing);
@@ -26,6 +35,11 @@ function setMarkerToFollow(marker) {
 function stopFollowing() {
   markerToFollow = null;
 }
+
+map.addEventListener('zoomhome', () => {
+  stopFollowing();
+  map.setView(playerMarker.getBounds().getCenter(), initialZoom);
+});
 
 /////////////////////
 // settings
@@ -480,8 +494,7 @@ fetch('/player')
 .then(playerData => {
   createPlayerMarker(playerData);
   map
-  .setZoom(20)
-  .panTo(playerData.position)
+  .setView(playerData.position, initialZoom)
 });
 
 /////////////////////
