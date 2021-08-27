@@ -163,9 +163,9 @@ namespace DvMod.RemoteDispatch
                     if (junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length)
                     {
                         Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                        JunctionsSaveManager.OrderedJunctions[junctionId].Switch(Junction.SwitchMode.REGULAR);
-                        context.Response.StatusCode = 204;
-                        context.Response.Close();
+                        var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
+                        junction.Switch(Junction.SwitchMode.REGULAR);
+                        Render200(context, junction.selectedBranch.ToString());
                         return;
                     }
                 }
