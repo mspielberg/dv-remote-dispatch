@@ -49,14 +49,11 @@ namespace DvMod.RemoteDispatch
             if (value)
             {
                 harmony.PatchAll();
-                Updater.Create();
                 if (Main.settings.startServerOnLoad)
                     HttpServer.Create();
             }
             else
             {
-                EventSource.Shutdown();
-                Updater.Destroy();
                 HttpServer.Destroy();
                 harmony.UnpatchAll(modEntry.Info.Id);
             }

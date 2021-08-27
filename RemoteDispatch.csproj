@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="RedworkDE.Publicizer" Version="0.2.2" />
     <PublicizeAssembly Include="Assembly-CSharp" Private="True" Readonly="True" />
   </ItemGroup>

@@ -77,12 +77,6 @@ namespace DvMod.RemoteDispatch
                 kvp => JobToJson(kvp.Value)));
         }
 
-        public static void PublishJobUpdate()
-        {
-            EventSource.PublishMessage(JsonConvert.SerializeObject(new JObject(
-                new JProperty("type", "jobsUpdate"))));
-        }
-
         public static class JobPatches
         {
             [HarmonyPatch(typeof(JobChainController), nameof(JobChainController.UpdateTrainCarPlatesOfCarsOnJob))]
@@ -96,7 +90,7 @@ namespace DvMod.RemoteDispatch
                             jobIdForCar.Remove(car);
                         else
                             jobIdForCar[car] = jobId;
-                        Updater.MarkJobsAsDirty();
+                        Sessions.AddTag("jobs");
                     }
                 }
             }

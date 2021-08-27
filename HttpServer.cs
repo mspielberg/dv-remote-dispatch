@@ -83,9 +83,6 @@ namespace DvMod.RemoteDispatch
                 context.Response.ContentType = "application/json";
                 Render200(context, CarData.GetAllCarDataJson());
                 break;
-            case "eventSource":
-                HandleEventSourceSubscription(context);
-                break;
             case "icon.svg":
                 context.Response.ContentType = "image/svg+xml";
                 RenderResource(context, "icon.svg");
@@ -128,19 +125,26 @@ namespace DvMod.RemoteDispatch
             case "trainset":
                 HandleTrainsetRequest(context);
                 break;
+            case "updates":
+                HandleUpdatesRequest(context);
+                break;
             default:
                 RenderEmpty(context, 404);
                 break;
             }
         }
 
-        private static void HandleEventSourceSubscription(HttpListenerContext context)
+        private static void HandleUpdatesRequest(HttpListenerContext context)
         {
-            var query = context.Request.Url.Query?.TrimStart('?');
-            if (query != null)
+            if (context.Request.Url.Segments.Length < 3)
             {
-                EventSource.AddSession(query, context);
+                RenderEmpty(context, 404);
+                return;
             }
+
+            var sessionId = context.Request.Url.Segments[2];
+            context.Response.ContentType = "application/json";
+            Render200(context, Sessions.GetTagsJson(sessionId));
         }
 
         private static void HandleJunctionRequest(HttpListenerContext context)
@@ -222,7 +226,7 @@ namespace DvMod.RemoteDispatch
         private static void Render200(HttpListenerContext context, string s)
         {
             var bytes = Encoding.UTF8.GetBytes(s);
-            if (bytes.Length > 1024 && (context.Request.Headers.GetValues("Accept-Encoding")?.Contains("gzip") ?? false))
+            if (bytes.Length > 128 && (context.Request.Headers.GetValues("Accept-Encoding")?.Contains("gzip") ?? false))
             {
                 context.Response.Headers.Add("Content-Encoding", "gzip");
                 var mem = new MemoryStream(bytes);
