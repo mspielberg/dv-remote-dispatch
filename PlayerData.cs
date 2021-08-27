@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -5,30 +6,42 @@ namespace DvMod.RemoteDispatch
 {
     public static class PlayerData
     {
-        private static string? previousReport;
+        private static World.Position previousPosition;
+        private static float previousRotation;
 
-        public static string? GetPlayerDataJson()
+        public static void CheckTransform()
         {
             var transform = PlayerManager.PlayerTransform;
             if (transform == null)
-                return null;
-
+                return;
             var position = new World.Position(transform.position - WorldMover.currentMove);
-            return JsonConvert.SerializeObject(new JObject(
-                new JProperty("type", "playerUpdate"),
-                new JProperty("position", position.ToLatLon().ToJson()),
-                new JProperty("rotation", transform.eulerAngles.y)
-            ));
+            var rotation = transform.eulerAngles.y;
+            Main.DebugLog(() => $"position={position}, rotation={rotation}");
+            if (!(
+                ApproximatelyEquals(previousPosition.x, position.x)
+                && ApproximatelyEquals(previousPosition.z, position.z)
+                && ApproximatelyEquals(previousRotation, rotation)))
+            {
+                Sessions.AddTag("player");
+                previousPosition = position;
+                previousRotation = rotation;
+            }
         }
 
-        public static void PublishPlayerData()
+        private static bool ApproximatelyEquals(float f1, float f2)
         {
-            var newData = GetPlayerDataJson();
-            if (newData != null && newData != previousReport)
-            {
-                EventSource.PublishMessage(newData);
-                previousReport = newData;
-            }
+            var delta = f1 - f2;
+            return delta > -1e-3 && delta < 1e-3;
+        }
+
+        public static string? GetPlayerDataJson()
+        {
+            CheckTransform();
+            return JsonConvert.SerializeObject(new JObject(
+                new JProperty("type", "playerUpdate"),
+                new JProperty("position", previousPosition.ToLatLon().ToJson()),
+                new JProperty("rotation", Math.Round(previousRotation, 2))
+            ));
         }
     }
 }

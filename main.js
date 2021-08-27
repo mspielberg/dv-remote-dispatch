@@ -218,11 +218,13 @@ function updateCarJobs() {
     jobData.tasks.forEach(task => {
       task.cars.forEach(carId => {
         carJobIds.set(carId, jobId);
-        updateCarRow(carId);
-        updateCarMarker(carId);
       });
     })
   });
+  for ([carId, _] of allCarData) {
+    updateCarRow(carId);
+    updateCarMarker(carId);
+  }
 }
 
 function updateJobListColors() {
@@ -240,8 +242,8 @@ function updateJobList() {
   });
 }
 
-function updateJobs() {
-  fetch('/job')
+function updateAllJobs() {
+  return fetch('/job')
   .then(resp => resp.json())
   .then(jobs => {
     allJobData.clear();
@@ -489,12 +491,17 @@ function scrollToTrack(trackId) {
     map.panTo(polyLine.getCenter());
 }
 
+function updatePlayer() {
+  return fetch('/player')
+    .then(resp => resp.json())
+    .then(playerData => updatePlayerOverlay(playerData));
+}
+
 fetch('/player')
 .then(resp => resp.json())
 .then(playerData => {
   createPlayerMarker(playerData);
-  map
-  .setView(playerData.position, initialZoom)
+  map.setView(playerData.position, initialZoom)
 });
 
 /////////////////////
@@ -619,26 +626,30 @@ function updateAllCars() {
   .then(resp => resp.json())
   .then(cars => {
     Object.entries(cars).forEach(([carId, carData]) => {
-      createNewCar(carId, carData);
+      if (!carMarkers.has(carId))
+        createNewCar(carId, carData);
+      else
+        updateCar(carId, carData);
     });
+    for ([carId, _] of carMarkers)
+      if (!cars[carId])
+        removeCar(carId);
   });
 }
 
 const trainsetFetchesInProgress = new Set();
 
-function updateTrainsets(trainsetIds) {
-  for (const trainsetId of trainsetIds) {
-    if (trainsetFetchesInProgress.has(trainsetId))
-      continue;
+function updateTrainset(trainsetId) {
+  if (trainsetFetchesInProgress.has(trainsetId))
+    return;
 
-    trainsetFetchesInProgress.add(trainsetId);
-    fetch(`/trainset/${trainsetId}`)
-    .then(resp => resp.json())
-    .then(cars =>
-      Object.entries(cars).forEach(([carId, carData]) =>
-        updateCar(carId, carData)))
-    .then(_ => trainsetFetchesInProgress.delete(trainsetId));
-  }
+  trainsetFetchesInProgress.add(trainsetId);
+  fetch(`/trainset/${trainsetId}`)
+  .then(resp => resp.json())
+  .then(cars =>
+    Object.entries(cars).forEach(([carId, carData]) =>
+      updateCar(carId, carData)))
+  .then(_ => trainsetFetchesInProgress.delete(trainsetId));
 }
 
 /////////////////////
@@ -649,59 +660,53 @@ function uuidv4() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
+const sessionId = uuidv4();
+const updateInterval = 100;
+let updateStart;
 
-function handleEvent(e) {
-  const msg = JSON.parse(e.data);
-  switch (msg.type)
-  {
-  case "carDeleted":
-    removeCar(msg.carId);
-    break;
-  case "carSpawned":
-    createNewCar(msg.carId, msg.carData);
-    break;
-  case "jobsUpdate":
-    updateJobs();
-    break;
-  case "junctionSwitched":
-    updateJunctionOverlay(msg.junctionId, msg.selectedBranch);
-    break;
-  case "playerUpdate":
-    updatePlayerOverlay(msg);
-    break;
-  case "trainsetsUpdate":
-    updateTrainsets(msg.trainsetIds);
-    break;
-  }
-  if (markerToFollow)
-    map.panTo(markerToFollow.getBounds().getCenter());
+function updateOnce() {
+  updateStart = performance.now();
+  return fetch(`/updates/${sessionId}`)
+  .then(resp => resp.json())
+  .then(tags => {
+    const updatePromises = [];
+    for (tag of tags) {
+      switch (tag) {
+      case 'cars':
+        updatePromises.push(updateAllCars());
+        break;
+      case 'jobs':
+        updatePromises.push(updateAllJobs());
+        break;
+      case 'junctions':
+        updatePromises.push(updateAllJunctions());
+        break;
+      case 'player':
+        updatePromises.push(updatePlayer());
+        break;
+      default:
+        const segments = tag.split('-');
+        switch (segments[0]) {
+        case 'trainset': updateTrainset(segments[1]); break;
+        }
+      }
+    }
+    return Promise.allSettled(updatePromises);
+  })
+  .then(_ => {
+    if (markerToFollow)
+      map.panTo(markerToFollow.getBounds().getCenter());
+  });
 }
 
-function subscribeForEvents() {
-  const events = new EventSource(`/eventSource?${uuidv4()}`)
-  let zoomActive = false;
-  const queuedEvents = [];
-
-  map.addEventListener('zoomstart', _ => zoomActive = true);
-  map.addEventListener('zoomend', _ => {
-    zoomActive = false;
-    queuedEvents.forEach(handleEvent);
-    queuedEvents.length = 0;
+function updateLoop() {
+  updateOnce()
+  .then(_ => {
+    const timeToNextUpdate = (updateStart + updateInterval) - performance.now();
+    setTimeout(updateLoop, timeToNextUpdate);
   });
-  events.onerror = function(e) {
-    console.error(e)
-  }
-  events.onmessage = function(e) {
-    if (zoomActive)
-      queuedEvents.push(e);
-    else
-      handleEvent(e);
-  };
 }
 
 junctionsReady.then(_ => {
-  subscribeForEvents();
-  updateJobs();
-  updateAllCars();
-  updateAllJunctions();
+  updateLoop();
 });
