@@ -363,8 +363,10 @@ const junctionsReady = tracksReady
   }))
 );
 
-function toggleJunction(index) {
-  fetch(`/junction/${index}/toggle`, { method: 'POST' })
+function toggleJunction(junctionId) {
+  fetch(`/junction/${junctionId}/toggle`, { method: 'POST' })
+  .then(resp => resp.json())
+  .then(selectedBranch => updateJunctionOverlay(junctionId, selectedBranch));
 }
 
 const junctionCanvasSize = 30;
