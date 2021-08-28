@@ -56,8 +56,12 @@ namespace DvMod.RemoteDispatch
         public static Dictionary<RailTrack, IEnumerable<World.LatLon>> GetNormalizedTrackCoordinates() =>
             GetAllTrackPoints().ToDictionary(kvp => kvp.Key, kvp => NormalizeTrackPoints(kvp.Value));
 
-        public static Dictionary<RailTrack, IEnumerable<World.Position>> GetAllTrackPoints(float resolution = SIMPLIFIED_RESOLUTION) =>
-            Component.FindObjectsOfType<RailTrack>().ToDictionary(track => track, track => GetTrackPoints(track, resolution));
+        public static Dictionary<RailTrack, IEnumerable<World.Position>> GetAllTrackPoints(float resolution = SIMPLIFIED_RESOLUTION)
+        {
+            if (!WorldStreamingInit.IsLoaded)
+                throw new Exception("World not yet loaded");
+            return Component.FindObjectsOfType<RailTrack>().ToDictionary(track => track, track => GetTrackPoints(track, resolution));
+        }
 
         private static IEnumerable<World.Position> GetTrackPoints(RailTrack track, float resolution = SIMPLIFIED_RESOLUTION)
         {
@@ -70,12 +74,26 @@ namespace DvMod.RemoteDispatch
                 yield return new World.Position((float)pt.position.x, (float)pt.position.z);
         }
 
-        private static readonly string trackPointJSON = JsonConvert.SerializeObject(
-            GetNormalizedTrackCoordinates().ToDictionary(
-                kvp => kvp.Key.logicTrack.ID,
-                kvp => kvp.Value.Select(ll => ll.ToJson())));
+        private static string? trackPointJSON;
 
-        public static string GetTrackPointJSON() => trackPointJSON;
+        public static string? GetTrackPointJSON()
+        {
+            if (trackPointJSON == null)
+            {
+                try
+                {
+                    trackPointJSON = JsonConvert.SerializeObject(
+                        GetNormalizedTrackCoordinates().ToDictionary(
+                            kvp => kvp.Key.logicTrack.ID,
+                            kvp => kvp.Value.Select(ll => ll.ToJson())));
+                }
+                catch (Exception e)
+                {
+                    Main.mod!.Logger.LogException("Could not generate track JSON", e);
+                }
+            }
+            return trackPointJSON;
+        }
     }
 
     public static class Junctions
