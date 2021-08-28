@@ -130,7 +130,7 @@ namespace DvMod.RemoteDispatch
                 HandleTrainsetRequest(context);
                 break;
             case "updates":
-                HandleUpdatesRequest(context);
+                await HandleUpdatesRequest(context).ConfigureAwait(false);
                 break;
             default:
                 RenderEmpty(context, 404);
@@ -138,7 +138,7 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private static void HandleUpdatesRequest(HttpListenerContext context)
+        private static async Task HandleUpdatesRequest(HttpListenerContext context)
         {
             if (context.Request.Url.Segments.Length < 3)
             {
@@ -147,7 +147,7 @@ namespace DvMod.RemoteDispatch
             }
 
             var sessionId = context.Request.Url.Segments[2];
-            Render200(context, ContentTypes.Json, Sessions.GetTagsJson(sessionId));
+            Render200(context, ContentTypes.Json, await Sessions.GetTagsJson(sessionId).ConfigureAwait(false));
         }
 
         private static void HandleJunctionRequest(HttpListenerContext context)
