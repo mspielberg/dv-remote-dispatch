@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using UnityEngine;
+using System.Threading.Tasks;
 
 namespace DvMod.RemoteDispatch
 {
@@ -24,6 +25,7 @@ namespace DvMod.RemoteDispatch
                 Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
                 listener.Start();
             }
+
             while (listener.IsListening)
             {
                 try
@@ -31,7 +33,17 @@ namespace DvMod.RemoteDispatch
                     var context = await listener.GetContextAsync().ConfigureAwait(true);
                     if (CheckAuthentication(context))
                     {
-                        HandleRequest(context);
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await HandleRequest(context).ConfigureAwait(false);
+                            }
+                            catch (Exception e)
+                            {
+                                Main.DebugLog(() => $"Exception while handling HTTP request ({context.Request.Url}): {e}");
+                            }
+                        });
                     }
                     else
                     {
@@ -42,10 +54,6 @@ namespace DvMod.RemoteDispatch
                 catch (ObjectDisposedException e) when (e.ObjectName == "listener")
                 {
                     // ignore when OnDestroy() is called to shutdown the server
-                }
-                catch (Exception e)
-                {
-                    Main.DebugLog(() => $"Exception while handling HTTP connection: {e}");
                 }
             }
         }
@@ -67,7 +75,7 @@ namespace DvMod.RemoteDispatch
                     identity.Password == Main.settings.serverPassword);
         }
 
-        private static void HandleRequest(HttpListenerContext context)
+        private static async Task HandleRequest(HttpListenerContext context)
         {
             var request = context.Request;
             if (request.Url.Segments.Length < 2)
