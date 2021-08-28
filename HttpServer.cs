@@ -81,22 +81,20 @@ namespace DvMod.RemoteDispatch
             {
             case "car":
                 context.Response.ContentType = "application/json";
-                Render200(context, CarData.GetAllCarDataJson());
+                Render200(context, "application/json", CarData.GetAllCarDataJson());
                 break;
             case "icon.svg":
                 context.Response.ContentType = "image/svg+xml";
                 RenderResource(context, "icon.svg");
                 break;
             case "job":
-                context.Response.ContentType = "application/json";
-                Render200(context, JobData.GetAllJobDataJson());
+                Render200(context, ContentTypes.Json, JobData.GetAllJobDataJson());
                 break;
             case "junction":
                 HandleJunctionRequest(context);
                 break;
             case "junctionState":
-                context.Response.ContentType = "application/json";
-                Render200(context, Junctions.GetJunctionStateJSON());
+                Render200(context, ContentTypes.Json, Junctions.GetJunctionStateJSON());
                 break;
             case "leaflet.rotatedImageOverlay.js":
                 context.Response.ContentType = "application/javascript";
@@ -107,10 +105,9 @@ namespace DvMod.RemoteDispatch
                 RenderResource(context, "main.js");
                 break;
             case "player":
-                context.Response.ContentType = "application/json";
-                var json = PlayerData.GetPlayerDataJson();
-                if (json != null)
-                    Render200(context, json);
+                var playerJson = PlayerData.GetPlayerDataJson();
+                if (playerJson != null)
+                    Render200(context, ContentTypes.Json, playerJson);
                 else
                     RenderEmpty(context, 500);
                 break;
@@ -119,8 +116,7 @@ namespace DvMod.RemoteDispatch
                 RenderResource(context, "style.css");
                 break;
             case "track":
-                context.Response.ContentType = "application/json";
-                Render200(context, RailTracks.GetTrackPointJSON());
+                Render200(context, ContentTypes.Json, RailTracks.GetTrackPointJSON());
                 break;
             case "trainset":
                 HandleTrainsetRequest(context);
@@ -143,8 +139,7 @@ namespace DvMod.RemoteDispatch
             }
 
             var sessionId = context.Request.Url.Segments[2];
-            context.Response.ContentType = "application/json";
-            Render200(context, Sessions.GetTagsJson(sessionId));
+            Render200(context, ContentTypes.Json, Sessions.GetTagsJson(sessionId));
         }
 
         private static void HandleJunctionRequest(HttpListenerContext context)
@@ -153,8 +148,7 @@ namespace DvMod.RemoteDispatch
             switch (url.Segments.Length)
             {
             case 2:
-                context.Response.ContentType = "application/json";
-                Render200(context, Junctions.GetJunctionPointJSON());
+                Render200(context, ContentTypes.Json, Junctions.GetJunctionPointJSON());
                 break;
             case 4:
                 var junctionIdString = url.Segments[2].TrimEnd('/');
@@ -165,7 +159,7 @@ namespace DvMod.RemoteDispatch
                         Main.DebugLog(() => $"Toggling J-{junctionId}.");
                         var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
                         junction.Switch(Junction.SwitchMode.REGULAR);
-                        Render200(context, junction.selectedBranch.ToString());
+                        Render200(context, ContentTypes.Json, junction.selectedBranch.ToString());
                         return;
                     }
                 }
@@ -179,7 +173,6 @@ namespace DvMod.RemoteDispatch
 
         public static void HandleTrainsetRequest(HttpListenerContext context)
         {
-            context.Response.ContentType = "application/json";
             var request = context.Request;
             if (request.Url.Segments.Length < 3)
             {
@@ -188,7 +181,7 @@ namespace DvMod.RemoteDispatch
             }
             var trainsetId = int.Parse(request.Url.Segments[2]);
             var carsJson = CarData.GetTrainsetDataJson(trainsetId);
-            Render200(context, carsJson);
+            Render200(context, ContentTypes.Json, carsJson);
         }
 
         public static void Create()
@@ -223,8 +216,15 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private static void Render200(HttpListenerContext context, string s)
+        private static class ContentTypes
         {
+            public const string Json = "application/json";
+            public const string Javascript = "application/javascript";
+        }
+
+        private static void Render200(HttpListenerContext context, string contentType, string s)
+        {
+            context.Response.ContentType = contentType;
             var bytes = Encoding.UTF8.GetBytes(s);
             if (bytes.Length > 128 && (context.Request.Headers.GetValues("Accept-Encoding")?.Contains("gzip") ?? false))
             {
