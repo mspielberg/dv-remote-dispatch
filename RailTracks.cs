@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -60,7 +61,9 @@ namespace DvMod.RemoteDispatch
         {
             if (!WorldStreamingInit.IsLoaded)
                 throw new Exception("World not yet loaded");
-            return Component.FindObjectsOfType<RailTrack>().ToDictionary(track => track, track => GetTrackPoints(track, resolution));
+            var tracks = Component.FindObjectsOfType<RailTrack>();
+            Main.DebugLog(() => $"Found {tracks.Length} RailTracks.");
+            return tracks.ToDictionary(track => track, track => GetTrackPoints(track, resolution));
         }
 
         private static IEnumerable<World.Position> GetTrackPoints(RailTrack track, float resolution = SIMPLIFIED_RESOLUTION)
@@ -76,23 +79,28 @@ namespace DvMod.RemoteDispatch
 
         private static string? trackPointJSON;
 
-        public static string? GetTrackPointJSON()
+        private static string GenerateTrackPointJSON()
         {
-            if (trackPointJSON == null)
-            {
-                try
-                {
-                    trackPointJSON = JsonConvert.SerializeObject(
-                        GetNormalizedTrackCoordinates().ToDictionary(
-                            kvp => kvp.Key.logicTrack.ID,
-                            kvp => kvp.Value.Select(ll => ll.ToJson())));
-                }
-                catch (Exception e)
-                {
-                    Main.mod!.Logger.LogException("Could not generate track JSON", e);
-                }
-            }
+            trackPointJSON = JsonConvert.SerializeObject(
+                GetNormalizedTrackCoordinates().ToDictionary(
+                    kvp => kvp.Key.logicTrack.ID,
+                    kvp => kvp.Value.Select(ll => ll.ToJson())));
             return trackPointJSON;
+        }
+
+        public static async Task<string> GetTrackPointJSON()
+        {
+            if (trackPointJSON != null)
+                return trackPointJSON;
+            if (WorldStreamingInit.IsLoaded)
+            {
+                return GenerateTrackPointJSON();
+            }
+            var tcs = new TaskCompletionSource<string>();
+            WorldStreamingInit.LoadingFinished += () => tcs.TrySetResult(GenerateTrackPointJSON());
+            if (WorldStreamingInit.IsLoaded)
+                return GenerateTrackPointJSON();
+            return await tcs.Task.ConfigureAwait(false);
         }
     }
 
