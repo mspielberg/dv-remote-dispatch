@@ -124,10 +124,7 @@ namespace DvMod.RemoteDispatch
                 RenderResource(context, "style.css");
                 break;
             case "track":
-                if (RailTracks.GetTrackPointJSON() is string trackJson && trackJson != null)
-                    Render200(context, ContentTypes.Json, trackJson);
-                else
-                    RenderEmpty(context, 500);
+                Render200(context, ContentTypes.Json, await RailTracks.GetTrackPointJSON().ConfigureAwait(false));
                 break;
             case "trainset":
                 HandleTrainsetRequest(context);
