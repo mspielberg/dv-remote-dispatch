@@ -535,11 +535,13 @@ function updateAllCarColors() {
   carMarkers.forEach((_, carId) => updateCarColor(carId));
 }
 
+const locoShapeNoseDepth = 10;
+
 function createCarShape(carId, carData) {
   const isSpecial = carId.indexOf('-') > 0;
   const lengthPx = carData.length * svgPixelsPerMeter;
   const svg = isSpecial
-    ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-5},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-5},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
+    ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-locoShapeNoseDepth},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-locoShapeNoseDepth},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
     : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
   return svg;
 }
