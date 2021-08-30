@@ -30,6 +30,7 @@ namespace DvMod.RemoteDispatch
 
         public readonly struct LatLon
         {
+            private const int DECIMAL_PLACES = 8; // 1.11 mm
             private const float EARTH_CIRCUMFERENCE = 40e6f;
             private const float DEGREES_PER_METER = 360f / EARTH_CIRCUMFERENCE;
 
@@ -38,8 +39,8 @@ namespace DvMod.RemoteDispatch
 
             public LatLon(float latitude, float longitude)
             {
-                this.latitude = latitude;
-                this.longitude = longitude;
+                this.latitude = (float)Math.Round(latitude, DECIMAL_PLACES);
+                this.longitude = (float)Math.Round(longitude, DECIMAL_PLACES);
             }
 
             public static LatLon From(Position p) => new LatLon(DEGREES_PER_METER * p.z, DEGREES_PER_METER * p.x);
@@ -118,10 +119,11 @@ namespace DvMod.RemoteDispatch
         );
         public static string GetJunctionPointJSON() => junctionPointJSON;
 
+        public static IEnumerable<int> GetAllJunctionStates() => JunctionsSaveManager.OrderedJunctions.Select(j => j.selectedBranch);
+
         public static string GetJunctionStateJSON()
         {
-            return JsonConvert.SerializeObject(
-                JunctionsSaveManager.OrderedJunctions.Select(j => j.selectedBranch));
+            return JsonConvert.SerializeObject(GetAllJunctionStates());
         }
     }
 }

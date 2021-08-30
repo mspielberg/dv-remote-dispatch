@@ -147,7 +147,7 @@ namespace DvMod.RemoteDispatch
             }
 
             var sessionId = context.Request.Url.Segments[2];
-            Render200(context, ContentTypes.Json, await Sessions.GetTagsJson(sessionId).ConfigureAwait(false));
+            Render200(context, ContentTypes.Json, await Sessions.GetUpdates(sessionId).ConfigureAwait(false));
         }
 
         private static void HandleJunctionRequest(HttpListenerContext context)

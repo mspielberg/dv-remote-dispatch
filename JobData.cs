@@ -42,7 +42,7 @@ namespace DvMod.RemoteDispatch
             return job;
         }
 
-        public static string GetAllJobDataJson()
+        public static Dictionary<string, JObject> GetAllJobData()
         {
             static IEnumerable<TaskData> FlattenToTransport(TaskData data)
             {
@@ -72,9 +72,14 @@ namespace DvMod.RemoteDispatch
 
             // ensure cache is updated
             JobForId("");
-            return JsonConvert.SerializeObject(jobForId.ToDictionary(
+            return jobForId.ToDictionary(
                 kvp => kvp.Key,
-                kvp => JobToJson(kvp.Value)));
+                kvp => JobToJson(kvp.Value));
+        }
+
+        public static string GetAllJobDataJson()
+        {
+            return JsonConvert.SerializeObject(GetAllJobData());
         }
 
         public static class JobPatches
