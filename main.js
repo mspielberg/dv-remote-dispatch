@@ -131,7 +131,10 @@ function colorForJobDestination(jobId) {
 }
 
 function colorForJobType(jobId) {
-  const jobType = jobId.split('-')[1]
+  const segments = jobId.split('-');
+  if (segments.length == 2)
+    return 'cornflowerblue';
+  const jobType = segments[1];
   switch (jobType) {
   case 'FH': return 'lightgreen';
   case 'LH': return 'khaki';
@@ -548,13 +551,17 @@ function createCarLabel(carId, carData) {
   const rotation = carData.rotation >= 180 ? 'rotate(180)' : '';
   if (isSpecial)
     return `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
-  const jobIdLabel = jobId ? `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="16">${jobId.slice(-5,-3)}${jobId.slice(-2)}</text>` : "";
-  const carIdLabel =
+  const jobIdLabel =
+    !jobId ? ""
+    : jobId.split('-').length == 3 ? jobId.slice(-5,-3) + jobId.slice(-2)
+    : jobId.split('-').join('');
+  const jobIdText = `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="16">${jobIdLabel}</text>`
+  const carIdText =
     `<text y="-0.5em" y="1" transform="${rotation} translate(${lengthPx/2 - 5})" dominant-baseline="central" text-anchor="end" font-size="8" font-family="monospace" font-weight="bold">` +
       `<tspan x="0">${carId.slice(0,3)}</tspan>` +
       `<tspan x="0" dy="1em">${carId.slice(3)}</tspan>` +
     '</text>';
-  return jobIdLabel + carIdLabel;
+  return jobIdText + carIdText;
 }
 
 function createCarOverlay(carId, carData) {
