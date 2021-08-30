@@ -552,7 +552,7 @@ function createCarLabel(carId, carData) {
   const lengthPx = carData.length * svgPixelsPerMeter;
   const rotation = carData.rotation >= 180 ? 'rotate(180)' : '';
   if (isSpecial)
-    return `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
+    return `<text transform="translate(-3 0) ${rotation}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
   const jobIdLabel =
     !jobId ? ""
     : jobId.split('-').length == 3 ? jobId.slice(-5,-3) + jobId.slice(-2)
