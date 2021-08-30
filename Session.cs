@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DvMod.RemoteDispatch
 {
@@ -57,6 +58,31 @@ namespace DvMod.RemoteDispatch
             // No data available
             var (success, awaitedTag) = await session.pendingTags.TryTakeAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
             return success ? new string[1] { awaitedTag } : new string[0];
+        }
+
+        public static JObject GetUpdateForTrainset(string tag)
+        {
+            var segments = tag.Split('-');
+            var trainsetId = segments[1];
+            return JObject.FromObject(CarData.GetTrainsetData(int.Parse(trainsetId)));
+        }
+
+        public static JToken GetUpdateForTag(string tag)
+        {
+            return tag switch
+            {
+                "cars" => JObject.FromObject(CarData.GetAllCarData().ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson())),
+                "jobs" => JObject.FromObject(JobData.GetAllJobData()),
+                "junctions" => new JArray(Junctions.GetAllJunctionStates()),
+                "player" => PlayerData.GetPlayerData(),
+                var other => GetUpdateForTrainset(other),
+            };
+        }
+
+        public static async Task<string> GetUpdates(string sessionId)
+        {
+            var tags = await GetTags(sessionId).ConfigureAwait(false);
+            return JsonConvert.SerializeObject(tags.ToDictionary(tag => tag, tag => GetUpdateForTag(tag)));
         }
 
         public static async Task<string> GetTagsJson(string sessionId)

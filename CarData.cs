@@ -49,20 +49,24 @@ namespace DvMod.RemoteDispatch
                 GetAllCarData().ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson()));
         }
 
-        private static Dictionary<string, CarData> GetAllCarData()
+        public static Dictionary<string, CarData> GetAllCarData()
         {
             return SingletonBehaviour<IdGenerator>.Instance
                 .logicCarToTrainCar
                 .ToDictionary(kvp => kvp.Key.ID, kvp => new CarData(kvp.Value));
         }
 
-        public static string GetTrainsetDataJson(int id)
+        public static Dictionary<string, JObject> GetTrainsetData(int id)
         {
             var trainset = Trainset.allSets.Find(set => set.id == id);
             if (trainset == null)
-                return JsonConvert.SerializeObject(new JObject());
-            return JsonConvert.SerializeObject(
-                trainset.cars.ToDictionary(car => car.ID, car => new CarData(car).ToJson()));
+                return new Dictionary<string, JObject>();
+            return trainset.cars.ToDictionary(car => car.ID, car => new CarData(car).ToJson());
+        }
+
+        public static string GetTrainsetDataJson(int id)
+        {
+            return JsonConvert.SerializeObject(GetTrainsetData(id));
         }
     }
 }

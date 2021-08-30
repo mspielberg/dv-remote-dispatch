@@ -242,15 +242,11 @@ function updateJobList() {
   });
 }
 
-function updateAllJobs() {
-  return fetch('/job')
-  .then(resp => resp.json())
-  .then(jobs => {
-    allJobData.clear();
-    Object.entries(jobs).forEach(([jobId, jobData]) => allJobData.set(jobId, jobData));
-    updateJobList();
-    updateCarJobs();
-  });
+function updateAllJobs(jobs) {
+  allJobData.clear();
+  Object.entries(jobs).forEach(([jobId, jobData]) => allJobData.set(jobId, jobData));
+  updateJobList();
+  updateCarJobs();
 }
 
 /////////////////////
@@ -424,12 +420,8 @@ function createJunctionMarker(p, junctionId) {
     .setZIndex(Math.floor(p[0] * 100000 + p[1] * 100000));
 }
 
-function updateAllJunctions() {
-  return fetch('/junctionState')
-  .then(resp => resp.json())
-  .then(states =>
-    states.forEach((state, index) => updateJunctionOverlay(index, state))
-  );
+function updateAllJunctions(states) {
+  states.forEach((state, index) => updateJunctionOverlay(index, state))
 }
 
 /////////////////////
@@ -495,12 +487,6 @@ function scrollToTrack(trackId) {
   const polyLine = trackPolyLines.get(trackId);
   if (polyLine)
     map.panTo(polyLine.getCenter());
-}
-
-function updatePlayer() {
-  return fetch('/player')
-    .then(resp => resp.json())
-    .then(playerData => updatePlayerOverlay(playerData));
 }
 
 fetch('/player')
@@ -627,35 +613,21 @@ function removeCar(carId) {
   }
 }
 
-function updateAllCars() {
-  return fetch('/car')
-  .then(resp => resp.json())
-  .then(cars => {
-    Object.entries(cars).forEach(([carId, carData]) => {
-      if (!carMarkers.has(carId))
-        createNewCar(carId, carData);
-      else
-        updateCar(carId, carData);
-    });
-    for ([carId, _] of carMarkers)
-      if (!cars[carId])
-        removeCar(carId);
+function updateAllCars(updateCarData) {
+  Object.entries(updateCarData).forEach(([carId, carData]) => {
+    if (!carMarkers.has(carId))
+      createNewCar(carId, carData);
+    else
+      updateCar(carId, carData);
   });
+  for ([carId, _] of carMarkers)
+    if (!updateCarData[carId])
+      removeCar(carId);
 }
 
-const trainsetFetchesInProgress = new Set();
-
-function updateTrainset(trainsetId) {
-  if (trainsetFetchesInProgress.has(trainsetId))
-    return;
-
-  trainsetFetchesInProgress.add(trainsetId);
-  fetch(`/trainset/${trainsetId}`)
-  .then(resp => resp.json())
-  .then(cars =>
-    Object.entries(cars).forEach(([carId, carData]) =>
-      updateCar(carId, carData)))
-  .then(_ => trainsetFetchesInProgress.delete(trainsetId));
+function updateCars(cars) {
+  Object.entries(cars).forEach(([carId, carData]) =>
+    updateCar(carId, carData));
 }
 
 /////////////////////
@@ -674,30 +646,28 @@ function updateOnce() {
   updateStart = performance.now();
   return fetch(`/updates/${sessionId}`)
   .then(resp => resp.json())
-  .then(tags => {
-    const updatePromises = [];
-    for (tag of tags) {
+  .then(updateData => {
+    Object.entries(updateData).forEach(([tag, data]) => {
       switch (tag) {
       case 'cars':
-        updatePromises.push(updateAllCars());
+        updateAllCars(data);
         break;
       case 'jobs':
-        updatePromises.push(updateAllJobs());
+        updateAllJobs(data);
         break;
       case 'junctions':
-        updatePromises.push(updateAllJunctions());
+        updateAllJunctions(data);
         break;
       case 'player':
-        updatePromises.push(updatePlayer());
+        updatePlayerOverlay(data);
         break;
       default:
         const segments = tag.split('-');
         switch (segments[0]) {
-        case 'trainset': updateTrainset(segments[1]); break;
+        case 'trainset': updateCars(data); break;
         }
       }
-    }
-    return Promise.allSettled(updatePromises);
+    });
   })
   .then(_ => {
     if (markerToFollow)

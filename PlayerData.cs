@@ -16,7 +16,6 @@ namespace DvMod.RemoteDispatch
                 return;
             var position = new World.Position(transform.position - WorldMover.currentMove);
             var rotation = transform.eulerAngles.y;
-            Main.DebugLog(() => $"position={position}, rotation={rotation}");
             if (!(
                 ApproximatelyEquals(previousPosition.x, position.x)
                 && ApproximatelyEquals(previousPosition.z, position.z)
@@ -34,14 +33,17 @@ namespace DvMod.RemoteDispatch
             return delta > -1e-3 && delta < 1e-3;
         }
 
-        public static string? GetPlayerDataJson()
+        public static JObject GetPlayerData()
         {
             CheckTransform();
-            return JsonConvert.SerializeObject(new JObject(
-                new JProperty("type", "playerUpdate"),
+            return new JObject(
                 new JProperty("position", previousPosition.ToLatLon().ToJson()),
-                new JProperty("rotation", Math.Round(previousRotation, 2))
-            ));
+                new JProperty("rotation", Math.Round(previousRotation, 2)));
+        }
+
+        public static string GetPlayerDataJson()
+        {
+            return JsonConvert.SerializeObject(GetPlayerData());
         }
     }
 }
