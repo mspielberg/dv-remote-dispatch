@@ -647,49 +647,46 @@ function uuidv4() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
-const sessionId = uuidv4();
-const updateInterval = 100;
-let updateStart;
 
-function updateOnce() {
-  updateStart = performance.now();
-  return fetch(`/updates/${sessionId}`)
-  .then(resp => resp.json())
-  .then(updateData => {
-    Object.entries(updateData).forEach(([tag, data]) => {
-      switch (tag) {
-      case 'cars':
-        updateAllCars(data);
-        break;
-      case 'jobs':
-        updateAllJobs(data);
-        break;
-      case 'junctions':
-        updateAllJunctions(data);
-        break;
-      case 'player':
-        updatePlayerOverlay(data);
-        break;
-      default:
-        const segments = tag.split('-');
-        switch (segments[0]) {
-        case 'trainset': updateCars(data); break;
-        }
+function updateOnce(updateData) {
+  Object.entries(updateData).forEach(([tag, data]) => {
+    switch (tag) {
+    case 'cars':
+      updateAllCars(data);
+      break;
+    case 'jobs':
+      updateAllJobs(data);
+      break;
+    case 'junctions':
+      updateAllJunctions(data);
+      break;
+    case 'player':
+      updatePlayerOverlay(data);
+      break;
+    default:
+      const segments = tag.split('-');
+      switch (segments[0]) {
+      case 'trainset': updateCars(data); break;
       }
-    });
-  })
-  .then(_ => {
-    if (markerToFollow)
-      map.panTo(markerToFollow.getBounds().getCenter());
+    }
   });
+  if (markerToFollow)
+      map.panTo(markerToFollow.getBounds().getCenter());
 }
 
 function updateLoop() {
-  updateOnce()
-  .then(_ => {
+  const updateInterval = 100;
+  let updateStart;
+  const wsUrl = new URL(`/updates`, window.location.href);
+  wsUrl.protocol = 'ws';
+  const ws = new WebSocket(wsUrl.href);
+  ws.addEventListener('message', e => {
+    updateStart = performance.now();
+    updateOnce(JSON.parse(e.data));
     const timeToNextUpdate = (updateStart + updateInterval) - performance.now();
-    setTimeout(updateLoop, timeToNextUpdate);
+    setTimeout(() => ws.send('poll'), timeToNextUpdate);
   });
+  ws.addEventListener('open', _ => ws.send('poll'));
 }
 
 junctionsReady.then(_ => {
