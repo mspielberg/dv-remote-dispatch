@@ -9,26 +9,27 @@
 
   <ItemGroup>
     <PackageReference Include="RedworkDE.Publicizer" Version="0.2.2" />
+    <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
     <PublicizeAssembly Include="Assembly-CSharp" Private="True" Readonly="True" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="0Harmony"/>
-    <Reference Include="Assembly-CSharp"/>
-    <Reference Include="DV.PointSet"/>
-    <Reference Include="DV.Utils"/>
-    <Reference Include="Newtonsoft.JSON"/>
-    <Reference Include="UnityEngine.CoreModule"/>
-    <Reference Include="UnityEngine.IMGUIModule"/>
-    <Reference Include="UnityModManager"/>
-    <Reference Include="net.smkd.vector3d"/>
+    <Reference Include="0Harmony" />
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="DV.PointSet" />
+    <Reference Include="DV.Utils" />
+    <Reference Include="Newtonsoft.JSON" />
+    <Reference Include="UnityEngine.CoreModule" />
+    <Reference Include="UnityEngine.IMGUIModule" />
+    <Reference Include="UnityModManager" />
+    <Reference Include="net.smkd.vector3d" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="icon.svg"/>
-    <EmbeddedResource Include="index.html"/>
-    <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
-    <EmbeddedResource Include="main.js"/>
-    <EmbeddedResource Include="style.css"/>
+    <EmbeddedResource Include="icon.svg" />
+    <EmbeddedResource Include="index.html" />
+    <EmbeddedResource Include="leaflet.rotatedImageOverlay.js" />
+    <EmbeddedResource Include="main.js" />
+    <EmbeddedResource Include="style.css" />
   </ItemGroup>
 </Project>

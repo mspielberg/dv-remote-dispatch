@@ -1,195 +1,152 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 using UnityEngine;
-using System.Threading.Tasks;
+using WebSocketSharp.Server;
+using WebSocketSharp.Net;
 
 namespace DvMod.RemoteDispatch
 {
     public class HttpServer : MonoBehaviour
     {
         private static GameObject? rootObject;
-        private readonly HttpListener listener = new HttpListener();
+        private WebSocketSharp.Server.HttpServer? server;
 
-        public async void Start()
+        public void Start()
         {
-            if (!listener.IsListening)
+            if (server != null)
+                return;
+            server = new WebSocketSharp.Server.HttpServer(Main.settings.serverPort)
             {
-                listener.Prefixes.Add($"http://*:{Main.settings.serverPort}/");
-                listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous | AuthenticationSchemes.Basic;
-                listener.Realm = "DV Remote Dispatch";
-                Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
-                listener.Start();
-            }
-
-            while (listener.IsListening)
-            {
-                try
-                {
-                    var context = await listener.GetContextAsync().ConfigureAwait(true);
-                    if (CheckAuthentication(context))
-                    {
-                        _ = Task.Run(async () =>
-                        {
-                            try
-                            {
-                                await HandleRequest(context).ConfigureAwait(false);
-                            }
-                            catch (Exception e)
-                            {
-                                Main.DebugLog(() => $"Exception while handling HTTP request ({context.Request.Url}): {e}");
-                            }
-                        });
-                    }
-                    else
-                    {
-                        context.Response.Headers.Add("WWW-Authenticate", "Basic");
-                        RenderEmpty(context, 401);
-                    }
-                }
-                catch (ObjectDisposedException e) when (e.ObjectName == "listener")
-                {
-                    // ignore when OnDestroy() is called to shutdown the server
-                }
-            }
+                AuthenticationSchemes = Main.settings.serverPassword.Length == 0 ? AuthenticationSchemes.Anonymous : AuthenticationSchemes.Basic,
+                Realm = "DV Remote Dispatch",
+                UserCredentialsFinder = identity => new NetworkCredential(identity.Name, Main.settings.serverPassword)
+            };
+            server.OnGet += OnGet;
+            server.OnPost += OnPost;
+            Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
+            server.Start();
         }
 
         public void OnDestroy()
         {
-            if (listener.IsListening)
+            if (server != null)
             {
                 Main.DebugLog(() => "Stopping HTTP server");
-                listener.Stop();
-                listener.Prefixes.Clear();
+                server.Stop();
             }
         }
 
-        private static bool CheckAuthentication(HttpListenerContext context)
+        private static void OnPost(object _, HttpRequestEventArgs args)
         {
-            return Main.settings.serverPassword.Length == 0
-                || (context.User?.Identity is HttpListenerBasicIdentity identity &&
-                    identity.Password == Main.settings.serverPassword);
+            var segments = args.Request.Url.Segments;
+
+            if (segments.Length == 4
+                && segments[1] == "junction"
+                && segments[3] == "toggle"
+                && int.TryParse(segments[2].TrimEnd('/'), out var junctionId)
+                && junctionId >= 0
+                && junctionId < JunctionsSaveManager.OrderedJunctions.Length)
+            {
+                Main.DebugLog(() => $"Toggling J-{junctionId}.");
+                var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
+                junction.Switch(Junction.SwitchMode.REGULAR);
+                Render200(args, ContentTypes.Json, junction.selectedBranch.ToString());
+            }
+            else
+            {
+                RenderEmpty(args, 404);
+            }
         }
 
-        private static async Task HandleRequest(HttpListenerContext context)
+        private static void OnGet(object _, HttpRequestEventArgs args)
         {
-            var request = context.Request;
+            var request = args.Request;
+            Main.DebugLog(() => request.Url.ToString());
             if (request.Url.Segments.Length < 2)
             {
-                context.Response.ContentType = "text/html; charset=UTF-8";
-                RenderResource(context, "index.html");
+                args.Response.ContentType = "text/html; charset=UTF-8";
+                RenderResource(args, "index.html");
                 return;
             }
 
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
             case "car":
-                context.Response.ContentType = "application/json";
-                Render200(context, "application/json", CarData.GetAllCarDataJson());
+                args.Response.ContentType = "application/json";
+                Render200(args, "application/json", CarData.GetAllCarDataJson());
                 break;
             case "icon.svg":
-                context.Response.ContentType = "image/svg+xml";
-                RenderResource(context, "icon.svg");
+                args.Response.ContentType = "image/svg+xml";
+                RenderResource(args, "icon.svg");
                 break;
             case "job":
-                Render200(context, ContentTypes.Json, JobData.GetAllJobDataJson());
+                Render200(args, ContentTypes.Json, JobData.GetAllJobDataJson());
                 break;
             case "junction":
-                HandleJunctionRequest(context);
+                Render200(args, ContentTypes.Json, Junctions.GetJunctionPointJSON());
                 break;
             case "junctionState":
-                Render200(context, ContentTypes.Json, Junctions.GetJunctionStateJSON());
+                Render200(args, ContentTypes.Json, Junctions.GetJunctionStateJSON());
                 break;
             case "leaflet.rotatedImageOverlay.js":
-                context.Response.ContentType = "application/javascript";
-                RenderResource(context, "leaflet.rotatedImageOverlay.js");
+                args.Response.ContentType = "application/javascript";
+                RenderResource(args, "leaflet.rotatedImageOverlay.js");
                 break;
             case "main.js":
-                context.Response.ContentType = "application/javascript";
-                RenderResource(context, "main.js");
+                args.Response.ContentType = "application/javascript";
+                RenderResource(args, "main.js");
                 break;
             case "player":
                 var playerJson = PlayerData.GetPlayerDataJson();
                 if (playerJson != null)
-                    Render200(context, ContentTypes.Json, playerJson);
+                    Render200(args, ContentTypes.Json, playerJson);
                 else
-                    RenderEmpty(context, 500);
+                    RenderEmpty(args, 500);
                 break;
             case "style.css":
-                context.Response.ContentType = "text/css";
-                RenderResource(context, "style.css");
+                args.Response.ContentType = "text/css";
+                RenderResource(args, "style.css");
                 break;
             case "track":
-                Render200(context, ContentTypes.Json, await RailTracks.GetTrackPointJSON().ConfigureAwait(false));
+                Render200(args, ContentTypes.Json, RailTracks.GetTrackPointJSON().Result);
                 break;
             case "trainset":
-                HandleTrainsetRequest(context);
+                HandleTrainsetRequest(args);
                 break;
             case "updates":
-                await HandleUpdatesRequest(context).ConfigureAwait(false);
+                HandleUpdatesRequest(args);
                 break;
             default:
-                RenderEmpty(context, 404);
+                RenderEmpty(args, 404);
                 break;
             }
         }
 
-        private static async Task HandleUpdatesRequest(HttpListenerContext context)
+        private static void HandleUpdatesRequest(HttpRequestEventArgs args)
         {
-            if (context.Request.Url.Segments.Length < 3)
+            if (args.Request.Url.Segments.Length < 3)
             {
-                RenderEmpty(context, 404);
+                RenderEmpty(args, 404);
                 return;
             }
 
-            var sessionId = context.Request.Url.Segments[2];
-            Render200(context, ContentTypes.Json, await Sessions.GetUpdates(sessionId).ConfigureAwait(false));
+            var sessionId = args.Request.Url.Segments[2];
+            Render200(args, ContentTypes.Json, Sessions.GetUpdates(sessionId).Result);
         }
 
-        private static void HandleJunctionRequest(HttpListenerContext context)
+        public static void HandleTrainsetRequest(HttpRequestEventArgs args)
         {
-            var url = context.Request.Url;
-            switch (url.Segments.Length)
-            {
-            case 2:
-                Render200(context, ContentTypes.Json, Junctions.GetJunctionPointJSON());
-                break;
-            case 4:
-                var junctionIdString = url.Segments[2].TrimEnd('/');
-                if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle")
-                {
-                    if (junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length)
-                    {
-                        Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                        var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
-                        junction.Switch(Junction.SwitchMode.REGULAR);
-                        Render200(context, ContentTypes.Json, junction.selectedBranch.ToString());
-                        return;
-                    }
-                }
-                RenderEmpty(context, 404);
-                break;
-            default:
-                RenderEmpty(context, 404);
-                break;
-            }
-        }
-
-        public static void HandleTrainsetRequest(HttpListenerContext context)
-        {
-            var request = context.Request;
+            var request = args.Request;
             if (request.Url.Segments.Length < 3)
             {
-                RenderEmpty(context, 404);
+                RenderEmpty(args, 404);
                 return;
             }
             var trainsetId = int.Parse(request.Url.Segments[2]);
             var carsJson = CarData.GetTrainsetDataJson(trainsetId);
-            Render200(context, ContentTypes.Json, carsJson);
+            Render200(args, ContentTypes.Json, carsJson);
         }
 
         public static void Create()
@@ -209,18 +166,37 @@ namespace DvMod.RemoteDispatch
             rootObject = null;
         }
 
-        private static void RenderResource(HttpListenerContext context, string resourceName)
+        private static bool AcceptEncodingIncludes(HttpRequestEventArgs args, string encoding)
+        {
+            var headerValues = args.Request.Headers.Get("Accept-Encoding");
+            if (headerValues == null)
+                return false;
+            Main.DebugLog(() => $"Accept-Encoding = {headerValues}");
+            return headerValues.Split(',').Select(x => x.Trim()).Any(x => x == encoding);
+        }
+
+        private static void RenderResource(HttpRequestEventArgs args, string resourceName)
         {
             var assembly = typeof(HttpServer).Assembly;
             using var stream = assembly.GetManifestResourceStream(typeof(HttpServer), resourceName);
             if (stream == null)
             {
-                RenderEmpty(context, 404);
+                RenderEmpty(args, 404);
+            }
+            else if (AcceptEncodingIncludes(args, "gzip"))
+            {
+                args.Response.SendChunked = true;
+                args.Response.Headers.Add("Content-Encoding", "gzip");
+                using var gzip = new GZipStream(args.Response.OutputStream, CompressionMode.Compress);
+                stream.CopyTo(gzip);
+                gzip.Close();
+                args.Response.Close();
             }
             else
             {
-                stream.CopyTo(context.Response.OutputStream);
-                context.Response.Close();
+                args.Response.SendChunked = true;
+                stream.CopyTo(args.Response.OutputStream);
+                args.Response.Close();
             }
         }
 
@@ -230,27 +206,29 @@ namespace DvMod.RemoteDispatch
             public const string Javascript = "application/javascript";
         }
 
-        private static void Render200(HttpListenerContext context, string contentType, string s)
+        private static void Render200(HttpRequestEventArgs args, string contentType, string s)
         {
-            context.Response.ContentType = contentType;
+            args.Response.ContentType = contentType;
             var bytes = Encoding.UTF8.GetBytes(s);
-            if (bytes.Length > 128 && (context.Request.Headers.GetValues("Accept-Encoding")?.Contains("gzip") ?? false))
+            if (bytes.Length > 128 && AcceptEncodingIncludes(args, "gzip"))
             {
-                context.Response.Headers.Add("Content-Encoding", "gzip");
+                args.Response.SendChunked = true;
+                args.Response.Headers.Add("Content-Encoding", "gzip");
                 var mem = new MemoryStream(bytes);
-                using var gzip = new GZipStream(context.Response.OutputStream, CompressionMode.Compress);
+                using var gzip = new GZipStream(args.Response.OutputStream, CompressionMode.Compress);
                 mem.CopyTo(gzip);
             }
             else
             {
-                context.Response.Close(bytes, false);
+                args.Response.ContentLength64 = bytes.LongLength;
+                args.Response.Close(bytes, false);
             }
         }
 
-        private static void RenderEmpty(HttpListenerContext context, int statusCode)
+        private static void RenderEmpty(HttpRequestEventArgs args, int statusCode)
         {
-            context.Response.StatusCode = statusCode;
-            context.Response.Close();
+            args.Response.StatusCode = statusCode;
+            args.Response.Close();
         }
     }
 }
