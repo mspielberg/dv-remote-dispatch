@@ -16,30 +16,30 @@ namespace DvMod.RemoteDispatch
 
         private class Session
         {
-            public AsyncQueue<string> pendingTags = new AsyncQueue<string>();
+            public AsyncSet<string> pendingTags = new AsyncSet<string>();
             public Stopwatch timeSinceLastFetch = new Stopwatch();
         }
 
         public static void AddTag(string tag)
         {
-            foreach (var (sessionId, session) in allSessions)
+            foreach (var kvp in allSessions)
             {
+                var sessionId = kvp.Key;
+                var session = kvp.Value;
                 if (session.timeSinceLastFetch.Elapsed > SessionTimeout)
                 {
                     Main.DebugLog(() => $"Session {sessionId} timed out");
                     allSessions.Remove(sessionId);
                 }
-                else if (!session.pendingTags.Contains(tag))
+                else
                 {
-                    // Might result in duplicates
                     session.pendingTags.Add(tag);
                 }
             }
         }
 
-        public static async Task<IEnumerable<string>> GetTags(string sessionId)
+        private static async Task<IEnumerable<string>> GetTags(string sessionId)
         {
-            PlayerData.CheckTransform();
             if (!allSessions.TryGetValue(sessionId, out var session))
             {
                 Main.DebugLog(() => $"Starting new session {sessionId}");
@@ -60,14 +60,14 @@ namespace DvMod.RemoteDispatch
             return success ? new string[1] { awaitedTag } : new string[0];
         }
 
-        public static JObject GetUpdateForTrainset(string tag)
+        private static JObject GetUpdateForTrainset(string tag)
         {
             var segments = tag.Split('-');
             var trainsetId = segments[1];
             return JObject.FromObject(CarData.GetTrainsetData(int.Parse(trainsetId)));
         }
 
-        public static JToken GetUpdateForTag(string tag)
+        private static JToken GetUpdateForTag(string tag)
         {
             return tag switch
             {
@@ -83,11 +83,6 @@ namespace DvMod.RemoteDispatch
         {
             var tags = await GetTags(sessionId).ConfigureAwait(false);
             return JsonConvert.SerializeObject(tags.ToDictionary(tag => tag, tag => GetUpdateForTag(tag)));
-        }
-
-        public static async Task<string> GetTagsJson(string sessionId)
-        {
-            return JsonConvert.SerializeObject(await GetTags(sessionId).ConfigureAwait(false));
         }
     }
 }

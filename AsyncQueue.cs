@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DvMod.RemoteDispatch
 {
-    public class AsyncQueue<T>
+    public class AsyncSet<T>
     {
         private readonly object queueLock = new object();
         private readonly SemaphoreSlim semaphore = new SemaphoreSlim(0);
@@ -15,49 +15,23 @@ namespace DvMod.RemoteDispatch
         {
             lock (queueLock)
             {
-                queue.Enqueue(item);
+                if (!queue.Contains(item))
+                {
+                    queue.Enqueue(item);
+                    semaphore.Release();
+                }
             }
-            semaphore.Release();
-        }
-
-        public bool Contains(T item)
-        {
-            lock (queueLock)
-            {
-                return queue.Contains(item);
-            }
-        }
-
-        public T Take(TimeSpan timeSpan)
-        {
-            semaphore.Wait(timeSpan);
-            lock (queueLock)
-            {
-                return queue.Dequeue();
-            }
-        }
-
-        public bool TryTake(out T value)
-        {
-            var success = semaphore.Wait(0);
-            if (success)
-                lock (queueLock) value = queue.Dequeue();
-            else
-                value = default;
-            return success;
         }
 
         public IEnumerable<T> TakeAll()
         {
-            var result = new List<T>();
-            while (semaphore.Wait(0))
+            lock (queueLock)
             {
-                lock (queueLock)
-                {
+                var result = new List<T>();
+                while (semaphore.Wait(0))
                     result.Add(queue.Dequeue());
-                }
+                return result;
             }
-            return result;
         }
 
         public async Task<(bool, T)> TryTakeAsync(TimeSpan timeSpan)
@@ -66,7 +40,7 @@ namespace DvMod.RemoteDispatch
             T value = default;
             if (success)
                 lock (queueLock) value = queue.Dequeue();
-            return (success, value);
+            return (success, value!);
         }
     }
 }
