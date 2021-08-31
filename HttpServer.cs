@@ -3,8 +3,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using UnityEngine;
-using WebSocketSharp.Server;
+using WebSocketSharp;
 using WebSocketSharp.Net;
+using WebSocketSharp.Server;
+using System;
 
 namespace DvMod.RemoteDispatch
 {
@@ -25,6 +27,7 @@ namespace DvMod.RemoteDispatch
             };
             server.OnGet += OnGet;
             server.OnPost += OnPost;
+            server.AddWebSocketService<WebSocketHandler>("/updates");
             Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
             server.Start();
         }
@@ -63,7 +66,6 @@ namespace DvMod.RemoteDispatch
         private static void OnGet(object _, HttpRequestEventArgs args)
         {
             var request = args.Request;
-            Main.DebugLog(() => request.Url.ToString());
             if (request.Url.Segments.Length < 2)
             {
                 args.Response.ContentType = "text/html; charset=UTF-8";
@@ -115,25 +117,10 @@ namespace DvMod.RemoteDispatch
             case "trainset":
                 HandleTrainsetRequest(args);
                 break;
-            case "updates":
-                HandleUpdatesRequest(args);
-                break;
             default:
                 RenderEmpty(args, 404);
                 break;
             }
-        }
-
-        private static void HandleUpdatesRequest(HttpRequestEventArgs args)
-        {
-            if (args.Request.Url.Segments.Length < 3)
-            {
-                RenderEmpty(args, 404);
-                return;
-            }
-
-            var sessionId = args.Request.Url.Segments[2];
-            Render200(args, ContentTypes.Json, Sessions.GetUpdates(sessionId).Result);
         }
 
         public static void HandleTrainsetRequest(HttpRequestEventArgs args)
@@ -171,7 +158,6 @@ namespace DvMod.RemoteDispatch
             var headerValues = args.Request.Headers.Get("Accept-Encoding");
             if (headerValues == null)
                 return false;
-            Main.DebugLog(() => $"Accept-Encoding = {headerValues}");
             return headerValues.Split(',').Select(x => x.Trim()).Any(x => x == encoding);
         }
 

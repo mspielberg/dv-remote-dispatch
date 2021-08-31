@@ -5,9 +5,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using WebSocketSharp;
+using WebSocketSharp.Server;
 
 namespace DvMod.RemoteDispatch
 {
+    public class WebSocketHandler : WebSocketBehavior
+    {
+        private string SessionId { get => $"{Context.User.Identity.Name}@{Context.UserEndPoint}"; }
+
+        protected override void OnMessage(MessageEventArgs e)
+        {
+            Send(RemoteDispatch.Sessions.GetUpdates(SessionId).Result);
+        }
+
+        protected override void OnOpen()
+        {
+            Main.DebugLog(() => $"Started new WebSocket connection for {SessionId}.");
+        }
+    }
+
     public static class Sessions
     {
         private static readonly TimeSpan SessionTimeout = TimeSpan.FromMinutes(5);
