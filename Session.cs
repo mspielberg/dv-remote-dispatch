@@ -12,7 +12,7 @@ namespace DvMod.RemoteDispatch
 {
     public class WebSocketHandler : WebSocketBehavior
     {
-        private string SessionId { get => $"{Context.User.Identity.Name}@{Context.UserEndPoint}"; }
+        private string SessionId { get => $"{Context.User?.Identity?.Name}@{Context.UserEndPoint}"; }
 
         protected override void OnMessage(MessageEventArgs e)
         {
