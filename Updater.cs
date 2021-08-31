@@ -1,4 +1,7 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -8,6 +11,7 @@ namespace DvMod.RemoteDispatch
         public void Start()
         {
             StartCoroutine(PublishEventsCoro());
+            StartCoroutine(RunActionsCoro());
         }
 
         private static GameObject? rootObject;
@@ -38,6 +42,28 @@ namespace DvMod.RemoteDispatch
                 yield return WaitFor.Seconds(0.1f);
                 PlayerData.CheckTransform();
             }
+        }
+
+        private static readonly Queue<(Action, TaskCompletionSource<bool>)> queuedActions = new Queue<(Action, TaskCompletionSource<bool>)>();
+        private IEnumerator RunActionsCoro()
+        {
+            while (true)
+            {
+                yield return null;
+                while (queuedActions.Count > 0)
+                {
+                    var (action, tcs) = queuedActions.Dequeue();
+                    action();
+                    tcs.SetResult(true);
+                }
+            }
+        }
+
+        public static Task PostAction(Action action)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            queuedActions.Enqueue((action, tcs));
+            return tcs.Task;
         }
     }
 }

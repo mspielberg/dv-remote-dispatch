@@ -3,10 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using UnityEngine;
-using WebSocketSharp;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
-using System;
 
 namespace DvMod.RemoteDispatch
 {
@@ -54,7 +52,7 @@ namespace DvMod.RemoteDispatch
             {
                 Main.DebugLog(() => $"Toggling J-{junctionId}.");
                 var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
-                junction.Switch(Junction.SwitchMode.REGULAR);
+                Updater.PostAction(() => junction.Switch(Junction.SwitchMode.REGULAR)).Wait();
                 Render200(args, ContentTypes.Json, junction.selectedBranch.ToString());
             }
             else
