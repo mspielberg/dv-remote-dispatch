@@ -134,6 +134,7 @@ body {
   text-align: center;
 }
 .jobList-jobHeader {
+  border-top: black solid 4px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
