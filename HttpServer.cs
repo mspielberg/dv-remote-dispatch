@@ -46,8 +46,8 @@ namespace DvMod.RemoteDispatch
             var segments = args.Request.Url.Segments;
 
             if (segments.Length == 4
-                && segments[1] == "junction"
-                && segments[3] == "toggle"
+                && segments[1].TrimEnd('/') == "junction"
+                && segments[3].TrimEnd('/') == "toggle"
                 && int.TryParse(segments[2].TrimEnd('/'), out var junctionId)
                 && junctionId >= 0
                 && junctionId < JunctionsSaveManager.OrderedJunctions.Length)
