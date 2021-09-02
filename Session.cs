@@ -11,6 +11,7 @@ namespace DvMod.RemoteDispatch
     public static class Sessions
     {
         private static readonly TimeSpan SessionTimeout = TimeSpan.FromMinutes(5);
+        private static readonly object allSesssionsLock = new object();
         private static readonly Dictionary<string, Session> allSessions = new Dictionary<string, Session>();
         private static readonly HashSet<string> AllTags = new HashSet<string>() { "cars", "jobs", "junctions", "player" };
 
@@ -22,31 +23,38 @@ namespace DvMod.RemoteDispatch
 
         public static void AddTag(string tag)
         {
-            foreach (var kvp in allSessions)
+            lock (allSesssionsLock)
             {
-                var sessionId = kvp.Key;
-                var session = kvp.Value;
-                if (session.timeSinceLastFetch.Elapsed > SessionTimeout)
+                foreach (var kvp in allSessions)
                 {
-                    Main.DebugLog(() => $"Session {sessionId} timed out");
-                    allSessions.Remove(sessionId);
-                }
-                else
-                {
-                    session.pendingTags.Add(tag);
+                    var sessionId = kvp.Key;
+                    var session = kvp.Value;
+                    if (session.timeSinceLastFetch.Elapsed > SessionTimeout)
+                    {
+                        Main.DebugLog(() => $"Session {sessionId} timed out");
+                        allSessions.Remove(sessionId);
+                    }
+                    else
+                    {
+                        session.pendingTags.Add(tag);
+                    }
                 }
             }
         }
 
         private static async Task<IEnumerable<string>> GetTags(string sessionId)
         {
-            if (!allSessions.TryGetValue(sessionId, out var session))
+            Session session;
+            lock (allSesssionsLock)
             {
-                Main.DebugLog(() => $"Starting new session {sessionId}");
-                session = new Session();
-                foreach (var tag in AllTags)
-                    session.pendingTags.Add(tag);
-                allSessions.Add(sessionId, session);
+                if (!allSessions.TryGetValue(sessionId, out session))
+                {
+                    Main.DebugLog(() => $"Starting new session {sessionId}");
+                    session = new Session();
+                    foreach (var tag in AllTags)
+                        session.pendingTags.Add(tag);
+                    allSessions.Add(sessionId, session);
+                }
             }
 
             session.timeSinceLastFetch.Restart();
