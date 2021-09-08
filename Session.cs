@@ -92,6 +92,7 @@ namespace DvMod.RemoteDispatch
                 "jobs" => JObject.FromObject(JobData.GetAllJobData()),
                 "junctions" => new JArray(Junctions.GetAllJunctionStates()),
                 "player" => PlayerData.GetPlayerData(),
+                "licenses" => JObject.FromObject(LicenseData.GetLicenseData()),
                 var other => GetUpdateForTrainset(other),
             };
         }

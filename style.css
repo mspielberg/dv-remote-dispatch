@@ -1,150 +1,191 @@
-th[role=columnheader]:not(.no-sort) {
-  cursor: pointer;
+﻿th[role=columnheader]:not(.no-sort) {
+    cursor: pointer;
 }
+
 th[role=columnheader]:not(.no-sort):after {
-  content: '';
-  float: right;
-  margin-top: 7px;
-  border-width: 0 4px 4px;
-  border-style: solid;
-  border-color: #404040 transparent;
-  visibility: hidden;
-  opacity: 0;
-  -ms-user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
+    content: '';
+    float: right;
+    margin-top: 7px;
+    border-width: 0 4px 4px;
+    border-style: solid;
+    border-color: #404040 transparent;
+    visibility: hidden;
+    opacity: 0;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
 }
+
 th[aria-sort=ascending]:not(.no-sort):after {
-  border-bottom: none;
-  border-width: 4px 4px 0;
+    border-bottom: none;
+    border-width: 4px 4px 0;
 }
+
 th[aria-sort]:not(.no-sort):after {
-  visibility: visible;
-  opacity: 0.4;
+    visibility: visible;
+    opacity: 0.4;
 }
+
 th[role=columnheader]:not(.no-sort):hover:after {
-  visibility: visible;
-  opacity: 1;
+    visibility: visible;
+    opacity: 1;
 }
+
 table {
-  background:#fff;
-  max-width:100%;
-  border-spacing:0;
-  width:100%;
-  margin:10px 0;
-  border:1px solid #ddd;
-  border-collapse:separate;
-  -webkit-box-shadow:0 0 4px rgba(0,0,0,0.10);
-     -moz-box-shadow:0 0 4px rgba(0,0,0,0.10);
-          box-shadow:0 0 4px rgba(0,0,0,0.10);
+    background: #fff;
+    max-width: 100%;
+    border-spacing: 0;
+    width: 100%;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-collapse: separate;
+    -webkit-box-shadow: 0 0 4px rgba(0,0,0,0.10);
+    -moz-box-shadow: 0 0 4px rgba(0,0,0,0.10);
+    box-shadow: 0 0 4px rgba(0,0,0,0.10);
 }
+
 table th,
 table td {
-  padding:3px;
-  line-height:18px;
-  text-align:left;
-  border-top:2px solid #ddd;
+    padding: 3px;
+    line-height: 18px;
+    text-align: left;
+    border-top: 2px solid #ddd;
 }
+
 table th {
-  background:#eee;
-  background:-webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#eee));
-  background:-moz-linear-gradient(top, #f6f6f6, #eee);
-  font-weight:bold;
-  vertical-align:bottom;
+    background: #eee;
+    background: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#eee));
+    background: -moz-linear-gradient(top, #f6f6f6, #eee);
+    font-weight: bold;
+    vertical-align: bottom;
 }
+
 table td {
-  vertical-align:top;
+    vertical-align: top;
 }
+
 table thead:first-child tr th,
 table thead:first-child tr td {
-  border-top:0;
+    border-top: 0;
 }
+
 table tbody + tbody {
-  border-top:2px solid #ddd;
+    border-top: 2px solid #ddd;
 }
+
 table th + th,
 table td + td,
 table th + td,
 table td + th {
-  border-left:1px solid #ddd;
+    border-left: 1px solid #ddd;
 }
+
 table thead:first-child tr:first-child th,
 table tbody:first-child tr:first-child th,
 table tbody:first-child tr:first-child td {
-  border-top:0;
+    border-top: 0;
 }
 
 .leaflet-sidebar.collapsed {
-  max-height: 120px;
+    max-height: 160px;
 }
+
 .leaflet-sidebar {
-  max-height: 100%;
-  width: 300px;
-  transition: width .5s, max-height .5s;
+    max-height: 100%;
+    width: 300px;
+    transition: width .5s, max-height .5s;
 }
+
 .leaflet-sidebar-pane {
-  min-width: 250px;
-  max-width: 250px;
-  padding: 10px;
+    min-width: 250px;
+    max-width: 250px;
+    padding: 10px;
 }
-.leaflet-sidebar-left~.leaflet-control-container .leaflet-left {
-  left:310px;
+
+.leaflet-sidebar-left ~ .leaflet-control-container .leaflet-left {
+    left: 310px;
 }
 
 .leaflet-sidebar-tabs a {
-  font: bold 32px "Lucida Console","Monaco",monospace;
+    font: bold 32px "Lucida Console","Monaco",monospace;
 }
+
 .leaflet-sidebar-tabs svg {
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .leaflet-touch .leaflet-bar a {
-  height: 36px;
-  width: 36px;
-  line-height: 36px;
+    height: 36px;
+    width: 36px;
+    line-height: 36px;
 }
+
 .gin-control-zoom {
-  font: bold 24px "Lucida Console","Monaco",monospace;
+    font: bold 24px "Lucida Console","Monaco",monospace;
 }
+
 .gin-control-zoom svg {
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%)
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%)
 }
 
 .interactive {
-  cursor: pointer;
+    cursor: pointer;
 }
+
 .following {
-  background: lightsteelblue;
+    background: lightsteelblue;
 }
+
 img.leaflet-sidebar-tab-icon32 {
-  margin: 4px;
+    margin: 4px;
 }
+
 .leaflet-container.dark {
-  background: #222;
+    background: #222;
 }
+
 body {
-  margin: 0px;
+    margin: 0px;
 }
+
 .joblist-trackSeparator {
-  text-align: center;
+    text-align: center;
 }
+
 .jobList-jobHeader {
-  border-top: black solid 4px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+    border-top: black solid 4px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
-.jobList-jobHeader-FH {
-  background: lightgreen;
+
+.jobList-jobHeader img {
+    float: right;
+    margin-top: -3px;
+    margin-bottom: -3px;
+    background-color: lightgray;
 }
-.jobList-jobHeader-LH {
-  background: khaki;
+
+.jobList-jobHeader .jobTaken::before {
+    content: "📋";
 }
-.jobList-jobHeader-SL,
-.jobList-jobHeader-SU {
-  background: lightcoral;
+
+#filterBody label {
+    vertical-align: bottom;
+    font-weight: bold;
+}
+
+.license-active {
+    width: 32px;
+    height: 32px;
+}
+
+.license-inactive {
+    width: 32px;
+    height: 32px;
+    filter: grayscale(1) contrast(.75) brightness(2) blur(.5px);
 }

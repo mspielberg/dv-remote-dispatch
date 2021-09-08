@@ -14,14 +14,16 @@ namespace DvMod.RemoteDispatch
         public readonly float rotation;
         public readonly string? jobId;
         public readonly string? destinationYardId;
+        public readonly float speed;
 
-        public CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId)
+        public CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId, float speed)
         {
             this.latlon = latlon;
             this.rotation = rotation;
             this.length = length;
             this.jobId = jobId;
             this.destinationYardId = destinationYardId;
+            this.speed = speed;
         }
 
         public CarData(TrainCar trainCar)
@@ -30,7 +32,8 @@ namespace DvMod.RemoteDispatch
             latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
             rotation: trainCar.transform.eulerAngles.y,
             jobId: JobData.JobIdForCar(trainCar),
-            destinationYardId: JobData.JobForCar(trainCar)?.chainData?.chainDestinationYardId)
+            destinationYardId: JobData.JobForCar(trainCar)?.chainData?.chainDestinationYardId,
+            speed: trainCar.GetForwardSpeed())
         {
         }
 
@@ -39,7 +42,8 @@ namespace DvMod.RemoteDispatch
             return new JObject(
                 new JProperty("length", (int)length),
                 new JProperty("position", latlon.ToJson()),
-                new JProperty("rotation", Math.Round(rotation, 2))
+                new JProperty("rotation", Math.Round(rotation, 2)),
+                new JProperty("speed", speed)
             );
         }
 

@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
+using System.Collections.Generic;
 
 namespace DvMod.RemoteDispatch
 {
@@ -12,6 +13,14 @@ namespace DvMod.RemoteDispatch
     {
         private static GameObject? rootObject;
         private WebSocketSharp.Server.HttpServer? server;
+
+        private static readonly Dictionary<string, string> contentTypes = new Dictionary<string, string>{
+            {"css", "text/css"},
+            {"js", "application/javascript"},
+            {"json", "application/json"},
+            {"png", "image/png"},
+            {"svg", "image/svg+xml"},
+        };
 
         public void Start()
         {
@@ -53,7 +62,7 @@ namespace DvMod.RemoteDispatch
                 Main.DebugLog(() => $"Toggling J-{junctionId}.");
                 var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
                 Updater.PostAction(() => junction.Switch(Junction.SwitchMode.REGULAR)).Wait();
-                Render200(args, ContentTypes.Json, junction.selectedBranch.ToString());
+                Render200(args, contentTypes["json"], junction.selectedBranch.ToString());
             }
             else
             {
@@ -71,53 +80,62 @@ namespace DvMod.RemoteDispatch
                 return;
             }
 
-            switch (request.Url.Segments[1].TrimEnd('/'))
+            string filename = request.Url.Segments[1].TrimEnd('/');
+            if (filename.Contains("."))
             {
-            case "car":
-                args.Response.ContentType = "application/json";
-                Render200(args, "application/json", CarData.GetAllCarDataJson());
-                break;
-            case "icon.svg":
-                args.Response.ContentType = "image/svg+xml";
-                RenderResource(args, "icon.svg");
-                break;
-            case "job":
-                Render200(args, ContentTypes.Json, JobData.GetAllJobDataJson());
-                break;
-            case "junction":
-                Render200(args, ContentTypes.Json, Junctions.GetJunctionPointJSON());
-                break;
-            case "junctionState":
-                Render200(args, ContentTypes.Json, Junctions.GetJunctionStateJSON());
-                break;
-            case "leaflet.rotatedImageOverlay.js":
-                args.Response.ContentType = "application/javascript";
-                RenderResource(args, "leaflet.rotatedImageOverlay.js");
-                break;
-            case "main.js":
-                args.Response.ContentType = "application/javascript";
-                RenderResource(args, "main.js");
-                break;
-            case "player":
-                var playerJson = PlayerData.GetPlayerDataJson();
-                if (playerJson != null)
-                    Render200(args, ContentTypes.Json, playerJson);
-                else
-                    RenderEmpty(args, 500);
-                break;
-            case "style.css":
-                args.Response.ContentType = "text/css";
-                RenderResource(args, "style.css");
-                break;
-            case "track":
-                Render200(args, ContentTypes.Json, RailTracks.GetTrackPointJSON().Result);
-                break;
-            case "trainset":
-                HandleTrainsetRequest(args);
-                break;
-            default:
-                RenderEmpty(args, 404);
-                break;
+                // Handle bundled files generically.
+                var assembly = typeof(HttpServer).Assembly;
+                using var stream = assembly.GetManifestResourceStream(typeof(HttpServer), filename);
+                if (stream != null)
+                {
+                    string ext = filename.Substring(filename.LastIndexOf(".") + 1);
+                    // Only allow known content-types (ensures we can't accidentally send .dll files for example).
+                    if (contentTypes.ContainsKey(ext))
+                    {
+                        Main.DebugLog(() => $"Found resource {filename}");
+                        args.Response.ContentType = contentTypes[ext];
+                        RenderResource(args, filename);
+                        return;
+                    }
+                }
+
+            }
+
+            // Handle non-files.
+            Main.DebugLog(() => $"Handling special type {filename}");
+            switch (filename)
+            {
+                case "car":
+                    Render200(args, contentTypes["json"], CarData.GetAllCarDataJson());
+                    break;
+                case "job":
+                    Render200(args, contentTypes["json"], JobData.GetAllJobDataJson());
+                    break;
+                case "licenses":
+                    Render200(args, contentTypes["json"], LicenseData.GetLicenseDataJson());
+                    break;
+                case "junction":
+                    Render200(args, contentTypes["json"], Junctions.GetJunctionPointJSON());
+                    break;
+                case "junctionState":
+                    Render200(args, contentTypes["json"], Junctions.GetJunctionStateJSON());
+                    break;
+                case "player":
+                    var playerJson = PlayerData.GetPlayerDataJson();
+                    if (playerJson != null)
+                        Render200(args, contentTypes["json"], playerJson);
+                    else
+                        RenderEmpty(args, 500);
+                    break;
+                case "track":
+                    Render200(args, contentTypes["json"], RailTracks.GetTrackPointJSON().Result);
+                    break;
+                case "trainset":
+                    HandleTrainsetRequest(args);
+                    break;
+                default:
+                    RenderEmpty(args, 404);
+                    break;
             }
         }
 
@@ -131,7 +149,7 @@ namespace DvMod.RemoteDispatch
             }
             var trainsetId = int.Parse(request.Url.Segments[2]);
             var carsJson = CarData.GetTrainsetDataJson(trainsetId);
-            Render200(args, ContentTypes.Json, carsJson);
+            Render200(args, contentTypes["json"], carsJson);
         }
 
         public static void Create()
@@ -165,6 +183,7 @@ namespace DvMod.RemoteDispatch
             using var stream = assembly.GetManifestResourceStream(typeof(HttpServer), resourceName);
             if (stream == null)
             {
+                Main.DebugLog(() => $"Resource {resourceName} not found.");
                 RenderEmpty(args, 404);
             }
             else if (AcceptEncodingIncludes(args, "gzip"))
@@ -182,12 +201,6 @@ namespace DvMod.RemoteDispatch
                 stream.CopyTo(args.Response.OutputStream);
                 args.Response.Close();
             }
-        }
-
-        private static class ContentTypes
-        {
-            public const string Json = "application/json";
-            public const string Javascript = "application/javascript";
         }
 
         private static void Render200(HttpRequestEventArgs args, string contentType, string s)

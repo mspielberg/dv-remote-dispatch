@@ -28,6 +28,7 @@ namespace DvMod.RemoteDispatch
             mod.OnGUI = OnGUI;
             mod.OnSaveGUI = OnSaveGUI;
             mod.OnToggle = OnToggle;
+            mod.OnUnload = OnUnload;
 
             return true;
         }
@@ -53,12 +54,15 @@ namespace DvMod.RemoteDispatch
                     HttpServer.Create();
                 Updater.Create();
             }
-            else
-            {
-                Updater.Destroy();
-                HttpServer.Destroy();
-                harmony.UnpatchAll(modEntry.Info.Id);
-            }
+            return true;
+        }
+
+        private static bool OnUnload(UnityModManager.ModEntry modEntry)
+        {
+            Harmony harmony = new Harmony(modEntry.Info.Id);
+            Updater.Destroy();
+            HttpServer.Destroy();
+            harmony.UnpatchAll(modEntry.Info.Id);
             return true;
         }
 

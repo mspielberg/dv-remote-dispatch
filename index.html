@@ -18,6 +18,7 @@
     <ul role="tablist">
       <li><a href="#carsTab" role="tab"><i class="fas fa-train" title="Cars"></i></a></li>
       <li><a href="#jobsTab" role="tab"><i class="fas fa-clipboard-list" title="Jobs"></i></a></li>
+      <li><a href="#filterTab" role="tab"><i class="fas fa-filter" title="Filters"></i></a></li>
       <li><a href="#settingsTab" role="tab"><i class="fas fa-cog" title="Settings"></i></a></li>
     </ul>
   </div>
@@ -34,6 +35,15 @@
       <table id="jobList">
         <tbody id="jobListBody"></tbody>
       </table>
+    </div>
+    <div class="leaflet-sidebar-pane" id="filterTab">
+      <div id="filterBody">
+        <input type="checkbox" id="onlyActiveLicenses" onClick="updateJobList()" onChange="updateJobList()" /><label for="onlyActiveLicenses">Only licensed jobs</label><br />
+        <div id="licenseList"></div>
+        <input type="checkbox" id="onlyActiveJobs" onClick="updateJobList()" onChange="updateJobList()" /><label for="onlyActiveJobs">Only active jobs</label><br />
+        <div id="destinationList"></div>
+        <div id="jobTypeList"></div>
+      </div>
     </div>
     <div class="leaflet-sidebar-pane" id="settingsTab">
       <table>
