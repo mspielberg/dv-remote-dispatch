@@ -15,6 +15,10 @@ const map = L.map('map', {
   zoomControl: false,
 })
 .fitBounds(mapBounds);
+
+const imgBounds = [[0, 0], [0.1475, 0.1475]];
+L.imageOverlay('dvmap.png', imgBounds).addTo(map);
+
 L.control.scale().addTo(map);
 const zoomHome = new L.Control.ZoomHome({
   position: 'topleft',
