@@ -42,7 +42,7 @@ map.addEventListener('zoomhome', () => {
     map.setView(playerMarker.getBounds().getCenter(), initialZoom);
 });
 
-const nearlyEqual = (v1, v2, epsilon = 0.001) => Math.abs(v1 - v2) <= epsilon;
+const nearlyEqual = (v1, v2, epsilon = 0.01) => Math.abs(v1 - v2) <= epsilon;
 
 const formatTime = function (seconds) {
     let time = "";
