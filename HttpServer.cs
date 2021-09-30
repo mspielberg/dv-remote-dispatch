@@ -80,7 +80,7 @@ namespace DvMod.RemoteDispatch
             var request = context.Request;
             if (request.Url.Segments.Length < 2)
             {
-                context.Response.ContentType = "text/html; charset=UTF-8";
+                context.Response.ContentType = ContentTypes.Html;
                 RenderResource(context, "index.html");
                 return;
             }
@@ -88,12 +88,7 @@ namespace DvMod.RemoteDispatch
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
             case "car":
-                context.Response.ContentType = "application/json";
-                Render200(context, "application/json", CarData.GetAllCarDataJson());
-                break;
-            case "icon.svg":
-                context.Response.ContentType = "image/svg+xml";
-                RenderResource(context, "icon.svg");
+                Render200(context, ContentTypes.Json, CarData.GetAllCarDataJson());
                 break;
             case "job":
                 Render200(context, ContentTypes.Json, JobData.GetAllJobDataJson());
@@ -104,14 +99,6 @@ namespace DvMod.RemoteDispatch
             case "junctionState":
                 Render200(context, ContentTypes.Json, Junctions.GetJunctionStateJSON());
                 break;
-            case "leaflet.rotatedImageOverlay.js":
-                context.Response.ContentType = "application/javascript";
-                RenderResource(context, "leaflet.rotatedImageOverlay.js");
-                break;
-            case "main.js":
-                context.Response.ContentType = "application/javascript";
-                RenderResource(context, "main.js");
-                break;
             case "player":
                 var playerJson = PlayerData.GetPlayerDataJson();
                 if (playerJson != null)
@@ -119,9 +106,8 @@ namespace DvMod.RemoteDispatch
                 else
                     RenderEmpty(context, 500);
                 break;
-            case "style.css":
-                context.Response.ContentType = "text/css";
-                RenderResource(context, "style.css");
+            case "res":
+                RenderResource(context);
                 break;
             case "track":
                 Render200(context, ContentTypes.Json, await RailTracks.GetTrackPointJSON().ConfigureAwait(false));
@@ -209,6 +195,14 @@ namespace DvMod.RemoteDispatch
             rootObject = null;
         }
 
+        private static void RenderResource(HttpListenerContext context)
+        {
+            var resourceName = context.Request.Url.Segments[2];
+            var extension = Path.GetExtension(resourceName);
+            context.Response.ContentType = ContentTypes.ForExtension(extension);
+            RenderResource(context, resourceName);
+        }
+
         private static void RenderResource(HttpListenerContext context, string resourceName)
         {
             var assembly = typeof(HttpServer).Assembly;
@@ -226,8 +220,22 @@ namespace DvMod.RemoteDispatch
 
         private static class ContentTypes
         {
+            public const string Css = "text/css";
+            public const string Html = "text/html; charset=UTF-8";
             public const string Json = "application/json";
             public const string Javascript = "application/javascript";
+            public const string Svg = "image/svg+xml";
+
+            public static string ForExtension(string extension) {
+                return extension switch
+                {
+                    ".css" => Css,
+                    ".js" => Javascript,
+                    ".json" => Json,
+                    ".svg" => Svg,
+                    _ => "",
+                };
+            }
         }
 
         private static void Render200(HttpListenerContext context, string contentType, string s)
