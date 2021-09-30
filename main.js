@@ -452,7 +452,6 @@ function followCar(carId, shouldScroll) {
 /////////////////////
 // player
 
-const playerCanvasSize = 20;
 let playerMarker;
 
 function getPlayerOverlayBounds(position) {
@@ -470,7 +469,7 @@ function createPlayerOverlay() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('id', 'player');
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.setAttribute('viewBox', `${-playerCanvasSize/2*1.5} ${-playerCanvasSize/2*1.5} ${playerCanvasSize*1.5} ${playerCanvasSize*1.5}`);
+  svg.setAttribute('viewBox', `-10 -10 20 20`);
   svg.innerHTML = '<polygon id="playerPolygon" fill="aqua" fill-opacity="70%" stroke="black" stroke-width="1%" points="0,-10 10,10 0,5 -10,10"/>';
   return svg;
 }
