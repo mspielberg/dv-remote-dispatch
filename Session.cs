@@ -59,7 +59,7 @@ namespace DvMod.RemoteDispatch
 
             session.timeSinceLastFetch.Restart();
 
-            var tags = session.pendingTags.TakeAll().ToHashSet();
+            var tags = new HashSet<string>(session.pendingTags.TakeAll());
             if (tags.Count > 0)
                 return tags;
 
