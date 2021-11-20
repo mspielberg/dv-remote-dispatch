@@ -15,10 +15,24 @@ namespace DvMod.RemoteDispatch
         private static readonly Dictionary<string, Session> allSessions = new Dictionary<string, Session>();
         private static readonly HashSet<string> AllTags = new HashSet<string>() { "cars", "jobs", "junctions", "player" };
 
+        public static event Action<string>? OnSessionStarted;
+        public static event Action<string>? OnSessionEnded;
+
         private class Session
         {
-            public AsyncSet<string> pendingTags = new AsyncSet<string>();
-            public Stopwatch timeSinceLastFetch = new Stopwatch();
+            public readonly string username;
+            public readonly AsyncSet<string> pendingTags = new AsyncSet<string>();
+            public readonly Stopwatch timeSinceLastFetch = new Stopwatch();
+
+            public Session(string username)
+            {
+                this.username = username;
+            }
+        }
+
+        public static HashSet<string> GetUsersWithActiveSessions()
+        {
+            return new HashSet<string>(allSessions.Values.Select(s => s.username));
         }
 
         public static void AddTag(string tag)
@@ -33,6 +47,7 @@ namespace DvMod.RemoteDispatch
                     {
                         Main.DebugLog(() => $"Session {sessionId} timed out");
                         allSessions.Remove(sessionId);
+                        OnSessionEnded?.Invoke(sessionId);
                     }
                     else
                     {
@@ -42,18 +57,19 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private static async Task<IEnumerable<string>> GetTags(string sessionId)
+        private static async Task<IEnumerable<string>> GetTags(string username, string sessionId)
         {
             Session session;
             lock (allSesssionsLock)
             {
                 if (!allSessions.TryGetValue(sessionId, out session))
                 {
-                    Main.DebugLog(() => $"Starting new session {sessionId}");
-                    session = new Session();
+                    Main.DebugLog(() => $"Starting new session {sessionId} for user {username}");
+                    session = new Session(username);
                     foreach (var tag in AllTags)
                         session.pendingTags.Add(tag);
                     allSessions.Add(sessionId, session);
+                    OnSessionStarted?.Invoke(username);
                 }
             }
 
@@ -87,9 +103,9 @@ namespace DvMod.RemoteDispatch
             };
         }
 
-        public static async Task<string> GetUpdates(string sessionId)
+        public static async Task<string> GetUpdates(string username, string sessionId)
         {
-            var tags = await GetTags(sessionId).ConfigureAwait(false);
+            var tags = await GetTags(username, sessionId).ConfigureAwait(false);
             return JsonConvert.SerializeObject(tags.ToDictionary(tag => tag, tag => GetUpdateForTag(tag)));
         }
     }

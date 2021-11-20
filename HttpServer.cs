@@ -132,8 +132,9 @@ namespace DvMod.RemoteDispatch
                 return;
             }
 
+            var username = context.User?.Identity?.Name ?? "";
             var sessionId = context.Request.Url.Segments[2];
-            Render200(context, ContentTypes.Json, await Sessions.GetUpdates(sessionId).ConfigureAwait(false));
+            Render200(context, ContentTypes.Json, await Sessions.GetUpdates(username, sessionId).ConfigureAwait(false));
         }
 
         private static void HandleJunctionRequest(HttpListenerContext context)
@@ -150,6 +151,11 @@ namespace DvMod.RemoteDispatch
                 {
                     if (junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length)
                     {
+                        if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
+                        {
+                            RenderEmpty(context, 403);
+                            return;
+                        }
                         Main.DebugLog(() => $"Toggling J-{junctionId}.");
                         var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
                         junction.Switch(Junction.SwitchMode.REGULAR);
