@@ -27,6 +27,8 @@ namespace DvMod.RemoteDispatch
             public Session(string username)
             {
                 this.username = username;
+                foreach (var tag in AllTags)
+                    pendingTags.Add(tag);
             }
         }
 
@@ -67,8 +69,6 @@ namespace DvMod.RemoteDispatch
                 {
                     Main.DebugLog(() => $"Starting new session {sessionId} for user {username}");
                     session = new Session(username);
-                    foreach (var tag in AllTags)
-                        session.pendingTags.Add(tag);
                     allSessions.Add(sessionId, session);
                     OnSessionStarted?.Invoke(username);
                 }

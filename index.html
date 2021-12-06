@@ -18,6 +18,7 @@
     <ul role="tablist">
       <li><a href="#carsTab" role="tab"><i class="fas fa-train" title="Cars"></i></a></li>
       <li><a href="#jobsTab" role="tab"><i class="fas fa-clipboard-list" title="Jobs"></i></a></li>
+      <li><a href="#locoControlTab" role="tab"><i class="fas fa-gamepad" title="Loco Control"></i></a></li>
       <li><a href="#settingsTab" role="tab"><i class="fas fa-cog" title="Settings"></i></a></li>
     </ul>
   </div>
@@ -31,10 +32,19 @@
       </table>
     </div>
     <div class="leaflet-sidebar-pane" id="jobsTab">
-      <input id="jobSearchText" name="jobSearchText" type="text" placeholder="Search...">
+      <input id="jobSearchText" type="text" placeholder="Search...">
       <table id="jobList">
         <tbody id="jobListBody"></tbody>
       </table>
+    </div>
+    <div class="leaflet-sidebar-pane" id="locoControlTab">
+      <label for="locoControlLocoId">Locomotive ID: L-</label>
+      <select id="locoControlLocoId"></select>
+      <div>
+        <span id="locoControlReverseButton" class="locoControlButton"><i class="far fa-caret-square-left" title="Reverse"></i></span>
+        <span id="locoControlStopButton" class="locoControlButton"><i class="far fa-square" title="Stop"></i></span>
+        <span id="locoControlForwardButton" class="locoControlButton"><i class="far fa-caret-square-right" title="Forward"></i></span>
+      </div>
     </div>
     <div class="leaflet-sidebar-pane" id="settingsTab">
       <table>

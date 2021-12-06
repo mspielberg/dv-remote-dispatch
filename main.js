@@ -522,6 +522,36 @@ fetch('/player')
 });
 
 /////////////////////
+// loco control
+
+const locoIdSelect = document.getElementById('locoControlLocoId');
+function updateLocoList() {
+  for (const elem of Array.from(locoIdSelect.children))
+    elem.remove();
+  const locoIds = Array.from(allCarData.keys())
+    .filter(id => id.startsWith("L-"))
+    .map(id => id.substring(2));
+  locoIds.sort();
+  for (const id of locoIds) {
+    const option = document.createElement('option');
+    option.textContent = id;
+    locoIdSelect.appendChild(option);
+  }
+}
+
+function sendLocoCommand(command) {
+  return function () {
+    const locoId = `L-${locoIdSelect.value.padStart(3, '0')}`;
+    if (allCarData.has(locoId))
+      fetch(`/car/${locoId}/${command}`, { method: 'POST' });
+  }
+}
+
+document.getElementById('locoControlReverseButton').addEventListener('click', sendLocoCommand('reverse'));
+document.getElementById('locoControlStopButton').addEventListener('click', sendLocoCommand('stop'));
+document.getElementById('locoControlForwardButton').addEventListener('click', sendLocoCommand('forward'));
+
+/////////////////////
 // cars
 
 const carWidthMeters = 3;
@@ -642,6 +672,7 @@ function removeCar(carId) {
     marker.remove();
     carMarkers.delete(carId);
   }
+  allCarData.delete(carId);
 }
 
 function updateAllCars(updateCarData) {
@@ -654,6 +685,7 @@ function updateAllCars(updateCarData) {
   for ([carId, _] of carMarkers)
     if (!updateCarData[carId])
       removeCar(carId);
+  updateLocoList();
 }
 
 function updateCars(cars) {

@@ -89,7 +89,7 @@ namespace DvMod.RemoteDispatch
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
             case "car":
-                Render200(context, ContentTypes.Json, CarData.GetAllCarDataJson());
+                HandleCarRequest(context);
                 break;
             case "job":
                 Render200(context, ContentTypes.Json, JobData.GetAllJobDataJson());
@@ -123,6 +123,43 @@ namespace DvMod.RemoteDispatch
                 RenderEmpty(context, 404);
                 break;
             }
+        }
+
+        private static void HandleCarRequest(HttpListenerContext context)
+        {
+            var segments = context.Request.Url.Segments;
+            if (segments.Length == 2 && context.Request.HttpMethod == "GET")
+            {
+                Render200(context, ContentTypes.Json, CarData.GetAllCarDataJson());
+                return;
+            }
+            if (segments.Length == 4 && context.Request.HttpMethod == "POST")
+            {
+                var carId = segments[2].TrimEnd('/');
+                var controller = LocoControl.GetLocoController(carId);
+                if (controller == null)
+                {
+                    RenderEmpty(context, 404);
+                    return;
+                }
+                switch (segments[3])
+                {
+                case "forward":
+                    LocoControl.SetForward(controller);
+                    break;
+                case "reverse":
+                    LocoControl.SetReverse(controller);
+                    break;
+                case "stop":
+                    LocoControl.SetStop(controller);
+                    break;
+                default:
+                    RenderEmpty(context, 404);
+                    return;
+                }
+                RenderEmpty(context, 204);
+            }
+            RenderEmpty(context, 404);
         }
 
         private static async Task HandleUpdatesRequest(HttpListenerContext context)

@@ -76,7 +76,7 @@ table tbody:first-child > tr:first-child td {
 }
 
 .leaflet-sidebar.collapsed {
-  max-height: 120px;
+  max-height: 160px;
 }
 .leaflet-sidebar {
   max-height: 100%;
@@ -147,4 +147,14 @@ body {
   position: relative;
   margin-top: -3px;
   margin-bottom: -1em;
+}
+.locoControlButton {
+  font-size: 36pt;
+  cursor: pointer;
+}
+.locoControlButton:hover {
+  background-color: lightgray
+}
+.locoControlButton:active {
+  background-color: lightblue;
 }
