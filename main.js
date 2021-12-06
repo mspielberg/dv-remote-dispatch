@@ -165,20 +165,20 @@ function jobMatchesFilter(jobId, jobData) {
   return fields.some(field => field.includes(testText));
 }
 
-function jobElems(jobId, jobData) {
+function jobElem(jobId, jobData) {
   function replaceHyphens(s) { return s.replaceAll('-', '\u2011'); }
 
-  const rows = [];
+  const tbody = document.createElement('tbody');
+  tbody.setAttribute('id', `jobList-${jobId}`);
 
   let row = document.createElement('tr');
   const jobIdCell = document.createElement('th'); 
-  jobIdCell.setAttribute('id', `jobList-${jobId}`);
   jobIdCell.setAttribute('colspan', CarsPerRow);
   jobIdCell.classList.add(`jobList-jobHeader`);
   jobIdCell.style.background = colorForJobId(jobId);
   jobIdCell.textContent = jobId;
   row.appendChild(jobIdCell);
-  rows.push(row);
+  tbody.appendChild(row);
 
   jobData.forEach(task => {
     row = document.createElement('tr');
@@ -203,7 +203,7 @@ function jobElems(jobId, jobData) {
 
     for (let carIndex = 0; carIndex < task.cars.length; carIndex++) {
       if (carIndex % CarsPerRow == 0) {
-        rows.push(row);
+        tbody.appendChild(row);
         row = document.createElement('tr');
       }
       const carId = task.cars[carIndex];
@@ -218,10 +218,10 @@ function jobElems(jobId, jobData) {
       // add filler cells
       for (let i = 0; i < CarsPerRow - (task.cars.length % CarsPerRow); i++)
         row.appendChild(document.createElement('td'));
-    rows.push(row);
+    tbody.appendChild(row);
   });
 
-  return rows;
+  return tbody;
 }
 
 function updateCarJobs() {
@@ -251,10 +251,7 @@ function updateJobList() {
   const sortedJobs = Array.from(allJobData.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   sortedJobs
     .filter(([jobId, jobData]) => jobMatchesFilter(jobId, jobData))
-    .forEach(([jobId, jobData]) => {
-      for (const elem of jobElems(jobId, jobData.tasks))
-        jobListBody.appendChild(elem);
-    });
+    .forEach(([jobId, jobData]) => jobListBody.appendChild(jobElem(jobId, jobData.tasks)));
 }
 
 function updateAllJobs(jobs) {
@@ -463,8 +460,10 @@ function followCar(carId, shouldScroll) {
   for (const elem of jobListBody.querySelectorAll('.following'))
     elem.classList.remove('following');
   const jobListElems = jobListBody.querySelectorAll(`.jobList-carCell-${carId}`);
-  for (const elem of jobListElems)
+  for (const elem of jobListElems) {
     elem.classList.add('following');
+    elem.closest('tbody').classList.add('following');
+  }
   if (shouldScroll && jobListElems.length > 0)
     jobListElems[0].scrollIntoView({ block: 'center' });
 }

@@ -69,9 +69,9 @@ table th + td,
 table td + th {
   border-left:1px solid #ddd;
 }
-table thead:first-child tr:first-child th,
-table tbody:first-child tr:first-child th,
-table tbody:first-child tr:first-child td {
+table thead:first-child > tr:first-child th,
+table tbody:first-child > tr:first-child th,
+table tbody:first-child > tr:first-child td {
   border-top:0;
 }
 
@@ -118,7 +118,10 @@ table tbody:first-child tr:first-child td {
 .interactive {
   cursor: pointer;
 }
-.following {
+tbody.following {
+  box-shadow: -4px 0px steelblue;
+}
+td.following {
   background: lightsteelblue;
 }
 img.leaflet-sidebar-tab-icon32 {
