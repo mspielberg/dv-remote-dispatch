@@ -159,6 +159,8 @@ function yardIdForTrack(trackId) {
 }
 
 function jobElems(jobId, jobData) {
+  function replaceHyphens(s) { return s.replaceAll('-', '\u2011'); }
+
   const rows = [];
 
   let row = document.createElement('tr');
@@ -175,7 +177,7 @@ function jobElems(jobId, jobData) {
     row = document.createElement('tr');
     const startTrackCell = document.createElement('th');
     startTrackCell.classList.add('interactive');
-    startTrackCell.textContent = task.startTrack;
+    startTrackCell.textContent = replaceHyphens(task.startTrack);
     startTrackCell.style.background = colorForYardId(yardIdForTrack(task.startTrack));
     startTrackCell.addEventListener('click', () => scrollToTrack(task.startTrack));
     row.appendChild(startTrackCell);
@@ -187,7 +189,7 @@ function jobElems(jobId, jobData) {
 
     const destinationTrackCell = document.createElement('th');
     destinationTrackCell.classList.add('interactive');
-    destinationTrackCell.textContent = task.destinationTrack;
+    destinationTrackCell.textContent = replaceHyphens(task.destinationTrack);
     destinationTrackCell.style.background = colorForYardId(yardIdForTrack(task.destinationTrack));
     destinationTrackCell.addEventListener('click', () => scrollToTrack(task.destinationTrack));
     row.appendChild(destinationTrackCell);
