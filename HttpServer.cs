@@ -70,8 +70,9 @@ namespace DvMod.RemoteDispatch
 
         private static bool CheckAuthentication(HttpListenerContext context)
         {
-            return Main.settings.serverPassword.Length == 0
-                || (context.User?.Identity is HttpListenerBasicIdentity identity &&
+            return
+                context.User?.Identity is HttpListenerBasicIdentity identity &&
+                (Main.settings.serverPassword.Length == 0 ||
                     identity.Password == Main.settings.serverPassword);
         }
 
