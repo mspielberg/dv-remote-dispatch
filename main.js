@@ -158,6 +158,13 @@ function yardIdForTrack(trackId) {
   return trackId.split('-')[0];
 }
 
+function jobMatchesFilter(jobId, jobData) {
+  const testText = document.getElementById('jobSearchText').value.toUpperCase();
+  function taskFields(task) { return [task.startTrack, task.destinationTrack].concat(task.cars); }
+  const fields = [jobId].concat(jobData.tasks.flatMap(taskFields));
+  return fields.some(field => field.includes(testText));
+}
+
 function jobElems(jobId, jobData) {
   function replaceHyphens(s) { return s.replaceAll('-', '\u2011'); }
 
@@ -241,10 +248,13 @@ function updateJobListColors() {
 function updateJobList() {
   for (const elem of Array.from(jobListBody.childNodes))
     elem.remove();
-  allJobData.forEach((jobData, jobId) => {
-    for (const elem of jobElems(jobId, jobData.tasks))
-      jobListBody.appendChild(elem);
-  });
+  const sortedJobs = Array.from(allJobData.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  sortedJobs
+    .filter(([jobId, jobData]) => jobMatchesFilter(jobId, jobData))
+    .forEach(([jobId, jobData]) => {
+      for (const elem of jobElems(jobId, jobData.tasks))
+        jobListBody.appendChild(elem);
+    });
 }
 
 function updateAllJobs(jobs) {
@@ -253,6 +263,13 @@ function updateAllJobs(jobs) {
   updateJobList();
   updateCarJobs();
 }
+
+let jobSearchTimeoutId = null;
+document.getElementById('jobSearchText').addEventListener('input', e => {
+  if (jobSearchTimeoutId)
+    clearTimeout(jobSearchTimeoutId);
+  jobSearchTimeoutId = setTimeout(updateJobList, 100);
+});
 
 /////////////////////
 // track
