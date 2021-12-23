@@ -138,6 +138,11 @@ namespace DvMod.RemoteDispatch
             Render200(context, ContentTypes.Json, await Sessions.GetUpdates(username, sessionId).ConfigureAwait(false));
         }
 
+        private static bool IsValidJunctionId(int junctionId)
+        {
+            return junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length;
+        }
+
         private static void HandleJunctionRequest(HttpListenerContext context)
         {
             var url = context.Request.Url;
@@ -148,21 +153,18 @@ namespace DvMod.RemoteDispatch
                 break;
             case 4:
                 var junctionIdString = url.Segments[2].TrimEnd('/');
-                if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle")
+                if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle" && IsValidJunctionId(junctionId))
                 {
-                    if (junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length)
+                    if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
                     {
-                        if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
-                        {
-                            RenderEmpty(context, 403);
-                            return;
-                        }
-                        Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                        var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
-                        junction.Switch(Junction.SwitchMode.REGULAR);
-                        Render200(context, ContentTypes.Json, junction.selectedBranch.ToString());
+                        RenderEmpty(context, 403);
                         return;
                     }
+                    Main.DebugLog(() => $"Toggling J-{junctionId}.");
+                    var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
+                    junction.Switch(Junction.SwitchMode.REGULAR);
+                    Render200(context, ContentTypes.Json, junction.selectedBranch.ToString());
+                    return;
                 }
                 RenderEmpty(context, 404);
                 break;
