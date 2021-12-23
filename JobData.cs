@@ -2,6 +2,7 @@ using DV.Logic.Job;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,6 +12,11 @@ namespace DvMod.RemoteDispatch
     {
         private static readonly Dictionary<TrainCar, string> jobIdForCar = InitializeJobIdForCar();
         private static Dictionary<string, Job> jobForId = new Dictionary<string, Job>();
+
+        private const JobLicenses LicensesToExport =
+          JobLicenses.Hazmat1 | JobLicenses.Hazmat2 | JobLicenses.Hazmat3 |
+          JobLicenses.Military1 | JobLicenses.Military2 | JobLicenses.Military3 |
+          JobLicenses.TrainLength1 | JobLicenses.TrainLength2;
 
         public static string? JobIdForCar(TrainCar car)
         {
@@ -65,10 +71,17 @@ namespace DvMod.RemoteDispatch
                 new JProperty("destinationTrack", data.destinationTrack?.ID?.FullDisplayID),
                 new JProperty("cars", (data.cars ?? new List<Car>()).Select(car => car.ID))
             );
+            static JArray Licenses(Job job) => JArray.FromObject(
+                Enum.GetValues(typeof(JobLicenses))
+                    .OfType<JobLicenses>()
+                    .Where(v => (job.requiredLicenses & LicensesToExport & v) != JobLicenses.Basic)
+                    .Select(v => Enum.GetName(typeof(JobLicenses), v))
+            );
             static JObject JobToJson(Job job) => new JObject(
                 new JProperty("originYardId", job.chainData.chainOriginYardId),
                 new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
-                new JProperty("tasks", FlattenMany(job.GetJobData()).Select(TaskToJson)));
+                new JProperty("tasks", FlattenMany(job.tasks.Select(task => task.GetTaskData())).Select(TaskToJson)),
+                new JProperty("requiredLicenses", Licenses(job)));
 
             // ensure cache is updated
             JobForId("");
