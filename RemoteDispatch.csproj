@@ -28,6 +28,7 @@
     <EmbeddedResource Include="icon.svg"/>
     <EmbeddedResource Include="index.html"/>
     <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
+    <EmbeddedResource Include="licenses/*.png"/>
     <EmbeddedResource Include="main.js"/>
     <EmbeddedResource Include="style.css"/>
   </ItemGroup>
