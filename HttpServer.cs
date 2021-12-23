@@ -143,7 +143,7 @@ namespace DvMod.RemoteDispatch
             return junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length;
         }
 
-        private static void HandleJunctionRequest(HttpListenerContext context)
+        private static async void HandleJunctionRequest(HttpListenerContext context)
         {
             var url = context.Request.Url;
             switch (url.Segments.Length)
@@ -160,10 +160,14 @@ namespace DvMod.RemoteDispatch
                         RenderEmpty(context, 403);
                         return;
                     }
-                    Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                    var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
-                    junction.Switch(Junction.SwitchMode.REGULAR);
-                    Render200(context, ContentTypes.Json, junction.selectedBranch.ToString());
+                    var newSelectedBranch = await Updater.RunOnMainThread(() =>
+                    {
+                        Main.DebugLog(() => $"Toggling J-{junctionId}.");
+                        var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
+                        junction.Switch(Junction.SwitchMode.REGULAR);
+                        return junction.selectedBranch;
+                    }).ConfigureAwait(false);
+                    Render200(context, ContentTypes.Json, newSelectedBranch.ToString());
                     return;
                 }
                 RenderEmpty(context, 404);
