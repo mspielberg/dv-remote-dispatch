@@ -174,13 +174,17 @@ function jobElem(jobId, jobData) {
   let row = document.createElement('tr');
   const jobIdCell = document.createElement('th'); 
   jobIdCell.setAttribute('colspan', CarsPerRow);
-  jobIdCell.classList.add(`jobList-jobHeader`);
+  jobIdCell.classList.add("jobList-jobHeader");
   jobIdCell.style.background = colorForJobId(jobId);
-  jobIdCell.textContent = jobId;
+  jobIdCell.innerHTML = `<span>${jobId}</span>`;
+  // Icons for licenses required
+  for (var license of jobData.requiredLicenses) {
+      jobIdCell.innerHTML += `<img src="res/licenses.${license}.png" title="${license}">`;
+  }
   row.appendChild(jobIdCell);
   tbody.appendChild(row);
 
-  jobData.forEach(task => {
+  jobData.tasks.forEach(task => {
     row = document.createElement('tr');
     const startTrackCell = document.createElement('th');
     startTrackCell.classList.add('interactive');
@@ -251,7 +255,7 @@ function updateJobList() {
   const sortedJobs = Array.from(allJobData.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   sortedJobs
     .filter(([jobId, jobData]) => jobMatchesFilter(jobId, jobData))
-    .forEach(([jobId, jobData]) => jobListBody.appendChild(jobElem(jobId, jobData.tasks)));
+    .forEach(([jobId, jobData]) => jobListBody.appendChild(jobElem(jobId, jobData)));
 }
 
 function updateAllJobs(jobs) {

@@ -141,13 +141,10 @@ body {
   padding-top: 5px;
   padding-bottom: 5px;
 }
-.jobList-jobHeader-FH {
-  background: lightgreen;
-}
-.jobList-jobHeader-LH {
-  background: khaki;
-}
-.jobList-jobHeader-SL,
-.jobList-jobHeader-SU {
-  background: lightcoral;
+.jobList-jobHeader img {
+  height: 1.5em;
+  float: right;
+  position: relative;
+  margin-top: -3px;
+  margin-bottom: -1em;
 }
