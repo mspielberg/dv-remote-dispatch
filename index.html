@@ -38,8 +38,11 @@
       </table>
     </div>
     <div class="leaflet-sidebar-pane" id="locoControlTab">
-      <label for="locoControlLocoId">Locomotive ID: L-</label>
-      <select id="locoControlLocoId"></select>
+      <div>
+        <label for="locoControlLocoId">L-</label>
+        <select id="locoControlLocoId"></select>
+        <span id="locoControlForwardSpeed"></span> km/h
+      </div>
       <div>
         <span class="locoControlButton" locoControlCommand="reverse"><i class="far fa-play-circle fa-flip-horizontal" title="Reverse"></i></span>
         <span class="locoControlButton" locoControlCommand="stop"><i class="far fa-stop-circle" title="Stop"></i></span>

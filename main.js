@@ -541,7 +541,7 @@ function updateLocoList() {
 
 function sendLocoCommand(e) {
   const command = e.currentTarget.getAttribute('locoControlCommand');
-  const locoId = `L-${locoIdSelect.value.padStart(3, '0')}`;
+  const locoId = `L-${locoIdSelect.value}`;
   if (allCarData.has(locoId))
     fetch(`/car/${locoId}/${command}`, { method: 'POST' });
 }
@@ -549,6 +549,18 @@ function sendLocoCommand(e) {
 for (const button of document.querySelectorAll('.locoControlButton')) {
   button.addEventListener('click', sendLocoCommand);
 }
+
+const locoSpeedDisplay = document.getElementById('locoControlForwardSpeed');
+function updateLocoSpeedDisplay() {
+  const locoId = `L-${locoIdSelect.value}`;
+  const carData = allCarData.get(locoId);
+  if (carData)
+    locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
+  else
+    locoSpeedDisplay.textContent = '';
+}
+
+setInterval(updateLocoSpeedDisplay, 1000 / 9);
 
 /////////////////////
 // cars

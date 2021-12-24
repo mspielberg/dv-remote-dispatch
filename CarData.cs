@@ -15,8 +15,9 @@ namespace DvMod.RemoteDispatch
         public readonly string? jobId;
         public readonly string? destinationYardId;
         public readonly TrainCarType carType;
+        public readonly float forwardSpeed;
 
-        public CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId, TrainCarType carType)
+        public CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId, TrainCarType carType, float forwardSpeed)
         {
             this.latlon = latlon;
             this.rotation = rotation;
@@ -24,6 +25,7 @@ namespace DvMod.RemoteDispatch
             this.jobId = jobId;
             this.destinationYardId = destinationYardId;
             this.carType = carType;
+            this.forwardSpeed = forwardSpeed;
         }
 
         public CarData(TrainCar trainCar)
@@ -33,7 +35,8 @@ namespace DvMod.RemoteDispatch
             rotation: trainCar.transform.eulerAngles.y,
             jobId: JobData.JobIdForCar(trainCar),
             destinationYardId: JobData.JobForCar(trainCar)?.chainData?.chainDestinationYardId,
-            carType: trainCar.carType)
+            carType: trainCar.carType,
+            forwardSpeed: trainCar.GetForwardSpeed())
         {
         }
 
@@ -45,7 +48,10 @@ namespace DvMod.RemoteDispatch
                 new JProperty("rotation", Math.Round(rotation, 2))
             );
             if (LocoControl.CanBeControlled(carType))
+            {
                 carObj.Add("canBeControlled", true);
+                carObj.Add("forwardSpeed", forwardSpeed * 60 * 60 / 1000);
+            }
             return carObj;
         }
 
