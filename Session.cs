@@ -39,20 +39,21 @@ namespace DvMod.RemoteDispatch
         {
             lock (allSesssionsLock)
             {
+                List<string> timedOutSessions = new List<string>();
                 foreach (var kvp in allSessions)
                 {
                     var sessionId = kvp.Key;
                     var session = kvp.Value;
                     if (session.timeSinceLastFetch.Elapsed > SessionTimeout)
-                    {
-                        Main.DebugLog(() => $"Session {sessionId} timed out");
-                        allSessions.Remove(sessionId);
-                        OnSessionEnded?.Invoke(sessionId);
-                    }
+                        timedOutSessions.Add(sessionId);
                     else
-                    {
                         session.pendingTags.Add(tag);
-                    }
+                }
+                foreach (var sessionId in timedOutSessions)
+                {
+                    Main.DebugLog(() => $"Session {sessionId} timed out");
+                    allSessions.Remove(sessionId);
+                    OnSessionEnded?.Invoke(sessionId);
                 }
             }
         }
