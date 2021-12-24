@@ -547,15 +547,16 @@ function clearLocoControlButtonHighlights() {
 locoIdSelect.addEventListener('change', clearLocoControlButtonHighlights);
 
 function sendLocoCommand(e) {
-  clearLocoControlButtonHighlights();
   const buttonSvg = e.currentTarget.querySelector('svg');
   const command = e.currentTarget.getAttribute('locoControlCommand');
   const locoId = `L-${locoIdSelect.value}`;
   if (allCarData.has(locoId)) {
     fetch(`/car/${locoId}/${command}`, { method: 'POST' })
     .then(resp => {
-      if (resp.ok)
+      if (resp.ok) {
+        clearLocoControlButtonHighlights();
         buttonSvg.setAttribute('data-prefix', 'fas');
+      }
     });
   }
 }
