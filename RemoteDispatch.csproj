@@ -4,7 +4,7 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
-    <InformationalVersion>0.4.0</InformationalVersion>
+    <InformationalVersion>0.5.0</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>

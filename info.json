@@ -2,7 +2,7 @@
   "Id": "RemoteDispatch",
   "DisplayName": "Remote Dispatch",
   "Author": "Zeibach",
-  "Version": "0.4.0",
+  "Version": "0.5.0",
   "AssemblyName": "RemoteDispatch.dll",
   "EntryMethod": "DvMod.RemoteDispatch.Main.Load",
   "HomePage": "https://www.nexusmods.com/derailvalley/mods/328",
