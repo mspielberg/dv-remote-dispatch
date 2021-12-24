@@ -528,9 +528,9 @@ const locoIdSelect = document.getElementById('locoControlLocoId');
 function updateLocoList() {
   for (const elem of Array.from(locoIdSelect.children))
     elem.remove();
-  const locoIds = Array.from(allCarData.keys())
-    .filter(id => id.startsWith("L-"))
-    .map(id => id.substring(2));
+  const locoIds = Array.from(allCarData.entries())
+    .filter(([_, carData]) => carData.canBeControlled)
+    .map(([id, _]) => id.substring(2));
   locoIds.sort();
   for (const id of locoIds) {
     const option = document.createElement('option');

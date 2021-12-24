@@ -5,9 +5,16 @@ namespace DvMod.RemoteDispatch
 {
     public static class LocoControl
     {
+        public static bool CanBeControlled(TrainCarType carType)
+        {
+            return carType == TrainCarType.LocoShunter;
+        }
+
         public static LocoControllerBase? GetLocoController(string id)
         {
-            return SingletonBehaviour<IdGenerator>.Instance.logicCarToTrainCar.Values.FirstOrDefault(c => c.ID == id)?.GetComponent<LocoControllerBase>();
+            return SingletonBehaviour<IdGenerator>.Instance.logicCarToTrainCar.Values
+                .FirstOrDefault(c => c.ID == id && CanBeControlled(c.carType))
+                ?.GetComponent<LocoControllerBase>();
         }
 
         public static void SetForward(LocoControllerBase controller)
