@@ -10,7 +10,8 @@ namespace DvMod.RemoteDispatch
     {
         public void Start()
         {
-            StartCoroutine(PublishEventsCoro());
+            StartCoroutine(CheckPlayerTransformCoro());
+            StartCoroutine(DeferredEventsCoro());
         }
 
         private static GameObject? rootObject;
@@ -34,27 +35,35 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private IEnumerator PublishEventsCoro()
+        private IEnumerator CheckPlayerTransformCoro()
         {
             while (true)
             {
                 yield return WaitFor.Seconds(0.1f);
+                PlayerData.CheckTransform();
+            }
+        }
+
+        private IEnumerator DeferredEventsCoro()
+        {
+            while (true)
+            {
                 while (taskQueue.TryDequeue(out var action))
                     action();
-                PlayerData.CheckTransform();
+                yield return null;
             }
         }
 
         private static readonly ConcurrentQueue<Action> taskQueue = new ConcurrentQueue<Action>();
 
-        public static Task<T> RunOnMainThread<T>(Func<T> action)
+        public static Task<T> RunOnMainThread<T>(Func<T> func)
         {
             var tcs = new TaskCompletionSource<T>();
             taskQueue.Enqueue(() =>
             {
                 try
                 {
-                    tcs.SetResult(action());
+                    tcs.SetResult(func());
                 }
                 catch (Exception e)
                 {
