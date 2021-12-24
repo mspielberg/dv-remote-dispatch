@@ -17,6 +17,13 @@ namespace DvMod.RemoteDispatch
                 ?.GetComponent<LocoControllerBase>();
         }
 
+        public static void SetCoast(LocoControllerBase controller)
+        {
+            controller.SetThrottle(0f);
+            controller.SetBrake(0f);
+            controller.SetIndependentBrake(0f);
+        }
+
         public static void SetForward(LocoControllerBase controller)
         {
             controller.SetThrottle(0f);

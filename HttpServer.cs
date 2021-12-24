@@ -144,6 +144,9 @@ namespace DvMod.RemoteDispatch
                 }
                 switch (segments[3])
                 {
+                case "coast":
+                    LocoControl.SetCoast(controller);
+                    break;
                 case "forward":
                     LocoControl.SetForward(controller);
                     break;

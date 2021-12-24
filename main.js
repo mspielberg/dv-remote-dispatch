@@ -539,17 +539,16 @@ function updateLocoList() {
   }
 }
 
-function sendLocoCommand(command) {
-  return function () {
-    const locoId = `L-${locoIdSelect.value.padStart(3, '0')}`;
-    if (allCarData.has(locoId))
-      fetch(`/car/${locoId}/${command}`, { method: 'POST' });
-  }
+function sendLocoCommand(e) {
+  const command = e.currentTarget.getAttribute('locoControlCommand');
+  const locoId = `L-${locoIdSelect.value.padStart(3, '0')}`;
+  if (allCarData.has(locoId))
+    fetch(`/car/${locoId}/${command}`, { method: 'POST' });
 }
 
-document.getElementById('locoControlReverseButton').addEventListener('click', sendLocoCommand('reverse'));
-document.getElementById('locoControlStopButton').addEventListener('click', sendLocoCommand('stop'));
-document.getElementById('locoControlForwardButton').addEventListener('click', sendLocoCommand('forward'));
+for (const button of document.querySelectorAll('.locoControlButton')) {
+  button.addEventListener('click', sendLocoCommand);
+}
 
 /////////////////////
 // cars

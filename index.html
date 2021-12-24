@@ -41,9 +41,10 @@
       <label for="locoControlLocoId">Locomotive ID: L-</label>
       <select id="locoControlLocoId"></select>
       <div>
-        <span id="locoControlReverseButton" class="locoControlButton"><i class="far fa-caret-square-left" title="Reverse"></i></span>
-        <span id="locoControlStopButton" class="locoControlButton"><i class="far fa-square" title="Stop"></i></span>
-        <span id="locoControlForwardButton" class="locoControlButton"><i class="far fa-caret-square-right" title="Forward"></i></span>
+        <span class="locoControlButton" locoControlCommand="reverse"><i class="far fa-play-circle fa-flip-horizontal" title="Reverse"></i></span>
+        <span class="locoControlButton" locoControlCommand="stop"><i class="far fa-stop-circle" title="Stop"></i></span>
+        <span class="locoControlButton" locoControlCommand="coast"><i class="far fa-pause-circle" title="Coast"></i></span>
+        <span class="locoControlButton" locoControlCommand="forward"><i class="far fa-play-circle" title="Forward"></i></span>
       </div>
     </div>
     <div class="leaflet-sidebar-pane" id="settingsTab">
