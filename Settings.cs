@@ -81,6 +81,7 @@ namespace DvMod.RemoteDispatch
         {
             public string name;
             public bool canToggleJunctions;
+            public bool canControlLocomotives;
 
             public PlayerPermissions()
             {
@@ -105,6 +106,11 @@ namespace DvMod.RemoteDispatch
             return permissions.Find(p => p.name == username)?.canToggleJunctions ?? false;
         }
 
+        public bool HasLocoControlPermission(string username)
+        {
+            return permissions.Find(p => p.name == username)?.canControlLocomotives ?? false;
+        }
+
         private void OnSessionStarted(string username)
         {
             if (!permissions.Any(p => p.name == username))
@@ -121,6 +127,7 @@ namespace DvMod.RemoteDispatch
             DrawNamesColumn();
             DrawConnectedColumn();
             DrawJunctionsColumn();
+            DrawLocoControlColumn();
             GUILayout.EndHorizontal();
         }
 
@@ -147,6 +154,11 @@ namespace DvMod.RemoteDispatch
         private void DrawJunctionsColumn()
         {
             DrawColumn("Junctions", p => p.canToggleJunctions = GUILayout.Toggle(p.canToggleJunctions, ""));
+        }
+
+        private void DrawLocoControlColumn()
+        {
+            DrawColumn("DE2 Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
         }
     }
 }

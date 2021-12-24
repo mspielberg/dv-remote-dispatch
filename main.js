@@ -548,11 +548,16 @@ locoIdSelect.addEventListener('change', clearLocoControlButtonHighlights);
 
 function sendLocoCommand(e) {
   clearLocoControlButtonHighlights();
-  e.currentTarget.querySelector('svg').setAttribute('data-prefix', 'fas');
+  const buttonSvg = e.currentTarget.querySelector('svg');
   const command = e.currentTarget.getAttribute('locoControlCommand');
   const locoId = `L-${locoIdSelect.value}`;
-  if (allCarData.has(locoId))
-    fetch(`/car/${locoId}/${command}`, { method: 'POST' });
+  if (allCarData.has(locoId)) {
+    fetch(`/car/${locoId}/${command}`, { method: 'POST' })
+    .then(resp => {
+      if (resp.ok)
+        buttonSvg.setAttribute('data-prefix', 'fas');
+    });
+  }
 }
 
 for (const button of document.querySelectorAll('.locoControlButton')) {

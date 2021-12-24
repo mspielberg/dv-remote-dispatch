@@ -147,6 +147,11 @@ namespace DvMod.RemoteDispatch
                     RenderEmpty(context, 404);
                     return;
                 }
+                if (!Main.settings.permissions.HasLocoControlPermission(context.User.Identity.Name))
+                {
+                    RenderEmpty(context, 403);
+                    return;
+                }
                 await Updater.RunOnMainThread(() => LocoControl.RunCommand(controller, segments[3])).ConfigureAwait(false);
                 RenderEmpty(context, 204);
             }
