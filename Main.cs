@@ -52,9 +52,11 @@ namespace DvMod.RemoteDispatch
                 if (Main.settings.startServerOnLoad)
                     HttpServer.Create();
                 Updater.Create();
+                CarUpdater.Start();
             }
             else
             {
+                CarUpdater.Stop();
                 Updater.Destroy();
                 HttpServer.Destroy();
                 harmony.UnpatchAll(modEntry.Info.Id);

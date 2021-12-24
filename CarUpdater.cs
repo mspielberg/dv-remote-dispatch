@@ -26,13 +26,19 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        static CarUpdater()
+        public static void Start()
         {
             CarSpawner.CarSpawned += OnCarsChanged;
             CarSpawner.CarAboutToBeDeleted += OnCarsChanged;
         }
 
-        private static void OnCarsChanged(TrainCar _)
+        public static void Stop()
+        {
+            CarSpawner.CarSpawned -= OnCarsChanged;
+            CarSpawner.CarAboutToBeDeleted -= OnCarsChanged;
+        }
+
+        private static void OnCarsChanged(TrainCar trainCar)
         {
             Sessions.AddTag("cars");
         }
