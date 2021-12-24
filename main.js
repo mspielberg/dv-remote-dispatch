@@ -178,10 +178,22 @@ function jobElem(jobId, jobData) {
   jobIdCell.style.background = colorForJobId(jobId);
   jobIdCell.innerHTML = `<span>${jobId}</span>`;
   // Icons for licenses required
-  for (var license of jobData.requiredLicenses) {
+  for (const license of jobData.requiredLicenses) {
       jobIdCell.innerHTML += `<img src="res/licenses.${license}.png" title="${license}">`;
   }
   row.appendChild(jobIdCell);
+  tbody.appendChild(row);
+
+  row = document.createElement('tr');
+  jobMassCell = document.createElement('th');
+  jobMassCell.textContent = `${jobData.mass.toFixed(0)} t`;
+  jobLengthCell = document.createElement('th');
+  jobLengthCell.textContent = `${jobData.length.toFixed(0)} m`;
+  jobPaymentCell = document.createElement('th');
+  jobPaymentCell.textContent =
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+    .format(jobData.basePayment);
+  row.append(jobMassCell, jobLengthCell, jobPaymentCell);
   tbody.appendChild(row);
 
   jobData.tasks.forEach(task => {

@@ -71,17 +71,32 @@ namespace DvMod.RemoteDispatch
                 new JProperty("destinationTrack", data.destinationTrack?.ID?.FullDisplayID),
                 new JProperty("cars", (data.cars ?? new List<Car>()).Select(car => car.ID))
             );
-            static JArray Licenses(Job job) => JArray.FromObject(
+            static JArray RequiredLicenses(Job job) => JArray.FromObject(
                 Enum.GetValues(typeof(JobLicenses))
                     .OfType<JobLicenses>()
                     .Where(v => (job.requiredLicenses & LicensesToExport & v) != JobLicenses.Basic)
                     .Select(v => Enum.GetName(typeof(JobLicenses), v))
             );
-            static JObject JobToJson(Job job) => new JObject(
-                new JProperty("originYardId", job.chainData.chainOriginYardId),
-                new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
-                new JProperty("tasks", FlattenMany(job.tasks.Select(task => task.GetTaskData())).Select(TaskToJson)),
-                new JProperty("requiredLicenses", Licenses(job)));
+            static float TotalLength(TaskData task) => task.cars.Sum(car => car.length);
+            static float TotalMass(TaskData task) => task.cars.Sum(car => car.carOnlyMass)
+                + ((task.cargoTypePerCar == null)
+                ? 0f
+                : task.cars.Zip(task.cargoTypePerCar, (car, cargoType) => car.capacity * CargoTypes.GetCargoUnitMass(cargoType)).Sum());
+
+            static JObject JobToJson(Job job)
+            {
+                var flattenedTasks = FlattenMany(job.tasks.Select(task => task.GetTaskData())).ToArray();
+                var mainTask = job.jobType == JobType.ShuntingLoad ? flattenedTasks.Last() : flattenedTasks.First();
+                var length = TotalLength(mainTask);
+                return new JObject(
+                    new JProperty("originYardId", job.chainData.chainOriginYardId),
+                    new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
+                    new JProperty("tasks", flattenedTasks.Select(TaskToJson)),
+                    new JProperty("requiredLicenses", RequiredLicenses(job)),
+                    new JProperty("length", TotalLength(mainTask)),
+                    new JProperty("mass", TotalMass(mainTask) / 1000),
+                    new JProperty("basePayment", job.GetBasePaymentForTheJob()));
+            }
 
             // ensure cache is updated
             JobForId("");
