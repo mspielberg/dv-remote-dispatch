@@ -539,7 +539,16 @@ function updateLocoList() {
   }
 }
 
+function clearLocoControlButtonHighlights() {
+  for (const svg of document.querySelectorAll('.locoControlButton svg[data-prefix="fas"]'))
+    svg.setAttribute('data-prefix', 'far');
+}
+
+locoIdSelect.addEventListener('change', clearLocoControlButtonHighlights);
+
 function sendLocoCommand(e) {
+  clearLocoControlButtonHighlights();
+  e.currentTarget.querySelector('svg').setAttribute('data-prefix', 'fas');
   const command = e.currentTarget.getAttribute('locoControlCommand');
   const locoId = `L-${locoIdSelect.value}`;
   if (allCarData.has(locoId))
