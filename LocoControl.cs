@@ -49,5 +49,29 @@ namespace DvMod.RemoteDispatch
             controller.SetIndependentBrake(1f);
             controller.SetReverser(0f);
         }
+
+        public static bool IsSupportedCommand(string command)
+        {
+            return command == "coast" || command == "forward" || command == "reverse" || command == "stop";
+        }
+
+        public static void RunCommand(LocoControllerBase controller, string command)
+        {
+            switch (command)
+            {
+                case "coast":
+                    SetCoast(controller);
+                    break;
+                case "forward":
+                    SetForward(controller);
+                    break;
+                case "reverse":
+                    SetReverse(controller);
+                    break;
+                case "stop":
+                    SetStop(controller);
+                    break;
+            }
+        }
     }
 }

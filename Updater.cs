@@ -56,6 +56,24 @@ namespace DvMod.RemoteDispatch
 
         private static readonly ConcurrentQueue<Action> taskQueue = new ConcurrentQueue<Action>();
 
+        public static Task RunOnMainThread(Action action)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            taskQueue.Enqueue(() =>
+            {
+                try
+                {
+                    action();
+                    tcs.SetResult(true);
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            });
+            return tcs.Task;
+        }
+
         public static Task<T> RunOnMainThread<T>(Func<T> func)
         {
             var tcs = new TaskCompletionSource<T>();

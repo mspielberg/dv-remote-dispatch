@@ -125,7 +125,7 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        private static void HandleCarRequest(HttpListenerContext context)
+        private static async void HandleCarRequest(HttpListenerContext context)
         {
             var segments = context.Request.Url.Segments;
             if (segments.Length == 2 && context.Request.HttpMethod == "GET")
@@ -135,6 +135,11 @@ namespace DvMod.RemoteDispatch
             }
             if (segments.Length == 4 && context.Request.HttpMethod == "POST")
             {
+                if (!LocoControl.IsSupportedCommand(segments[3]))
+                {
+                    RenderEmpty(context, 404);
+                    return;
+                }
                 var carId = segments[2].TrimEnd('/');
                 var controller = LocoControl.GetLocoController(carId);
                 if (controller == null)
@@ -142,24 +147,7 @@ namespace DvMod.RemoteDispatch
                     RenderEmpty(context, 404);
                     return;
                 }
-                switch (segments[3])
-                {
-                case "coast":
-                    LocoControl.SetCoast(controller);
-                    break;
-                case "forward":
-                    LocoControl.SetForward(controller);
-                    break;
-                case "reverse":
-                    LocoControl.SetReverse(controller);
-                    break;
-                case "stop":
-                    LocoControl.SetStop(controller);
-                    break;
-                default:
-                    RenderEmpty(context, 404);
-                    return;
-                }
+                await Updater.RunOnMainThread(() => LocoControl.RunCommand(controller, segments[3])).ConfigureAwait(false);
                 RenderEmpty(context, 204);
             }
             RenderEmpty(context, 404);
