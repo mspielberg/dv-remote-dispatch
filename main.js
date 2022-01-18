@@ -176,11 +176,15 @@ function jobElem(jobId, jobData) {
   jobIdCell.setAttribute('colspan', CarsPerRow);
   jobIdCell.classList.add("jobList-jobHeader");
   jobIdCell.style.background = colorForJobId(jobId);
-  jobIdCell.innerHTML = `<span>${jobId}</span>`;
-  // Icons for licenses required
+  jobIdCell.textContent = jobId;
+
+  jobLicensesDiv = document.createElement('div');
+  jobLicensesDiv.classList.add('jobList-licenses');
   for (const license of jobData.requiredLicenses) {
-      jobIdCell.innerHTML += `<img src="res/licenses.${license}.png" title="${license}">`;
+      jobLicensesDiv.innerHTML += `<span class="jobList-license"><div class="jobList-licenseBackground"></div><img src="res/licenses.${license}.png" title="${license}"></span>`;
   }
+  jobIdCell.appendChild(jobLicensesDiv);
+
   row.appendChild(jobIdCell);
   tbody.appendChild(row);
 
