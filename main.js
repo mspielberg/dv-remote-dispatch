@@ -372,7 +372,7 @@ function createTrackLabels(trackId, coords) {
   }
 }
 
-const tracksReady = fetch('/track')
+const tracksReady = fetch(new URL('/track', location))
 .then(resp => resp.json())
 .then(tracks => {
   Object.entries(tracks).forEach(([trackId, coords]) => {
@@ -393,7 +393,7 @@ const tracksReady = fetch('/track')
 
 let junctions = [];
 const junctionsReady = tracksReady
-.then(_ => fetch('/junction'))
+.then(_ => fetch(new URL('/junction', location)))
 .then(resp => resp.json())
 .then(allJunctionData =>
   junctions = allJunctionData.map((data, index) => ({
@@ -403,7 +403,7 @@ const junctionsReady = tracksReady
 );
 
 function toggleJunction(junctionId) {
-  fetch(`/junction/${junctionId}/toggle`, { method: 'POST' })
+  fetch(new URL(`/junction/${junctionId}/toggle`, location), { method: 'POST' })
   .then(resp => resp.json())
   .then(selectedBranch => updateJunctionOverlay(junctionId, selectedBranch))
   .catch(err => {});
@@ -530,7 +530,7 @@ function scrollToTrack(trackId) {
     map.panTo(polyLine.getCenter());
 }
 
-fetch('/player')
+fetch(new URL('/player', location))
 .then(resp => resp.json())
 .then(playerData => {
   createPlayerMarker(playerData);
@@ -567,7 +567,7 @@ function sendLocoCommand(e) {
   const command = e.currentTarget.getAttribute('locoControlCommand');
   const locoId = `L-${locoIdSelect.value}`;
   if (allCarData.has(locoId)) {
-    fetch(`/car/${locoId}/${command}`, { method: 'POST' })
+    fetch(new URL(`/car/${locoId}/${command}`, location), { method: 'POST' })
     .then(resp => {
       if (resp.ok) {
         clearLocoControlButtonHighlights();
@@ -749,7 +749,7 @@ let updateStart;
 
 function updateOnce() {
   updateStart = performance.now();
-  return fetch(`/updates/${sessionId}`)
+  return fetch(new URL(`/updates/${sessionId}`, location))
   .then(resp => resp.json())
   .then(updateData => {
     Object.entries(updateData).forEach(([tag, data]) => {
