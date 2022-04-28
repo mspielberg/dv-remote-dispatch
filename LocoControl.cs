@@ -5,6 +5,8 @@ namespace DvMod.RemoteDispatch
 {
     public static class LocoControl
     {
+        public const float CouplerRange = 0.5f;
+
         public static bool CanBeControlled(TrainCarType carType)
         {
             return carType == TrainCarType.LocoShunter;
