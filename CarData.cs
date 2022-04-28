@@ -15,9 +15,8 @@ namespace DvMod.RemoteDispatch
         public readonly string? jobId;
         public readonly string? destinationYardId;
         public readonly TrainCarType carType;
-        public readonly float forwardSpeed;
 
-        public CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId, TrainCarType carType, float forwardSpeed)
+        protected CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId, TrainCarType carType)
         {
             this.latlon = latlon;
             this.rotation = rotation;
@@ -25,34 +24,29 @@ namespace DvMod.RemoteDispatch
             this.jobId = jobId;
             this.destinationYardId = destinationYardId;
             this.carType = carType;
-            this.forwardSpeed = forwardSpeed;
         }
 
-        public CarData(TrainCar trainCar)
-        : this(
-            trainCar.InterCouplerDistance,
-            latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
-            rotation: trainCar.transform.eulerAngles.y,
-            jobId: JobData.JobIdForCar(trainCar),
-            destinationYardId: JobData.JobForCar(trainCar)?.chainData?.chainDestinationYardId,
-            carType: trainCar.carType,
-            forwardSpeed: trainCar.GetForwardSpeed())
+        public static CarData From(TrainCar trainCar)
         {
+            if (LocoControl.CanBeControlled(trainCar.carType))
+                return new ControllableLocoData(trainCar);
+
+            return new CarData(
+                trainCar.InterCouplerDistance,
+                latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
+                rotation: trainCar.transform.eulerAngles.y,
+                jobId: JobData.JobIdForCar(trainCar),
+                destinationYardId: JobData.JobForCar(trainCar)?.chainData?.chainDestinationYardId,
+                carType: trainCar.carType);
         }
 
-        public JObject ToJson()
+        public virtual JObject ToJson()
         {
-            var carObj = new JObject(
+            return new JObject(
                 new JProperty("length", (int)length),
                 new JProperty("position", latlon.ToJson()),
                 new JProperty("rotation", Math.Round(rotation, 2))
             );
-            if (LocoControl.CanBeControlled(carType))
-            {
-                carObj.Add("canBeControlled", true);
-                carObj.Add("forwardSpeed", forwardSpeed * 60 * 60 / 1000);
-            }
-            return carObj;
         }
 
         public static string GetAllCarDataJson()
@@ -67,7 +61,7 @@ namespace DvMod.RemoteDispatch
             {
                 return SingletonBehaviour<IdGenerator>.Instance
                     .logicCarToTrainCar
-                    .ToDictionary(kvp => kvp.Key.ID, kvp => new CarData(kvp.Value));
+                    .ToDictionary(kvp => kvp.Key.ID, kvp => From(kvp.Value));
             }).Result;
         }
 
@@ -78,13 +72,66 @@ namespace DvMod.RemoteDispatch
                 var trainset = Trainset.allSets.Find(set => set.id == id);
                 if (trainset == null)
                     return new Dictionary<string, JObject>();
-                return trainset.cars.ToDictionary(car => car.ID, car => new CarData(car).ToJson());
+                return trainset.cars.ToDictionary(car => car.ID, car => From(car).ToJson());
             }).Result;
         }
 
         public static string GetTrainsetDataJson(int id)
         {
             return JsonConvert.SerializeObject(GetTrainsetData(id));
+        }
+    }
+
+    public class ControllableLocoData : CarData
+    {
+        public readonly bool canCouple;
+        public readonly bool isSlipping;
+        public readonly int carsInFront;
+        public readonly int carsInRear;
+        public readonly float brakePipe;
+        public readonly float forwardSpeed;
+        public readonly float independentBrake;
+        public readonly float reverser;
+        public readonly float throttle;
+        public readonly float trainBrake;
+
+        public ControllableLocoData(TrainCar trainCar)
+        : base(
+            trainCar.InterCouplerDistance,
+            latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
+            rotation: trainCar.transform.eulerAngles.y,
+            jobId: JobData.JobIdForCar(trainCar),
+            destinationYardId: JobData.JobForCar(trainCar)?.chainData?.chainDestinationYardId,
+            carType: trainCar.carType)
+        {
+            LocoControllerBase controller = trainCar.GetComponent<LocoControllerBase>();
+            canCouple = controller.IsCouplerInRange(LocoControl.CouplerRange);
+            isSlipping = controller.IsWheelslipping();
+            carsInFront = controller.GetNumberOfCarsInFront();
+            carsInRear = controller.GetNumberOfCarsInRear();
+            forwardSpeed = trainCar.GetForwardSpeed();
+            independentBrake = controller.independentBrake;
+            trainBrake = controller.brake;
+            reverser = controller.reverser;
+            throttle = controller.throttle;
+            brakePipe = trainCar.brakeSystem.brakePipePressure;
+        }
+
+        override public JObject ToJson()
+        {
+            var carObj = base.ToJson();
+            carObj.Add("canBeControlled", true);
+            carObj.Add("canCouple", canCouple);
+            carObj.Add("isSlipping", isSlipping);
+            carObj.Add("carsInFront", carsInFront);
+            carObj.Add("carsInRear", carsInRear);
+            carObj.Add("forwardSpeed", forwardSpeed * 60 * 60 / 1000);
+            carObj.Add("reverser", reverser);
+            carObj.Add("independentBrake", independentBrake);
+            carObj.Add("trainBrake", trainBrake);
+            carObj.Add("throttle", throttle);
+            carObj.Add("brakePipe", brakePipe);
+            return carObj;
         }
     }
 }
