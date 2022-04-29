@@ -581,17 +581,34 @@ for (const button of document.querySelectorAll('.locoControlButton')) {
   button.addEventListener('click', sendLocoCommand);
 }
 
-const locoSpeedDisplay = document.getElementById('locoControlForwardSpeed');
-function updateLocoSpeedDisplay() {
-  const locoId = `L-${locoIdSelect.value}`;
-  const carData = allCarData.get(locoId);
-  if (carData)
-    locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
-  else
-    locoSpeedDisplay.textContent = '';
+function updateReverserButtons(reverser) {
+  const reverseButton = document.querySelector('#locoControlReverserReverseButton svg');
+  reverseButton.setAttribute('data-prefix', reverser < 0 ? 'fas' : 'far');
+  const forwardButton = document.querySelector('#locoControlReverserForwardButton svg');
+  forwardButton.setAttribute('data-prefix', reverser > 0 ? 'fas' : 'far');
 }
 
-setInterval(updateLocoSpeedDisplay, 1000 / 9);
+const locoBrakePipeDisplay = document.getElementById('locoControlBrakePipe');
+const locoSpeedDisplay = document.getElementById('locoControlForwardSpeed');
+const locoTrainBrakeInput = document.getElementById('locoControlTrainBrakeInput');
+const locoIndependentBrakeInput = document.getElementById('locoControlIndependentBrakeInput');
+const locoReverserReverseButton = document.getElementById('locoControlReverserReverseButton');
+const locoReverserForwardButton = document.getElementById('locoControlReverserForwardButton');
+const locoThrottleInput = document.getElementById('locoControlThrottleInput');
+function updateLocoDisplay() {
+  const locoId = `L-${locoIdSelect.value}`;
+  const carData = allCarData.get(locoId);
+  if (carData) {
+    locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
+    locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
+    locoTrainBrakeInput.value = carData.trainBrake * 100;
+    locoIndependentBrakeInput.value = carData.independentBrake * 100;
+    updateReverserButtons(carData.reverser);
+    locoThrottleInput.value = carData.throttle * 100;
+  }
+}
+
+setInterval(updateLocoDisplay, 1000 / 9);
 
 /////////////////////
 // cars

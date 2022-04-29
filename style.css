@@ -169,8 +169,11 @@ body {
   z-index: 1;
 }
 
+#locoControlLocoId {
+  width: 4em;
+}
 .locoControlButton {
-  font-size: 36pt;
+  font-size: 16pt;
   cursor: pointer;
 }
 .locoControlButton:hover {
