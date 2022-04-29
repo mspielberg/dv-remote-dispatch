@@ -42,14 +42,32 @@
       <div>
         <label for="locoControlLocoId">L-</label>
         <select id="locoControlLocoId"></select>
+        <span id="locoControlBrakePipe"></span> bar
         <span id="locoControlForwardSpeed"></span> km/h
       </div>
       <div>
+        <label for="locoControlTrainBrakeInput">Train Brk</label>
+        <input id="locoControlTrainBrakeInput" type="range">
+      </div>
+      <div>
+        <label for="locoControlIndependentBrakeInput">Indep Brk</label>
+        <input id="locoControlIndependentBrakeInput" type="range">
+      </div>
+      <div>
+        <label>Reverser</label>
+        <span id="locoControlReverserReverseButton" class="locoControlButton" locoControlCommand="reverse"><i class="far fa-play-circle fa-flip-horizontal" title="Reverse"></i></span>
+        <span id="locoControlReverserForwardButton" class="locoControlButton" locoControlCommand="forward"><i class="far fa-play-circle" title="Forward"></i></span>
+      </div>
+      <div>
+        <label for="locoControlThrottleInput">Throttle</label>
+        <input id="locoControlThrottleInput" type="range">
+      </div>
+      <!--div>
         <span class="locoControlButton" locoControlCommand="reverse"><i class="far fa-play-circle fa-flip-horizontal" title="Reverse"></i></span>
         <span class="locoControlButton" locoControlCommand="stop"><i class="far fa-stop-circle" title="Stop"></i></span>
         <span class="locoControlButton" locoControlCommand="coast"><i class="far fa-pause-circle" title="Coast"></i></span>
         <span class="locoControlButton" locoControlCommand="forward"><i class="far fa-play-circle" title="Forward"></i></span>
-      </div>
+      </div-->
     </div>
     <div class="leaflet-sidebar-pane" id="settingsTab">
       <table>
