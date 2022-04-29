@@ -172,6 +172,10 @@ body {
 #locoControlLocoId {
   width: 4em;
 }
+#locoControlControls label {
+  display: inline-block;
+  width: 5em;
+}
 .locoControlButton {
   font-size: 16pt;
   cursor: pointer;
