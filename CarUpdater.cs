@@ -8,6 +8,11 @@ namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
+        public static void MarkCarAsDirty(TrainCar car)
+        {
+            Sessions.AddTag($"carguid-{car.CarGUID}");
+        }
+
         public static void MarkTrainsetAsDirty(Trainset trainset)
         {
             Sessions.AddTag($"trainset-{trainset.id}");
@@ -18,9 +23,7 @@ namespace DvMod.RemoteDispatch
         {
             public static void Postfix(TrainCar __instance)
             {
-                if (__instance.logicCar == null)
-                    return;
-                if (__instance.isStationary)
+                if (__instance.logicCar == null || __instance.isStationary)
                     return;
                 MarkTrainsetAsDirty(__instance.trainset);
             }

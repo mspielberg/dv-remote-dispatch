@@ -55,6 +55,22 @@ namespace DvMod.RemoteDispatch
                 GetAllCarData().ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson()));
         }
 
+        public static JObject? GetCarGuidDataJson(string guid)
+        {
+            var (carId, carData) = Updater.RunOnMainThread(() =>
+            {
+                var car = SingletonBehaviour<IdGenerator>.Instance.GetTrainCarByCarGuid(guid);
+                if (car == null)
+                    return default;
+                return (car.ID, From(car));
+            }).Result;
+            if (carId == default)
+                return null;
+            var obj = carData.ToJson();
+            obj.Add("id", carId);
+            return obj;
+        }
+
         public static Dictionary<string, CarData> GetAllCarData()
         {
             return Updater.RunOnMainThread(() =>

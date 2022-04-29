@@ -787,6 +787,7 @@ function updateOnce() {
         const segments = tag.split('-');
         switch (segments[0]) {
         case 'trainset': updateCars(data); break;
+        case 'carguid': updateCar(data.id, data); break;
         }
       }
     });
