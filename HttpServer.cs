@@ -88,40 +88,40 @@ namespace DvMod.RemoteDispatch
 
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
-            case "car":
-                HandleCarRequest(context);
-                break;
-            case "job":
-                Render200(context, ContentTypes.Json, JobData.GetAllJobDataJson());
-                break;
-            case "junction":
-                HandleJunctionRequest(context);
-                break;
-            case "junctionState":
-                Render200(context, ContentTypes.Json, Junctions.GetJunctionStateJSON());
-                break;
-            case "player":
-                var playerJson = PlayerData.GetPlayerDataJson();
-                if (playerJson != null)
-                    Render200(context, ContentTypes.Json, playerJson);
-                else
-                    RenderEmpty(context, 500);
-                break;
-            case "res":
-                RenderResource(context);
-                break;
-            case "track":
-                Render200(context, ContentTypes.Json, await RailTracks.GetTrackPointJSON().ConfigureAwait(false));
-                break;
-            case "trainset":
-                HandleTrainsetRequest(context);
-                break;
-            case "updates":
-                await HandleUpdatesRequest(context).ConfigureAwait(false);
-                break;
-            default:
-                RenderEmpty(context, 404);
-                break;
+                case "car":
+                    HandleCarRequest(context);
+                    break;
+                case "job":
+                    Render200(context, ContentTypes.Json, JobData.GetAllJobDataJson());
+                    break;
+                case "junction":
+                    HandleJunctionRequest(context);
+                    break;
+                case "junctionState":
+                    Render200(context, ContentTypes.Json, Junctions.GetJunctionStateJSON());
+                    break;
+                case "player":
+                    var playerJson = PlayerData.GetPlayerDataJson();
+                    if (playerJson != null)
+                        Render200(context, ContentTypes.Json, playerJson);
+                    else
+                        RenderEmpty(context, 500);
+                    break;
+                case "res":
+                    RenderResource(context);
+                    break;
+                case "track":
+                    Render200(context, ContentTypes.Json, await RailTracks.GetTrackPointJSON().ConfigureAwait(false));
+                    break;
+                case "trainset":
+                    HandleTrainsetRequest(context);
+                    break;
+                case "updates":
+                    await HandleUpdatesRequest(context).ConfigureAwait(false);
+                    break;
+                default:
+                    RenderEmpty(context, 404);
+                    break;
             }
         }
 
@@ -181,33 +181,33 @@ namespace DvMod.RemoteDispatch
             var url = context.Request.Url;
             switch (url.Segments.Length)
             {
-            case 2:
-                Render200(context, ContentTypes.Json, Junctions.GetJunctionPointJSON());
-                break;
-            case 4:
-                var junctionIdString = url.Segments[2].TrimEnd('/');
-                if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle" && IsValidJunctionId(junctionId))
-                {
-                    if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
+                case 2:
+                    Render200(context, ContentTypes.Json, Junctions.GetJunctionPointJSON());
+                    break;
+                case 4:
+                    var junctionIdString = url.Segments[2].TrimEnd('/');
+                    if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle" && IsValidJunctionId(junctionId))
                     {
-                        RenderEmpty(context, 403);
+                        if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
+                        {
+                            RenderEmpty(context, 403);
+                            return;
+                        }
+                        var newSelectedBranch = await Updater.RunOnMainThread(() =>
+                        {
+                            Main.DebugLog(() => $"Toggling J-{junctionId}.");
+                            var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
+                            junction.Switch(Junction.SwitchMode.REGULAR);
+                            return junction.selectedBranch;
+                        }).ConfigureAwait(false);
+                        Render200(context, ContentTypes.Json, newSelectedBranch.ToString());
                         return;
                     }
-                    var newSelectedBranch = await Updater.RunOnMainThread(() =>
-                    {
-                        Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                        var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
-                        junction.Switch(Junction.SwitchMode.REGULAR);
-                        return junction.selectedBranch;
-                    }).ConfigureAwait(false);
-                    Render200(context, ContentTypes.Json, newSelectedBranch.ToString());
-                    return;
-                }
-                RenderEmpty(context, 404);
-                break;
-            default:
-                RenderEmpty(context, 404);
-                break;
+                    RenderEmpty(context, 404);
+                    break;
+                default:
+                    RenderEmpty(context, 404);
+                    break;
             }
         }
 
@@ -273,7 +273,8 @@ namespace DvMod.RemoteDispatch
             public const string Png = "image/png";
             public const string Svg = "image/svg+xml";
 
-            public static string ForExtension(string extension) {
+            public static string ForExtension(string extension)
+            {
                 return extension switch
                 {
                     ".css" => Css,

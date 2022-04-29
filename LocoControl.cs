@@ -96,7 +96,7 @@ namespace DvMod.RemoteDispatch
                 {
                     if (__instance is LocoControllerShunter
                         && !ApproximatelyEqual(__instance.brake, nextTargetBrake))
-                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                        CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
                 }
             }
             [HarmonyPatch(typeof(LocoControllerBase), nameof(LocoControllerBase.SetIndependentBrake))]
@@ -106,7 +106,7 @@ namespace DvMod.RemoteDispatch
                 {
                     if (__instance is LocoControllerShunter
                         && !ApproximatelyEqual(__instance.independentBrake, nextTargetIndependentBrake))
-                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                        CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
                 }
             }
             [HarmonyPatch(typeof(LocoControllerBase), nameof(LocoControllerBase.SetReverser))]
@@ -116,7 +116,7 @@ namespace DvMod.RemoteDispatch
                 {
                     if (__instance is LocoControllerShunter
                         && !ApproximatelyEqual(__instance.reverser, position))
-                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                        CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
                 }
             }
             [HarmonyPatch(typeof(LocoControllerShunter), nameof(LocoControllerShunter.SetThrottle))]
@@ -125,7 +125,7 @@ namespace DvMod.RemoteDispatch
                 public static void Prefix(LocoControllerShunter __instance, float throttleLever)
                 {
                     if (!ApproximatelyEqual(__instance.throttle, throttleLever))
-                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                        CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
                 }
             }
         }
