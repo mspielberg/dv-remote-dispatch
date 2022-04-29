@@ -1,8 +1,10 @@
 using DV.Logic.Job;
 using HarmonyLib;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
@@ -22,61 +24,32 @@ namespace DvMod.RemoteDispatch
                 ?.GetComponent<LocoControllerBase>();
         }
 
-        public static void SetCoast(LocoControllerBase controller)
+        public static bool RunCommand(LocoControllerBase controller, NameValueCollection queryString)
         {
-            controller.SetThrottle(0f);
-            controller.SetBrake(0f);
-            controller.SetIndependentBrake(0f);
-        }
-
-        public static void SetForward(LocoControllerBase controller)
-        {
-            controller.SetThrottle(0f);
-            controller.SetBrake(0f);
-            controller.SetIndependentBrake(0f);
-            controller.SetReverser(1f);
-            controller.SetThrottle(0.4f);
-        }
-
-        public static void SetReverse(LocoControllerBase controller)
-        {
-            controller.SetThrottle(0f);
-            controller.SetBrake(0f);
-            controller.SetIndependentBrake(0f);
-            controller.SetReverser(-1f);
-            controller.SetThrottle(0.4f);
-        }
-
-        public static void SetStop(LocoControllerBase controller)
-        {
-            controller.SetThrottle(0f);
-            controller.SetBrake(1f);
-            controller.SetIndependentBrake(1f);
-            controller.SetReverser(0f);
-        }
-
-        public static bool IsSupportedCommand(string command)
-        {
-            return command == "coast" || command == "forward" || command == "reverse" || command == "stop";
-        }
-
-        public static void RunCommand(LocoControllerBase controller, string command)
-        {
-            switch (command)
+            for (int i = 0; i < queryString.Count; i++)
             {
-                case "coast":
-                    SetCoast(controller);
-                    break;
-                case "forward":
-                    SetForward(controller);
-                    break;
-                case "reverse":
-                    SetReverse(controller);
-                    break;
-                case "stop":
-                    SetStop(controller);
-                    break;
+                if (!float.TryParse(queryString.Get(i), out var value))
+                    return false;
+                var key = queryString.GetKey(i);
+                switch (key)
+                {
+                    case "trainBrake":
+                        controller.SetBrake(Mathf.Clamp01(value));
+                        break;
+                    case "independentBrake":
+                        controller.SetIndependentBrake(Mathf.Clamp01(value));
+                        break;
+                    case "reverser":
+                        controller.SetReverser(Mathf.Clamp(value, -1, 1));
+                        break;
+                    case "throttle":
+                        controller.SetThrottle(Mathf.Clamp01(value));
+                        break;
+                    default:
+                        return false;
+                }
             }
+            return true;
         }
 
         public static class ControllerUpdatePatches
@@ -96,7 +69,9 @@ namespace DvMod.RemoteDispatch
                 {
                     if (__instance is LocoControllerShunter
                         && !ApproximatelyEqual(__instance.brake, nextTargetBrake))
+                    {
                         CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                    }
                 }
             }
             [HarmonyPatch(typeof(LocoControllerBase), nameof(LocoControllerBase.SetIndependentBrake))]
@@ -106,7 +81,9 @@ namespace DvMod.RemoteDispatch
                 {
                     if (__instance is LocoControllerShunter
                         && !ApproximatelyEqual(__instance.independentBrake, nextTargetIndependentBrake))
+                    {
                         CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                    }
                 }
             }
             [HarmonyPatch(typeof(LocoControllerBase), nameof(LocoControllerBase.SetReverser))]
@@ -116,7 +93,9 @@ namespace DvMod.RemoteDispatch
                 {
                     if (__instance is LocoControllerShunter
                         && !ApproximatelyEqual(__instance.reverser, position))
+                    {
                         CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                    }
                 }
             }
             [HarmonyPatch(typeof(LocoControllerShunter), nameof(LocoControllerShunter.SetThrottle))]
@@ -125,7 +104,9 @@ namespace DvMod.RemoteDispatch
                 public static void Prefix(LocoControllerShunter __instance, float throttleLever)
                 {
                     if (!ApproximatelyEqual(__instance.throttle, throttleLever))
+                    {
                         CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                    }
                 }
             }
         }

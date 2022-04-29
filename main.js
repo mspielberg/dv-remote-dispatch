@@ -555,30 +555,8 @@ function updateLocoList() {
   }
 }
 
-function clearLocoControlButtonHighlights() {
-  for (const svg of document.querySelectorAll('.locoControlButton svg[data-prefix="fas"]'))
-    svg.setAttribute('data-prefix', 'far');
-}
-
-locoIdSelect.addEventListener('change', clearLocoControlButtonHighlights);
-
-function sendLocoCommand(e) {
-  const buttonSvg = e.currentTarget.querySelector('svg');
-  const command = e.currentTarget.getAttribute('locoControlCommand');
-  const locoId = `L-${locoIdSelect.value}`;
-  if (allCarData.has(locoId)) {
-    fetch(new URL(`/car/${locoId}/${command}`, location), { method: 'POST' })
-    .then(resp => {
-      if (resp.ok) {
-        clearLocoControlButtonHighlights();
-        buttonSvg.setAttribute('data-prefix', 'fas');
-      }
-    });
-  }
-}
-
-for (const button of document.querySelectorAll('.locoControlButton')) {
-  button.addEventListener('click', sendLocoCommand);
+function isReverserButtonActive(faButton) {
+  return faButton.querySelector('svg').getAttribute('data-prefix') == 'fas';
 }
 
 function updateReverserButtons(reverser) {
@@ -595,6 +573,7 @@ const locoIndependentBrakeInput = document.getElementById('locoControlIndependen
 const locoReverserReverseButton = document.getElementById('locoControlReverserReverseButton');
 const locoReverserForwardButton = document.getElementById('locoControlReverserForwardButton');
 const locoThrottleInput = document.getElementById('locoControlThrottleInput');
+
 function updateLocoDisplay() {
   const locoId = `L-${locoIdSelect.value}`;
   const carData = allCarData.get(locoId);
@@ -608,7 +587,27 @@ function updateLocoDisplay() {
   }
 }
 
+locoIdSelect.addEventListener('change', updateLocoDisplay);
 setInterval(updateLocoDisplay, 1000 / 9);
+
+function sendLocoCommand(command) {
+  const locoId = `L-${locoIdSelect.value}`;
+  if (allCarData.has(locoId)) {
+    fetch(new URL(`/car/${locoId}/control?${command}`, location), { method: 'POST' });
+  }
+}
+
+function rangeCommandSender(parameter) {
+  return e => sendLocoCommand(`${parameter}=${e.target.value / 100}`);
+}
+
+locoTrainBrakeInput.addEventListener('input', rangeCommandSender('trainBrake'));
+locoIndependentBrakeInput.addEventListener('input', rangeCommandSender('independentBrake'));
+locoReverserReverseButton.addEventListener('click', e =>
+  sendLocoCommand(`reverser=${isReverserButtonActive(locoReverserReverseButton) ? 0 : -1}`));
+locoReverserForwardButton.addEventListener('click', e =>
+  sendLocoCommand(`reverser=${isReverserButtonActive(locoReverserForwardButton) ? 0 : 1}`));
+locoThrottleInput.addEventListener('input', rangeCommandSender('throttle'));
 
 /////////////////////
 // cars
