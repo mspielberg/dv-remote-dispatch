@@ -85,14 +85,30 @@ namespace DvMod.RemoteDispatch
             return success ? new string[1] { awaitedTag } : new string[0];
         }
 
-        private static JObject GetUpdateForTrainset(string tag)
+        private static JObject? GetUpdateForCarGuid(string carGuid)
         {
-            var segments = tag.Split('-');
-            var trainsetId = segments[1];
+            return CarData.GetCarGuidDataJson(carGuid);
+        }
+
+        private static JObject GetUpdateForTrainset(string trainsetId)
+        {
             return JObject.FromObject(CarData.GetTrainsetData(int.Parse(trainsetId)));
         }
 
-        private static JToken GetUpdateForTag(string tag)
+        private static JToken? GetUpdateForSplitTag(string tag)
+        {
+            var index = tag.IndexOf('-');
+            var tagType = tag.Substring(0, index);
+            var tagId = tag.Substring(index + 1);
+            return tagType switch
+            {
+                "carguid" => GetUpdateForCarGuid(tagId),
+                "trainset" => GetUpdateForTrainset(tagId),
+                _ => throw new NotImplementedException($"Unexpected update tag {tag}"),
+            };
+        }
+
+        private static JToken? GetUpdateForTag(string tag)
         {
             return tag switch
             {
@@ -100,7 +116,8 @@ namespace DvMod.RemoteDispatch
                 "jobs" => JObject.FromObject(JobData.GetAllJobData()),
                 "junctions" => new JArray(Junctions.GetAllJunctionStates()),
                 "player" => PlayerData.GetPlayerData(),
-                var other => GetUpdateForTrainset(other),
+                _ when tag.Contains('-') => GetUpdateForSplitTag(tag),
+                _ => throw new NotImplementedException($"Unexpected update tag {tag}"),
             };
         }
 

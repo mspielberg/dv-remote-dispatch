@@ -1,5 +1,8 @@
 using DV.Logic.Job;
+using HarmonyLib;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace DvMod.RemoteDispatch
 {
@@ -73,6 +76,57 @@ namespace DvMod.RemoteDispatch
                 case "stop":
                     SetStop(controller);
                     break;
+            }
+        }
+
+        public static class ControllerUpdatePatches
+        {
+            private static bool ApproximatelyEqual(float a, float b, float epsilon = 0.01f)
+            {
+                if (a == b)
+                    return true;
+                float diff = a - b;
+                return diff >= -epsilon && diff <= epsilon;
+            }
+
+            [HarmonyPatch(typeof(LocoControllerBase), nameof(LocoControllerBase.SetBrake))]
+            public static class SetBrakePatch
+            {
+                public static void Prefix(LocoControllerBase __instance, float nextTargetBrake)
+                {
+                    if (__instance is LocoControllerShunter
+                        && !ApproximatelyEqual(__instance.brake, nextTargetBrake))
+                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                }
+            }
+            [HarmonyPatch(typeof(LocoControllerBase), nameof(LocoControllerBase.SetIndependentBrake))]
+            public static class SetIndependentBrakePatch
+            {
+                public static void Prefix(LocoControllerBase __instance, float nextTargetIndependentBrake)
+                {
+                    if (__instance is LocoControllerShunter
+                        && !ApproximatelyEqual(__instance.independentBrake, nextTargetIndependentBrake))
+                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                }
+            }
+            [HarmonyPatch(typeof(LocoControllerBase), nameof(LocoControllerBase.SetReverser))]
+            public static class UpdatePatch
+            {
+                public static void Prefix(LocoControllerBase __instance, float position)
+                {
+                    if (__instance is LocoControllerShunter
+                        && !ApproximatelyEqual(__instance.reverser, position))
+                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                }
+            }
+            [HarmonyPatch(typeof(LocoControllerShunter), nameof(LocoControllerShunter.SetThrottle))]
+            public static class ThrottleUpdatePatch
+            {
+                public static void Prefix(LocoControllerShunter __instance, float throttleLever)
+                {
+                    if (!ApproximatelyEqual(__instance.throttle, throttleLever))
+                       CarUpdater.MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                }
             }
         }
     }
