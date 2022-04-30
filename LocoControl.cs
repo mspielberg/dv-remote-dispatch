@@ -45,6 +45,12 @@ namespace DvMod.RemoteDispatch
                     case "throttle":
                         controller.SetThrottle(Mathf.Clamp01(value));
                         break;
+                    case "couple":
+                        controller.RemoteControllerCouple();
+                        break;
+                    case "uncouple":
+                        controller.Uncouple((int)value);
+                        break;
                     default:
                         return false;
                 }
