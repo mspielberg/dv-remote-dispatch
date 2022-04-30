@@ -573,6 +573,34 @@ const locoIndependentBrakeInput = document.getElementById('locoControlIndependen
 const locoReverserReverseButton = document.getElementById('locoControlReverserReverseButton');
 const locoReverserForwardButton = document.getElementById('locoControlReverserForwardButton');
 const locoThrottleInput = document.getElementById('locoControlThrottleInput');
+const locoControlCoupleButton = document.getElementById('locoControlCoupleButton');
+const locoControlUncoupleButton = document.getElementById('locoControlUncoupleButton');
+const locoControlUncoupleSelect = document.getElementById('locoControlUncoupleSelect');
+
+function updateCouplingControls(carData) {
+  const canCouple = carData.canCouple;
+  const carsInFront = carData.carsInFront;
+  const carsInRear = carData.carsInRear;
+
+  locoControlCoupleButton.disabled = !canCouple;
+  locoControlUncoupleButton.disabled = carsInFront == 0 && carsInRear && 0;
+
+  if (locoControlUncoupleSelect.childElementCount == carsInFront + carsInRear) {
+    return;
+  }
+
+  const options = [];
+  for (let i = carsInFront; i >= 1; i--)
+    options.push(i);
+  for (let i = 1; i <= -carsInRear; i++)
+    options.push(-i);
+  locoControlUncoupleSelect.replaceChildren(...options.map(i => {
+    const option = document.createElement('option');
+    option.setAttribute('value', i);
+    option.textContent = i >= 0 ? `\u002b${i}` : `\u2212${-i}`;
+    return option;
+  }));
+}
 
 function updateLocoDisplay() {
   const locoId = `L-${locoIdSelect.value}`;
@@ -584,6 +612,7 @@ function updateLocoDisplay() {
     locoIndependentBrakeInput.value = carData.independentBrake * 100;
     updateReverserButtons(carData.reverser);
     locoThrottleInput.value = carData.throttle * 100;
+    updateCouplingControls(carData);
   }
 }
 
@@ -608,6 +637,10 @@ locoReverserReverseButton.addEventListener('click', e =>
 locoReverserForwardButton.addEventListener('click', e =>
   sendLocoCommand(`reverser=${isReverserButtonActive(locoReverserForwardButton) ? 0 : 1}`));
 locoThrottleInput.addEventListener('input', rangeCommandSender('throttle'));
+locoControlCoupleButton.addEventListener('click', e =>
+  sendLocoCommand('couple=0'));
+locoControlUncoupleButton.addEventListener('click', e =>
+  sendLocoCommand(`uncouple=${locoControlUncoupleSelect.value}`));
 
 /////////////////////
 // cars
