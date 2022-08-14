@@ -561,9 +561,14 @@ function isReverserButtonActive(faButton) {
 
 function updateReverserButtons(reverser) {
   const reverseButton = document.querySelector('#locoControlReverserReverseButton svg');
-  reverseButton.setAttribute('data-prefix', reverser < 0 ? 'fas' : 'far');
+  const newReverseStyle = reverser < 0 ? 'fas' : 'far';
+  if (reverseButton.getAttribute('data-prefix') != newReverseStyle)
+    reverseButton.setAttribute('data-prefix', newReverseStyle);
+
   const forwardButton = document.querySelector('#locoControlReverserForwardButton svg');
-  forwardButton.setAttribute('data-prefix', reverser > 0 ? 'fas' : 'far');
+  const newForwardStyle = reverser > 0 ? 'fas' : 'far';
+  if (forwardButton.getAttribute('data-prefix') != newForwardStyle)
+    forwardButton.setAttribute('data-prefix', newForwardStyle);
 }
 
 const locoBrakePipeDisplay = document.getElementById('locoControlBrakePipe');
