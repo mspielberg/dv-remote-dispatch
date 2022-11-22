@@ -546,7 +546,7 @@ function updateLocoList() {
     elem.remove();
   const locoIds = Array.from(allCarData.entries())
     .filter(([_, carData]) => carData.canBeControlled)
-    .map(([id, _]) => id.substring(2));
+    .map(([id, _]) => id.slice(2));
   locoIds.sort();
   for (const id of locoIds) {
     const option = document.createElement('option');
@@ -614,7 +614,7 @@ function getCarColor(carId) {
   case 'destination':
     return jobId ? colorForJobDestination(jobId) : 'gray';
   case 'carType':
-    return colorByHashing(carId.substring(0,3));
+    return colorByHashing(carId.slice(0,3));
   }
 }
 
@@ -632,20 +632,20 @@ function updateAllCarColors() {
 const locoShapeNoseDepth = 10;
 
 function createCarShape(carId, carData) {
-  const isSpecial = carId.indexOf('-') > 0;
+  const isLoco = carId.slice(0,2) == 'L-';
   const lengthPx = carData.length * svgPixelsPerMeter;
-  const svg = isSpecial
+  const svg = isLoco
     ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-locoShapeNoseDepth},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-locoShapeNoseDepth},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
     : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
   return svg;
 }
 
 function createCarLabel(carId, carData) {
-  const isSpecial = carId.indexOf('-') > 0;
+  const isLoco = carId.slice(0,2) == 'L-';
   const jobId = carJobIds.get(carId);
   const lengthPx = carData.length * svgPixelsPerMeter;
   const rotation = carData.rotation >= 180 ? 'rotate(180)' : '';
-  if (isSpecial)
+  if (isLoco)
     return `<text transform="translate(-3 0) ${rotation}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
   const jobIdLabel =
     !jobId ? ""
@@ -654,8 +654,8 @@ function createCarLabel(carId, carData) {
   const jobIdText = `<text x="${-lengthPx/2 + 5}" transform="${rotation}" dominant-baseline="central" font-size="16">${jobIdLabel}</text>`
   const carIdText =
     `<text y="-0.5em" y="1" transform="${rotation} translate(${lengthPx/2 - 5})" dominant-baseline="central" text-anchor="end" font-size="8" font-family="monospace" font-weight="bold">` +
-      `<tspan x="0">${carId.slice(0,3)}</tspan>` +
-      `<tspan x="0" dy="1em">${carId.slice(3)}</tspan>` +
+      `<tspan x="0">${carId.slice(0,-3).replaceAll('-', '')}</tspan>` +
+      `<tspan x="0" dy="1em">${carId.slice(-3)}</tspan>` +
     '</text>';
   return jobIdText + carIdText;
 }
