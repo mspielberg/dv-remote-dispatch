@@ -126,10 +126,10 @@ namespace DvMod.RemoteDispatch
             carsInFront = controller.GetNumberOfCarsInFront();
             carsInRear = controller.GetNumberOfCarsInRear();
             forwardSpeed = trainCar.GetForwardSpeed();
-            independentBrake = controller.independentBrake;
-            trainBrake = controller.brake;
+            independentBrake = controller.GetTargetIndependentBrake();
+            trainBrake = controller.GetTargetBrake();
             reverser = controller.reverser;
-            throttle = controller.throttle;
+            throttle = controller.GetTargetThrottle();
             brakePipe = trainCar.brakeSystem.brakePipePressure;
         }
 

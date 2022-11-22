@@ -607,16 +607,51 @@ function updateCouplingControls(carData) {
   }));
 }
 
+function getControlledLocoId() {
+  return `L-${locoIdSelect.value}`;
+}
+
+function getControlledLocoData() {
+  return allCarData.get(getControlledLocoId());
+}
+
+let locoTrainBrakeEditing = false;
+let locoIndependentBrakeEditing = false;
+let locoThrottleEditing = false;
+
+function updateLocoTrainBrakeInput(carData) {
+  if (locoTrainBrakeEditing)
+    return;
+  if (!carData)
+    carData = getControlledLocoData();
+  locoTrainBrakeInput.value = carData.trainBrake * 100;
+}
+
+function updateLocoIndependentBrakeInput(carData) {
+  if (locoIndependentBrakeEditing)
+    return;
+  if (!carData)
+    carData = getControlledLocoData();
+  locoIndependentBrakeInput.value = carData.independentBrake * 100;
+}
+
+function updateLocoThrottleInput(carData) {
+  if (locoThrottleEditing)
+    return;
+  if (!carData)
+    carData = getControlledLocoData();
+  locoThrottleInput.value = carData.throttle * 100;
+}
+
 function updateLocoDisplay() {
-  const locoId = `L-${locoIdSelect.value}`;
-  const carData = allCarData.get(locoId);
+  const carData = getControlledLocoData();
   if (carData) {
     locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
     locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
-    locoTrainBrakeInput.value = carData.trainBrake * 100;
-    locoIndependentBrakeInput.value = carData.independentBrake * 100;
+    updateLocoTrainBrakeInput(carData);
+    updateLocoIndependentBrakeInput(carData);
     updateReverserButtons(carData.reverser);
-    locoThrottleInput.value = carData.throttle * 100;
+    updateLocoThrottleInput(carData);
     updateCouplingControls(carData);
   }
 }
@@ -646,6 +681,23 @@ locoControlCoupleButton.addEventListener('click', e =>
   sendLocoCommand('couple=0'));
 locoControlUncoupleButton.addEventListener('click', e =>
   sendLocoCommand(`uncouple=${locoControlUncoupleSelect.value}`));
+
+locoTrainBrakeInput.addEventListener("mousedown", () => locoTrainBrakeEditing = true);
+locoTrainBrakeInput.addEventListener("mouseup", () => {
+  locoTrainBrakeEditing = false;
+  updateLocoTrainBrakeInput();
+});
+locoIndependentBrakeInput.addEventListener("mousedown", () => locoIndependentBrakeEditing = true);
+locoIndependentBrakeInput.addEventListener("mouseup", () => {
+  locoIndependentBrakeEditing = false;
+  updateLocoIndependentBrakeInput();
+});
+locoThrottleInput.addEventListener("mousedown", () => locoThrottleEditing = true);
+locoThrottleInput.addEventListener("mouseup", () => {
+  locoThrottleEditing = false;
+  updateLocoThrottleInput();
+});
+
 
 /////////////////////
 // cars
