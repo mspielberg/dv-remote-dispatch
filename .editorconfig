@@ -1,0 +1,3 @@
+[*.cs]
+csharp_indent_switch_labels = false
+dotnet_diagnostic.RCS1197.severity = none

@@ -33,26 +33,26 @@ namespace DvMod.RemoteDispatch
                 var key = queryString.GetKey(i);
                 switch (key)
                 {
-                    case "trainBrake":
-                        controller.SetBrake(Mathf.Clamp01(value));
-                        break;
-                    case "independentBrake":
-                        controller.SetIndependentBrake(Mathf.Clamp01(value));
-                        break;
-                    case "reverser":
-                        controller.SetReverser(Mathf.Clamp(value, -1, 1));
-                        break;
-                    case "throttle":
-                        controller.SetThrottle(Mathf.Clamp01(value));
-                        break;
-                    case "couple":
-                        controller.RemoteControllerCouple();
-                        break;
-                    case "uncouple":
-                        controller.Uncouple((int)value);
-                        break;
-                    default:
-                        return false;
+                case "trainBrake":
+                    controller.SetBrake(Mathf.Clamp01(value));
+                    break;
+                case "independentBrake":
+                    controller.SetIndependentBrake(Mathf.Clamp01(value));
+                    break;
+                case "reverser":
+                    controller.SetReverser(Mathf.Clamp(value, -1, 1));
+                    break;
+                case "throttle":
+                    controller.SetThrottle(Mathf.Clamp01(value));
+                    break;
+                case "couple":
+                    controller.RemoteControllerCouple();
+                    break;
+                case "uncouple":
+                    controller.Uncouple((int)value);
+                    break;
+                default:
+                    return false;
                 }
             }
             return true;
