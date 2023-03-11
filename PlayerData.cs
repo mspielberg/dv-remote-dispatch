@@ -36,9 +36,12 @@ namespace DvMod.RemoteDispatch
         public static JObject GetPlayerData()
         {
             CheckTransform();
-            return new JObject(
+            return new JObject(new JProperty("players", new JArray(new JObject(
+                new JProperty("id", "player"),
+                new JProperty("color", "aqua"),
                 new JProperty("position", previousPosition.ToLatLon().ToJson()),
-                new JProperty("rotation", Math.Round(previousRotation, 2)));
+                new JProperty("rotation", Math.Round(previousRotation, 2)))
+            )));
         }
 
         public static string GetPlayerDataJson()

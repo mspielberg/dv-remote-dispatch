@@ -38,7 +38,7 @@ function stopFollowing() {
 
 map.addEventListener('zoomhome', () => {
   stopFollowing();
-  map.setView(playerMarker.getBounds().getCenter(), initialZoom);
+  map.setView(playerMarkers.values().next().value.getBounds().getCenter(), initialZoom);
 });
 
 /////////////////////
@@ -491,36 +491,55 @@ function followCar(carId, shouldScroll) {
 /////////////////////
 // player
 
-let playerMarker;
+let playerMarkers = new Map();
 
 function getPlayerOverlayBounds(position) {
   const size = metersToDegrees * 2;
   return [ [ position[0] - size, position[1] - size], [position[0] + size, position[1] + size] ];
 }
 
-function updatePlayerOverlay(playerData) {
-  const polygonElem = document.getElementById("playerPolygon");
-  polygonElem.setAttribute('transform', `rotate(${playerData.rotation})`);
-  playerMarker.setBounds(getPlayerOverlayBounds(playerData.position));
+function updatePlayerOverlays(data) {
+  let existingPlayerIds = Array.from(playerMarkers.keys());
+  // Remove markers from disconnected players
+  existingPlayerIds
+  .filter(id => !data.players.some(player => player.id === id))
+  .forEach(id => {
+    removePlayerOverlay(id);
+  });
+  // Add markers for new players
+  data.players
+  .filter(playerData => !existingPlayerIds.includes(playerData.id))
+  .forEach(playerData => {
+    createPlayerMarker(playerData);
+  });
+  data.players.forEach(playerData => {
+    const polygonElem = document.getElementById(`playerPolygon-${playerData.id}`);
+    polygonElem.setAttribute('transform', `rotate(${playerData.rotation})`);
+    playerMarkers.get(playerData.id).setBounds(getPlayerOverlayBounds(playerData.position));
+  });
 }
 
-function createPlayerOverlay() {
+function removePlayerOverlay(id) {
+  document.getElementById(`playerPolygon-${id}`)?.remove();
+  playerMarkers.delete(id);
+}
+
+function createPlayerOverlay(playerData) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', 'player');
+  svg.setAttribute('id', `player-${playerData.id}`);
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.setAttribute('viewBox', `-10 -10 20 20`);
-  svg.innerHTML = '<polygon id="playerPolygon" fill="aqua" fill-opacity="70%" stroke="black" stroke-width="1%" points="0,-10 10,10 0,5 -10,10"/>';
+  svg.innerHTML = `<polygon id="playerPolygon-${playerData.id}" fill="${playerData.color}" fill-opacity="70%" stroke="black" stroke-width="1%" points="0,-10 10,10 0,5 -10,10"/>`;
   return svg;
 }
 
 function createPlayerMarker(playerData) {
-  playerMarker = L.svgOverlay(
-    createPlayerOverlay(),
+  playerMarkers.set(playerData.id, L.svgOverlay(
+    createPlayerOverlay(playerData),
     getPlayerOverlayBounds(playerData.position),
     { interactive: true, bubblingMouseEvents: false })
     .addEventListener('click', e => setMarkerToFollow(e.target))
-    .addTo(map);
-  updatePlayerOverlay(playerData);
+    .addTo(map));
 }
 
 function scrollToTrack(trackId) {
@@ -532,9 +551,9 @@ function scrollToTrack(trackId) {
 
 fetch(new URL('/player', location))
 .then(resp => resp.json())
-.then(playerData => {
-  createPlayerMarker(playerData);
-  map.setView(playerData.position, initialZoom)
+.then(data => {
+  updatePlayerOverlays(data);
+  map.setView(data.players[0].position, initialZoom);
 });
 
 /////////////////////
@@ -870,7 +889,7 @@ function updateOnce() {
         updateAllJunctions(data);
         break;
       case 'player':
-        updatePlayerOverlay(data);
+        updatePlayerOverlays(data);
         break;
       default:
         const segments = tag.split('-');
