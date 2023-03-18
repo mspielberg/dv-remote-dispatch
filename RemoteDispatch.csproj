@@ -18,7 +18,7 @@
     <Reference Include="DV.BrakeSystem"/>
     <Reference Include="DV.PointSet"/>
     <Reference Include="DV.Utils"/>
-    <Reference Include="Newtonsoft.JSON"/>
+    <Reference Include="Newtonsoft.Json"/>
     <Reference Include="UnityEngine.CoreModule"/>
     <Reference Include="UnityEngine.IMGUIModule"/>
     <Reference Include="UnityModManager"/>
