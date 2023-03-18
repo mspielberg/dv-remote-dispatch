@@ -20,7 +20,7 @@ const zoomHome = new L.Control.ZoomHome({
   position: 'topleft',
   zoomInText: '<i class="fas fa-search-plus"></i>',
   zoomHomeText: '<i class="fas fa-user"></i>',
-  zoomHomeTitle: 'Zoom to player',
+  zoomHomeTitle: 'Zoom to player(s)',
   zoomOutText: '<i class="fas fa-search-minus"></i>',
 }).addTo(map);
 
@@ -36,9 +36,15 @@ function stopFollowing() {
   markerToFollow = null;
 }
 
+function zoomToAllPlayers() {
+  const bounds = new L.LatLngBounds();
+  playerMarkers.forEach(marker => bounds.extend(marker.getBounds()));
+  map.fitBounds(bounds, { maxZoom: initialZoom });
+}
+
 map.addEventListener('zoomhome', () => {
   stopFollowing();
-  map.setView(playerMarkers.values().next().value.getBounds().getCenter(), initialZoom);
+  zoomToAllPlayers();
 });
 
 /////////////////////
@@ -491,7 +497,7 @@ function followCar(carId, shouldScroll) {
 /////////////////////
 // player
 
-let playerMarkers = new Map();
+const playerMarkers = new Map();
 
 function getPlayerOverlayBounds(position) {
   const size = metersToDegrees * 2;
@@ -499,23 +505,23 @@ function getPlayerOverlayBounds(position) {
 }
 
 function updatePlayerOverlays(data) {
-  let existingPlayerIds = Array.from(playerMarkers.keys());
+  const existingPlayerIds = Array.from(playerMarkers.keys());
   // Remove markers from disconnected players
   existingPlayerIds
-  .filter(id => !data.players.some(player => player.id === id))
+  .filter(id => !data.hasOwnProperty(id))
   .forEach(id => {
     removePlayerOverlay(id);
   });
   // Add markers for new players
-  data.players
-  .filter(playerData => !existingPlayerIds.includes(playerData.id))
-  .forEach(playerData => {
-    createPlayerMarker(playerData);
+  Object.entries(data)
+  .filter(([id]) => !existingPlayerIds.includes(id))
+  .forEach(([id, playerData]) => {
+    createPlayerMarker(id, playerData);
   });
-  data.players.forEach(playerData => {
-    const polygonElem = document.getElementById(`playerPolygon-${playerData.id}`);
+  Object.entries(data).forEach(([id, playerData]) => {
+    const polygonElem = document.getElementById(`playerPolygon-${id}`);
     polygonElem.setAttribute('transform', `rotate(${playerData.rotation})`);
-    playerMarkers.get(playerData.id).setBounds(getPlayerOverlayBounds(playerData.position));
+    playerMarkers.get(id).setBounds(getPlayerOverlayBounds(playerData.position));
   });
 }
 
@@ -524,18 +530,23 @@ function removePlayerOverlay(id) {
   playerMarkers.delete(id);
 }
 
-function createPlayerOverlay(playerData) {
+function createPlayerOverlay(id, playerData) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', `player-${playerData.id}`);
-  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.setAttribute('viewBox', `-10 -10 20 20`);
-  svg.innerHTML = `<polygon id="playerPolygon-${playerData.id}" fill="${playerData.color}" fill-opacity="70%" stroke="black" stroke-width="1%" points="0,-10 10,10 0,5 -10,10"/>`;
+  svg.setAttribute('viewBox', '-10 -10 20 20');
+  const polygon = document.createElementNS(svg.namespaceURI, 'polygon');
+  polygon.setAttribute('id', `playerPolygon-${id}`);
+  polygon.setAttribute('fill', playerData.color);
+  polygon.setAttribute('fill-opacity', '70%');
+  polygon.setAttribute('stroke', 'black');
+  polygon.setAttribute('stroke-width', '1%');
+  polygon.setAttribute('points', '0,-10 10,10 0,5 -10,10');
+  svg.appendChild(polygon);
   return svg;
 }
 
-function createPlayerMarker(playerData) {
-  playerMarkers.set(playerData.id, L.svgOverlay(
-    createPlayerOverlay(playerData),
+function createPlayerMarker(id, playerData) {
+  playerMarkers.set(id, L.svgOverlay(
+    createPlayerOverlay(id, playerData),
     getPlayerOverlayBounds(playerData.position),
     { interactive: true, bubblingMouseEvents: false })
     .addEventListener('click', e => setMarkerToFollow(e.target))
@@ -553,7 +564,7 @@ fetch(new URL('/player', location))
 .then(resp => resp.json())
 .then(data => {
   updatePlayerOverlays(data);
-  map.setView(data.players[0].position, initialZoom);
+  zoomToAllPlayers();
 });
 
 /////////////////////
