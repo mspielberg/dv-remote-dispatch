@@ -25,7 +25,7 @@ namespace DvMod.RemoteDispatch
             serverPort = configFile.Bind("Server", "Port", (ushort)7245, new ConfigDescription("Network port to listen on", new AcceptableValueRange<ushort>(1024, 49151)));
             serverPassword = configFile.Bind("Server", "Password", "", "The password required to connect to the server");
             startServerOnLoad = configFile.Bind("Server", "Start on Load", false, "Whether the server should start automatically when the game loads");
-            permissions = configFile.Bind("Server", "Permissions", new Permissions(), new ConfigDescription("Permissions for each user", null, new ConfigurationManagerAttributes { CustomDrawer = _ => permissions?.Value?.Draw() }));
+            permissions = configFile.Bind("Server", "Permissions", new Permissions(), new ConfigDescription("Permissions for each user", null, new ConfigurationManagerAttributes { CustomDrawer = _ => permissions?.Value?.Draw(this) }));
             configFile.Bind("Server", "Start Server", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { CustomDrawer = DrawStartStop, HideDefaultButton = true, ReadOnly = true }));
             enableLogging = configFile.Bind("Debug", "Logging", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { IsAdvanced = true }));
         }
@@ -51,20 +51,13 @@ namespace DvMod.RemoteDispatch
         }
     }
 
-    [Serializable]
     public class Permissions
     {
-        [Serializable]
         public class PlayerPermissions
         {
-            public string name;
+            public readonly string name;
             public bool canToggleJunctions;
             public bool canControlLocomotives;
-
-            public PlayerPermissions()
-            {
-                name = "";
-            }
 
             public PlayerPermissions(string name)
             {
@@ -98,14 +91,18 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        public void Draw()
+        public void Draw(Settings settings)
         {
+            GUILayout.BeginVertical();
             GUILayout.BeginHorizontal("box", GUILayout.ExpandWidth(false));
             DrawNamesColumn();
             DrawConnectedColumn();
             DrawJunctionsColumn();
             DrawLocoControlColumn();
             GUILayout.EndHorizontal();
+            if (GUILayout.Button("Save Permissions"))
+                settings.permissions.OnSettingChanged(this);
+            GUILayout.EndVertical();
         }
 
         private void DrawColumn(string label, Action<PlayerPermissions> action)
@@ -138,14 +135,28 @@ namespace DvMod.RemoteDispatch
             DrawColumn("Locomotive Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
         }
 
-        public static string ConvertToString(object obj, Type _)
+        public static string ConvertToString(object? obj, Type _)
         {
-            return JsonConvert.SerializeObject(obj);
+            return obj == null ? string.Empty : JsonConvert.SerializeObject(obj);
         }
 
         public static object ConvertToObject(string str, Type _)
         {
-            return JsonConvert.DeserializeObject<Permissions>(str) ?? new Permissions();
+            if (string.IsNullOrEmpty(str))
+                return new Permissions();
+
+            try
+            {
+                Permissions? perms = JsonConvert.DeserializeObject<Permissions>(str);
+                if (perms != null)
+                    return perms;
+            }
+            catch (Exception)
+            {
+                Main.DebugLog(() => $"Failed to deserialize permissions: {str}");
+            }
+
+            return new Permissions();
         }
     }
 }

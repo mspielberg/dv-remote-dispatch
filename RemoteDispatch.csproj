@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Krafs.Publicizer" Version="2.2.1"/>
     <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
+    <Publicize Include="BepInEx:BepInEx.Configuration.ConfigEntryBase.OnSettingChanged"/>
   </ItemGroup>
 
   <ItemGroup>
