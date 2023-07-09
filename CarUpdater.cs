@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
+using DV.Utils;
 
 namespace DvMod.RemoteDispatch
 {
@@ -31,14 +32,23 @@ namespace DvMod.RemoteDispatch
 
         public static void Start()
         {
-            CarSpawner.CarSpawned += OnCarsChanged;
-            CarSpawner.CarAboutToBeDeleted += OnCarsChanged;
+            CarSpawner carSpawner = SingletonBehaviour<CarSpawner>.Instance;
+            if (carSpawner == null)
+            {
+                Main.DebugLog(() => $"Tried to start {nameof(CarUpdater)} before {nameof(CarSpawner)} was initialized!");
+                return;
+            }
+            carSpawner.CarSpawned += OnCarsChanged;
+            carSpawner.CarAboutToBeDeleted += OnCarsChanged;
         }
 
         public static void Stop()
         {
-            CarSpawner.CarSpawned -= OnCarsChanged;
-            CarSpawner.CarAboutToBeDeleted -= OnCarsChanged;
+            CarSpawner carSpawner = SingletonBehaviour<CarSpawner>.Instance;
+            if (carSpawner == null)
+                return;
+            carSpawner.CarSpawned -= OnCarsChanged;
+            carSpawner.CarAboutToBeDeleted -= OnCarsChanged;
         }
 
         private static void OnCarsChanged(TrainCar trainCar)

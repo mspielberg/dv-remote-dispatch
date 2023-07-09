@@ -1,82 +1,60 @@
-using System.Linq;
-using UnityModManagerNet;
-using UnityEngine;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using BepInEx.Configuration;
+using Newtonsoft.Json;
+using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
-    public class Settings : UnityModManager.ModSettings
+    public class Settings
     {
-        public int serverPort = 7245;
-        public string serverPassword = "";
-        public bool startServerOnLoad = false;
-        public Permissions permissions = new Permissions();
-        public bool enableLogging = false;
+        public readonly ConfigEntry<ushort> serverPort;
+        public readonly ConfigEntry<string> serverPassword;
+        public readonly ConfigEntry<bool> startServerOnLoad;
+        public readonly ConfigEntry<Permissions> permissions;
+        public readonly ConfigEntry<bool> enableLogging;
 
-        public readonly string? version = Main.mod?.Info.Version;
-
-        const char EnDash = '\u2013';
-        private string uncommittedPort = "initial";
-        private string message = "";
-
-        public void Draw()
+        public Settings(ConfigFile configFile)
         {
-            GUILayout.BeginVertical(GUILayout.ExpandWidth(false));
-
-            if (uncommittedPort == "initial")
-                uncommittedPort = serverPort.ToString();
-
-            GUILayout.Label($"Network port (1024{EnDash}65535)");
-            uncommittedPort = GUILayout.TextField(uncommittedPort, maxLength: 5);
-            uncommittedPort = new string(uncommittedPort.Where(c => char.IsDigit(c)).ToArray());
-            bool isValidPort = int.TryParse(uncommittedPort, out var parsed) && parsed >= 1024 && parsed <= 65535;
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Start", GUILayout.ExpandWidth(false)))
-            {
-                if (isValidPort)
-                {
-                    serverPort = parsed;
-                    HttpServer.Create();
-                }
-                else
-                {
-                    message = "Invalid port";
-                }
-            }
-
-            if (GUILayout.Button("Stop", GUILayout.ExpandWidth(false)))
-            {
-                HttpServer.Destroy();
-                message = "";
-            }
-
-            GUILayout.Label(message);
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Password (blank for none)");
-            serverPassword = GUILayout.TextField(serverPassword);
-            GUILayout.EndHorizontal();
-
-            startServerOnLoad = GUILayout.Toggle(startServerOnLoad, "Start server on load");
-
-            permissions.Draw();
-
-            enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
-
-            GUILayout.EndVertical();
+            if (!TomlTypeConverter.CanConvert(typeof(Permissions)))
+                TomlTypeConverter.AddConverter(typeof(Permissions), new TypeConverter {
+                    ConvertToObject = Permissions.ConvertToObject,
+                    ConvertToString = Permissions.ConvertToString
+                });
+            serverPort = configFile.Bind("Server", "Port", (ushort)7245, new ConfigDescription("Network port to listen on", new AcceptableValueRange<ushort>(1024, 49151)));
+            serverPassword = configFile.Bind("Server", "Password", "", "The password required to connect to the server");
+            startServerOnLoad = configFile.Bind("Server", "Start on Load", false, "Whether the server should start automatically when the game loads");
+            permissions = configFile.Bind("Server", "Permissions", new Permissions(), new ConfigDescription("Permissions for each user", null, new ConfigurationManagerAttributes { CustomDrawer = _ => permissions?.Value?.Draw() }));
+            configFile.Bind("Server", "Start Server", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { CustomDrawer = DrawStartStop, HideDefaultButton = true, ReadOnly = true }));
+            enableLogging = configFile.Bind("Debug", "Logging", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { IsAdvanced = true }));
         }
 
-        override public void Save(UnityModManager.ModEntry entry)
+        private static void DrawStartStop(ConfigEntryBase _)
         {
-            Save<Settings>(this, entry);
+            if (!WorldStreamingInit.isLoaded)
+            {
+                GUILayout.Label("Waiting for session");
+                return;
+            }
+
+            if (!HttpServer.IsRunning())
+            {
+                if (GUILayout.Button("Start", GUILayout.ExpandWidth(false)))
+                    HttpServer.Create();
+            }
+            else
+            {
+                if (GUILayout.Button("Stop", GUILayout.ExpandWidth(false)))
+                    HttpServer.Destroy();
+            }
         }
     }
 
+    [Serializable]
     public class Permissions
     {
+        [Serializable]
         public class PlayerPermissions
         {
             public string name;
@@ -122,7 +100,6 @@ namespace DvMod.RemoteDispatch
 
         public void Draw()
         {
-            GUILayout.Label("Dispatcher permissions:");
             GUILayout.BeginHorizontal("box", GUILayout.ExpandWidth(false));
             DrawNamesColumn();
             DrawConnectedColumn();
@@ -135,7 +112,7 @@ namespace DvMod.RemoteDispatch
         {
             GUILayout.BeginVertical();
             GUILayout.Label(label);
-            foreach (var p in permissions)
+            foreach (PlayerPermissions? p in permissions)
                 action(p);
             GUILayout.EndVertical();
         }
@@ -147,7 +124,7 @@ namespace DvMod.RemoteDispatch
 
         private void DrawConnectedColumn()
         {
-            var connectedUsers = Sessions.GetUsersWithActiveSessions();
+            HashSet<string> connectedUsers = Sessions.GetUsersWithActiveSessions();
             DrawColumn("Connected", p => GUILayout.Toggle(connectedUsers.Contains(p.name), ""));
         }
 
@@ -158,7 +135,17 @@ namespace DvMod.RemoteDispatch
 
         private void DrawLocoControlColumn()
         {
-            DrawColumn("DE2 Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
+            DrawColumn("Locomotive Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
+        }
+
+        public static string ConvertToString(object obj, Type _)
+        {
+            return JsonConvert.SerializeObject(obj);
+        }
+
+        public static object ConvertToObject(string str, Type _)
+        {
+            return JsonConvert.DeserializeObject<Permissions>(str) ?? new Permissions();
         }
     }
 }

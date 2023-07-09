@@ -4,25 +4,32 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
-    <InformationalVersion>0.5.1</InformationalVersion>
+    <Version>0.5.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RedworkDE.Publicizer" Version="0.2.2" />
-    <PublicizeAssembly Include="Assembly-CSharp" Private="True" Readonly="True" />
+    <PackageReference Include="Krafs.Publicizer" Version="2.2.1"/>
+    <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="0Harmony"/>
     <Reference Include="Assembly-CSharp"/>
     <Reference Include="DV.BrakeSystem"/>
+    <Reference Include="DV.Simulation"/>
+    <Reference Include="DV.Common"/>
+    <Reference Include="DV.Interaction"/>
     <Reference Include="DV.PointSet"/>
+    <Reference Include="DV.ThingTypes"/>
     <Reference Include="DV.Utils"/>
     <Reference Include="Newtonsoft.Json"/>
-    <Reference Include="UnityEngine.CoreModule"/>
-    <Reference Include="UnityEngine.IMGUIModule"/>
-    <Reference Include="UnityModManager"/>
     <Reference Include="net.smkd.vector3d"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile"/>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+    <PackageReference Include="BepInEx.Core" Version="5.*"/>
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*"/>
   </ItemGroup>
 
   <ItemGroup>

@@ -703,9 +703,9 @@ function rangeCommandSender(parameter) {
 locoTrainBrakeInput.addEventListener('input', rangeCommandSender('trainBrake'));
 locoIndependentBrakeInput.addEventListener('input', rangeCommandSender('independentBrake'));
 locoReverserReverseButton.addEventListener('click', e =>
-  sendLocoCommand(`reverser=${isReverserButtonActive(locoReverserReverseButton) ? 0 : -1}`));
+  sendLocoCommand(`reverser=${isReverserButtonActive(locoReverserReverseButton) ? 0.5 : 0}`));
 locoReverserForwardButton.addEventListener('click', e =>
-  sendLocoCommand(`reverser=${isReverserButtonActive(locoReverserForwardButton) ? 0 : 1}`));
+  sendLocoCommand(`reverser=${isReverserButtonActive(locoReverserForwardButton) ? 0.5 : 1}`));
 locoThrottleInput.addEventListener('input', rangeCommandSender('throttle'));
 locoControlCoupleButton.addEventListener('click', e =>
   sendLocoCommand('couple=0'));

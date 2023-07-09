@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.IO;
@@ -7,6 +6,8 @@ using System.IO.Compression;
 using System.Text;
 using UnityEngine;
 using System.Threading.Tasks;
+using DV;
+using DV.Utils;
 
 namespace DvMod.RemoteDispatch
 {
@@ -19,10 +20,10 @@ namespace DvMod.RemoteDispatch
         {
             if (!listener.IsListening)
             {
-                listener.Prefixes.Add($"http://*:{Main.settings.serverPort}/");
+                listener.Prefixes.Add($"http://*:{Main.Settings.serverPort.BoxedValue}/");
                 listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous | AuthenticationSchemes.Basic;
                 listener.Realm = "DV Remote Dispatch";
-                Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
+                Main.DebugLog(() => $"Starting HTTP server on port {Main.Settings.serverPort.BoxedValue}");
                 listener.Start();
             }
 
@@ -70,10 +71,8 @@ namespace DvMod.RemoteDispatch
 
         private static bool CheckAuthentication(HttpListenerContext context)
         {
-            return
-                context.User?.Identity is HttpListenerBasicIdentity identity &&
-                (Main.settings.serverPassword.Length == 0 ||
-                    identity.Password == Main.settings.serverPassword);
+            string serverPassword = Main.Settings.serverPassword.Value;
+            return context.User?.Identity is HttpListenerBasicIdentity identity && (string.IsNullOrEmpty(serverPassword) || identity.Password == serverPassword);
         }
 
         private static async Task HandleRequest(HttpListenerContext context)
@@ -142,7 +141,7 @@ namespace DvMod.RemoteDispatch
                     RenderEmpty(context, 404);
                     return;
                 }
-                if (!Main.settings.permissions.HasLocoControlPermission(context.User.Identity.Name))
+                if (!Main.Settings.permissions.Value.HasLocoControlPermission(context.User.Identity.Name))
                 {
                     RenderEmpty(context, 403);
                     return;
@@ -170,7 +169,7 @@ namespace DvMod.RemoteDispatch
 
         private static bool IsValidJunctionId(int junctionId)
         {
-            return junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length;
+            return junctionId >= 0 && junctionId < SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Length;
         }
 
         private static async void HandleJunctionRequest(HttpListenerContext context)
@@ -185,7 +184,7 @@ namespace DvMod.RemoteDispatch
                 var junctionIdString = url.Segments[2].TrimEnd('/');
                 if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle" && IsValidJunctionId(junctionId))
                 {
-                    if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
+                    if (!Main.Settings.permissions.Value.HasJunctionPermission(context.User.Identity.Name))
                     {
                         RenderEmpty(context, 403);
                         return;
@@ -193,7 +192,7 @@ namespace DvMod.RemoteDispatch
                     var newSelectedBranch = await Updater.RunOnMainThread(() =>
                     {
                         Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                        var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
+                        var junction = SingletonBehaviour<WorldData>.Instance.OrderedJunctions[junctionId];
                         junction.Switch(Junction.SwitchMode.REGULAR);
                         return junction.selectedBranch;
                     }).ConfigureAwait(false);
@@ -231,10 +230,17 @@ namespace DvMod.RemoteDispatch
             }
         }
 
+        public static bool IsRunning()
+        {
+            return rootObject != null;
+        }
+
         public static void Destroy()
         {
+            if (rootObject == null)
+                return;
             // ensure server shuts down immediately, not at the end of the frame
-            GameObject.DestroyImmediate(rootObject);
+            DestroyImmediate(rootObject);
             rootObject = null;
         }
 

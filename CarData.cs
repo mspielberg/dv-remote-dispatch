@@ -4,6 +4,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DV.RemoteControls;
+using DV.ThingTypes;
+using DV.Utils;
 
 namespace DvMod.RemoteDispatch
 {
@@ -28,7 +31,7 @@ namespace DvMod.RemoteDispatch
 
         public static CarData From(TrainCar trainCar)
         {
-            if (LocoControl.CanBeControlled(trainCar.carType))
+            if (trainCar.GetComponent<RemoteControllerModule>() != null)
                 return new ControllableLocoData(trainCar);
 
             return new CarData(
@@ -120,7 +123,7 @@ namespace DvMod.RemoteDispatch
             destinationYardId: JobData.JobForCar(trainCar)?.chainData?.chainDestinationYardId,
             carType: trainCar.carType)
         {
-            LocoControllerBase controller = trainCar.GetComponent<LocoControllerBase>();
+            ILocomotiveRemoteControl controller = trainCar.GetComponent<ILocomotiveRemoteControl>();
             canCouple = controller.IsCouplerInRange(LocoControl.CouplerRange);
             isSlipping = controller.IsWheelslipping();
             carsInFront = controller.GetNumberOfCarsInFront();
@@ -128,7 +131,7 @@ namespace DvMod.RemoteDispatch
             forwardSpeed = trainCar.GetForwardSpeed();
             independentBrake = controller.GetTargetIndependentBrake();
             trainBrake = controller.GetTargetBrake();
-            reverser = controller.reverser;
+            reverser = controller.GetReverserValue();
             throttle = controller.GetTargetThrottle();
             brakePipe = trainCar.brakeSystem.brakePipePressure;
         }

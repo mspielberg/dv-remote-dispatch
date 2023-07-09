@@ -1,79 +1,64 @@
 using HarmonyLib;
 using System;
-using UnityModManagerNet;
+using System.Reflection;
+using BepInEx;
+using UnityEngine.SceneManagement;
 
 namespace DvMod.RemoteDispatch
 {
-    [EnableReloading]
-    public static class Main
+    [BepInPlugin("com.github.mspielberg.dv-remote-dispatch", "RemoteDispatch", PluginInfo.PLUGIN_VERSION)]
+    public class Main : BaseUnityPlugin
     {
-        public static UnityModManager.ModEntry? mod;
-        public static Settings settings = new Settings();
-        public static bool enabled;
+        public static Main Instance = null!;
+        public static Settings Settings = null!;
+        private Harmony? harmony;
 
-        static public bool Load(UnityModManager.ModEntry modEntry)
+        private void Awake()
         {
-            mod = modEntry;
-
-            try
+            if (Instance != null)
             {
-                var loaded = Settings.Load<Settings>(modEntry);
-                if (loaded.version == modEntry.Info.Version)
-                    settings = loaded;
-            }
-            catch
-            {
+                Logger.LogFatal($"{Info.Metadata.Name} is already loaded!");
+                Destroy(this);
+                return;
             }
 
-            mod.OnGUI = OnGUI;
-            mod.OnSaveGUI = OnSaveGUI;
-            mod.OnToggle = OnToggle;
+            Instance = this;
 
-            return true;
-        }
+            Settings = new Settings(Config);
 
-        private static void OnGUI(UnityModManager.ModEntry modEntry)
-        {
-            settings.Draw();
-        }
+            harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            harmony.PatchAll();
 
-        private static void OnSaveGUI(UnityModManager.ModEntry modEntry)
-        {
-            settings.Save(modEntry);
-        }
-
-        private static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
-        {
-            Harmony harmony = new Harmony(modEntry.Info.Id);
-
-            if (value)
+            WorldStreamingInit.LoadingFinished += () =>
             {
-                harmony.PatchAll();
-                if (Main.settings.startServerOnLoad)
+                if (Settings.startServerOnLoad.Value)
                     HttpServer.Create();
                 Updater.Create();
                 CarUpdater.Start();
-            }
-            else
+            };
+            
+            SceneManager.sceneLoaded += (scene, mode) =>
             {
-                CarUpdater.Stop();
-                Updater.Destroy();
+                if (scene.buildIndex != (int)DVScenes.MainMenu)
+                    return;
                 HttpServer.Destroy();
-                harmony.UnpatchAll(modEntry.Info.Id);
-            }
-            return true;
+                Updater.Destroy();
+                CarUpdater.Stop();
+            };
         }
 
-        public static void DebugLog(TrainCar car, Func<string> message)
+        private void OnDisable()
         {
-            if (car == PlayerManager.Car)
-                DebugLog(message);
+            CarUpdater.Stop();
+            Updater.Destroy();
+            HttpServer.Destroy();
+            harmony?.UnpatchSelf();
         }
 
         public static void DebugLog(Func<string> message)
         {
-            if (settings.enableLogging)
-                mod?.Logger.Log(message());
+            if (Settings.enableLogging.Value)
+                Instance.Logger.LogDebug(message());
         }
     }
 }

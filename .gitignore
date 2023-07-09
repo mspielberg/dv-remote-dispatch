@@ -2,3 +2,5 @@
 /bin/
 /obj/
 /dv
+.idea/
+Directory.Build.targets
