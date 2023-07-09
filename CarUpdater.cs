@@ -1,17 +1,31 @@
-using HarmonyLib;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.Linq;
+using DV.HUD;
 using DV.Utils;
+using HarmonyLib;
 
 namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
+        private static readonly InteriorControlsManager.ControlType[] WATCHED_CONTROL_TYPES = {
+            InteriorControlsManager.ControlType.IndBrake,
+            InteriorControlsManager.ControlType.TrainBrake,
+            InteriorControlsManager.ControlType.Throttle,
+            InteriorControlsManager.ControlType.Reverser
+        };
+
         public static void MarkCarAsDirty(TrainCar car)
         {
             Sessions.AddTag($"carguid-{car.CarGUID}");
+        }
+
+        [HarmonyPatch(typeof(InteriorControlsManager), nameof(InteriorControlsManager.Start))]
+        public static class ControlsUpdatedPatch
+        {
+            public static void Postfix(InteriorControlsManager __instance)
+            {
+                foreach (InteriorControlsManager.ControlType controlType in WATCHED_CONTROL_TYPES)
+                    __instance.controls[controlType].controlImplBase.ValueChanged += args => MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+            }
         }
 
         public static void MarkTrainsetAsDirty(Trainset trainset)
@@ -38,6 +52,7 @@ namespace DvMod.RemoteDispatch
                 Main.DebugLog(() => $"Tried to start {nameof(CarUpdater)} before {nameof(CarSpawner)} was initialized!");
                 return;
             }
+
             carSpawner.CarSpawned += OnCarsChanged;
             carSpawner.CarAboutToBeDeleted += OnCarsChanged;
         }

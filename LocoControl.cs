@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using DV.RemoteControls;
 using DV.Utils;
-using HarmonyLib;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -51,7 +50,6 @@ namespace DvMod.RemoteDispatch
                     return false;
                 }
             }
-            CarUpdater.MarkCarAsDirty(controller.car);
             return true;
         }
     }
