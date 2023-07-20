@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
@@ -10,7 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Krafs.Publicizer" Version="2.2.1"/>
     <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
-    <Publicize Include="BepInEx:BepInEx.Configuration.ConfigEntryBase.OnSettingChanged"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -27,10 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="UnityModManager" Version="0.27.0"/>
     <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile"/>
-    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
-    <PackageReference Include="BepInEx.Core" Version="5.*"/>
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*"/>
   </ItemGroup>
 
   <ItemGroup>

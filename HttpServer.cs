@@ -20,10 +20,10 @@ namespace DvMod.RemoteDispatch
         {
             if (!listener.IsListening)
             {
-                listener.Prefixes.Add($"http://*:{Main.Settings.serverPort.BoxedValue}/");
+                listener.Prefixes.Add($"http://*:{Main.settings.serverPort}/");
                 listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous | AuthenticationSchemes.Basic;
                 listener.Realm = "DV Remote Dispatch";
-                Main.DebugLog(() => $"Starting HTTP server on port {Main.Settings.serverPort.BoxedValue}");
+                Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
                 listener.Start();
             }
 
@@ -71,7 +71,7 @@ namespace DvMod.RemoteDispatch
 
         private static bool CheckAuthentication(HttpListenerContext context)
         {
-            string serverPassword = Main.Settings.serverPassword.Value;
+            string serverPassword = Main.settings.serverPassword;
             return context.User?.Identity is HttpListenerBasicIdentity identity && (string.IsNullOrEmpty(serverPassword) || identity.Password == serverPassword);
         }
 
@@ -141,7 +141,7 @@ namespace DvMod.RemoteDispatch
                     RenderEmpty(context, 404);
                     return;
                 }
-                if (!Main.Settings.permissions.Value.HasLocoControlPermission(context.User.Identity.Name))
+                if (!Main.settings.permissions.HasLocoControlPermission(context.User.Identity.Name))
                 {
                     RenderEmpty(context, 403);
                     return;
@@ -184,7 +184,7 @@ namespace DvMod.RemoteDispatch
                 var junctionIdString = url.Segments[2].TrimEnd('/');
                 if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle" && IsValidJunctionId(junctionId))
                 {
-                    if (!Main.Settings.permissions.Value.HasJunctionPermission(context.User.Identity.Name))
+                    if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
                     {
                         RenderEmpty(context, 403);
                         return;
