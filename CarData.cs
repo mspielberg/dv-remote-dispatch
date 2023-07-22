@@ -1,12 +1,12 @@
 using DV.Logic.Job;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DV.RemoteControls;
 using DV.ThingTypes;
 using DV.Utils;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace DvMod.RemoteDispatch
 {
@@ -31,7 +31,7 @@ namespace DvMod.RemoteDispatch
 
         public static CarData From(TrainCar trainCar)
         {
-            if (trainCar.GetComponent<RemoteControllerModule>() != null)
+            if (LocoControl.CanBeControlled(trainCar))
                 return new ControllableLocoData(trainCar);
 
             return new CarData(

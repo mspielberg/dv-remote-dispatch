@@ -1,8 +1,8 @@
 using DV.Logic.Job;
-using System.Collections.Specialized;
-using System.Linq;
 using DV.RemoteControls;
 using DV.Utils;
+using System.Collections.Specialized;
+using System.Linq;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -11,6 +11,11 @@ namespace DvMod.RemoteDispatch
     {
         public const float CouplerRange = 0.5f;
 
+        public static bool CanBeControlled(TrainCar trainCar)
+        {
+            return trainCar.GetComponent<RemoteControllerModule>() != null;
+        }
+        
         public static RemoteControllerModule? GetLocoController(string id)
         {
             return SingletonBehaviour<IdGenerator>.Instance.logicCarToTrainCar.Values

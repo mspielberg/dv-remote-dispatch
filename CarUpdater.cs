@@ -1,12 +1,13 @@
 using DV.HUD;
 using DV.Utils;
 using HarmonyLib;
+using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
-        private static readonly InteriorControlsManager.ControlType[] WATCHED_CONTROL_TYPES = {
+        private static readonly InteriorControlsManager.ControlType[] WatchedControlTypes = {
             InteriorControlsManager.ControlType.IndBrake,
             InteriorControlsManager.ControlType.TrainBrake,
             InteriorControlsManager.ControlType.Throttle,
@@ -23,8 +24,13 @@ namespace DvMod.RemoteDispatch
         {
             public static void Postfix(InteriorControlsManager __instance)
             {
-                foreach (InteriorControlsManager.ControlType controlType in WATCHED_CONTROL_TYPES)
-                    __instance.controls[controlType].controlImplBase.ValueChanged += args => MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                foreach (InteriorControlsManager.ControlType controlType in WatchedControlTypes)
+                    __instance.controls[controlType].controlImplBase.ValueChanged += args =>
+                    {
+                        if (Mathf.Abs(args.delta) > 0.01f)
+                            return;
+                        MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                    };
             }
         }
 

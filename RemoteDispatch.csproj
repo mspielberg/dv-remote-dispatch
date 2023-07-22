@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
-    <Version>0.5.1</Version>
+    <InformationalVersion>0.5.1</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,8 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="UnityModManager" Version="0.27.0"/>
-    <PackageReference Include="UnityEngine.Modules" Version="2019.4.40" IncludeAssets="compile"/>
+    <Reference Include="UnityEngine.CoreModule"/>
+    <Reference Include="UnityEngine.IMGUIModule"/>
+    <PackageReference Include="UnityModManager" Version="0.27.2"/>
   </ItemGroup>
 
   <ItemGroup>

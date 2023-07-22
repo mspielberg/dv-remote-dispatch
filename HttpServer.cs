@@ -1,13 +1,13 @@
-using System;
+using DV.Utils;
+using DV;
+using System.IO.Compression;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.IO;
-using System.IO.Compression;
 using System.Text;
-using UnityEngine;
 using System.Threading.Tasks;
-using DV;
-using DV.Utils;
+using System;
+using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
@@ -228,11 +228,6 @@ namespace DvMod.RemoteDispatch
                 GameObject.DontDestroyOnLoad(rootObject);
                 rootObject.AddComponent<HttpServer>();
             }
-        }
-
-        public static bool IsRunning()
-        {
-            return rootObject != null;
         }
 
         public static void Destroy()
