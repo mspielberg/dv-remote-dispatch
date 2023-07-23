@@ -1,10 +1,12 @@
 using DV.PointSet;
-using Newtonsoft.Json;
+using DV.Utils;
+using DV;
 using Newtonsoft.Json.Linq;
-using System;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -108,7 +110,7 @@ namespace DvMod.RemoteDispatch
     public static class Junctions
     {
         private static readonly string junctionPointJSON = JsonConvert.SerializeObject(
-            JunctionsSaveManager.OrderedJunctions.Select(j =>
+            SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j =>
             {
                 var moved = j.position - WorldMover.currentMove;
                 return new JObject(
@@ -119,7 +121,7 @@ namespace DvMod.RemoteDispatch
         );
         public static string GetJunctionPointJSON() => junctionPointJSON;
 
-        public static IEnumerable<int> GetAllJunctionStates() => JunctionsSaveManager.OrderedJunctions.Select(j => j.selectedBranch);
+        public static IEnumerable<int> GetAllJunctionStates() => SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j => j.selectedBranch);
 
         public static string GetJunctionStateJSON()
         {

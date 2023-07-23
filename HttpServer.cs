@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
+using DV.Utils;
+using DV;
+using System.IO.Compression;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.IO;
-using System.IO.Compression;
 using System.Text;
-using UnityEngine;
 using System.Threading.Tasks;
+using System;
+using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
@@ -70,10 +71,8 @@ namespace DvMod.RemoteDispatch
 
         private static bool CheckAuthentication(HttpListenerContext context)
         {
-            return
-                context.User?.Identity is HttpListenerBasicIdentity identity &&
-                (Main.settings.serverPassword.Length == 0 ||
-                    identity.Password == Main.settings.serverPassword);
+            string serverPassword = Main.settings.serverPassword;
+            return context.User?.Identity is HttpListenerBasicIdentity identity && (string.IsNullOrEmpty(serverPassword) || identity.Password == serverPassword);
         }
 
         private static async Task HandleRequest(HttpListenerContext context)
@@ -170,7 +169,7 @@ namespace DvMod.RemoteDispatch
 
         private static bool IsValidJunctionId(int junctionId)
         {
-            return junctionId >= 0 && junctionId < JunctionsSaveManager.OrderedJunctions.Length;
+            return junctionId >= 0 && junctionId < SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Length;
         }
 
         private static async void HandleJunctionRequest(HttpListenerContext context)
@@ -193,7 +192,7 @@ namespace DvMod.RemoteDispatch
                     var newSelectedBranch = await Updater.RunOnMainThread(() =>
                     {
                         Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                        var junction = JunctionsSaveManager.OrderedJunctions[junctionId];
+                        var junction = SingletonBehaviour<WorldData>.Instance.OrderedJunctions[junctionId];
                         junction.Switch(Junction.SwitchMode.REGULAR);
                         return junction.selectedBranch;
                     }).ConfigureAwait(false);
@@ -233,8 +232,10 @@ namespace DvMod.RemoteDispatch
 
         public static void Destroy()
         {
+            if (rootObject == null)
+                return;
             // ensure server shuts down immediately, not at the end of the frame
-            GameObject.DestroyImmediate(rootObject);
+            DestroyImmediate(rootObject);
             rootObject = null;
         }
 

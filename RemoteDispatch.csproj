@@ -8,21 +8,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RedworkDE.Publicizer" Version="0.2.2" />
-    <PublicizeAssembly Include="Assembly-CSharp" Private="True" Readonly="True" />
+    <PackageReference Include="Krafs.Publicizer" Version="2.2.1"/>
+    <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="0Harmony"/>
     <Reference Include="Assembly-CSharp"/>
     <Reference Include="DV.BrakeSystem"/>
+    <Reference Include="DV.Simulation"/>
+    <Reference Include="DV.Common"/>
+    <Reference Include="DV.Interaction"/>
     <Reference Include="DV.PointSet"/>
+    <Reference Include="DV.ThingTypes"/>
     <Reference Include="DV.Utils"/>
     <Reference Include="Newtonsoft.Json"/>
+    <Reference Include="net.smkd.vector3d"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="UnityEngine.CoreModule"/>
     <Reference Include="UnityEngine.IMGUIModule"/>
-    <Reference Include="UnityModManager"/>
-    <Reference Include="net.smkd.vector3d"/>
+    <PackageReference Include="UnityModManager" Version="0.27.2"/>
   </ItemGroup>
 
   <ItemGroup>

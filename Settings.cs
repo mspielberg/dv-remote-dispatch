@@ -158,7 +158,7 @@ namespace DvMod.RemoteDispatch
 
         private void DrawLocoControlColumn()
         {
-            DrawColumn("DE2 Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
+            DrawColumn("Locomotive Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
         }
     }
 }

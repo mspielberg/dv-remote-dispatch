@@ -1,10 +1,13 @@
 using DV.Logic.Job;
+using DV.ThingTypes.TransitionHelpers;
+using DV.ThingTypes;
+using DV.Utils;
 using HarmonyLib;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace DvMod.RemoteDispatch
 {
@@ -34,7 +37,7 @@ namespace DvMod.RemoteDispatch
 
         private static Dictionary<TrainCar, string> InitializeJobIdForCar()
         {
-            return JobChainController.jobToJobCars
+            return SingletonBehaviour<JobsManager>.Instance.jobToJobCars
                 .SelectMany(kvp => kvp.Value.Select(car => (car, job: kvp.Key)))
                 .ToDictionary(p => p.car, p => p.job.ID);
         }
@@ -43,7 +46,7 @@ namespace DvMod.RemoteDispatch
         {
             if (jobForId.TryGetValue(jobId, out var job))
                 return job;
-            jobForId = JobChainController.jobToJobCars.Keys.ToDictionary(job => job.ID);
+            jobForId = SingletonBehaviour<JobsManager>.Instance.jobToJobCars.Keys.ToDictionary(job => job.ID);
             jobForId.TryGetValue(jobId, out job);
             return job;
         }
@@ -78,10 +81,10 @@ namespace DvMod.RemoteDispatch
                     .Select(v => Enum.GetName(typeof(JobLicenses), v))
             );
             static float TotalLength(TaskData task) => task.cars.Sum(car => car.length);
-            static float TotalMass(TaskData task) => task.cars.Sum(car => car.carOnlyMass)
+            static float TotalMass(TaskData task) => task.cars.Sum(car => car.carType.parentType.mass)
                 + ((task.cargoTypePerCar == null)
                 ? 0f
-                : task.cars.Zip(task.cargoTypePerCar, (car, cargoType) => car.capacity * CargoTypes.GetCargoUnitMass(cargoType)).Sum());
+                : task.cars.Zip(task.cargoTypePerCar, (car, cargoType) => car.capacity * cargoType.ToV2().massPerUnit).Sum());
 
             static JObject JobToJson(Job job)
             {

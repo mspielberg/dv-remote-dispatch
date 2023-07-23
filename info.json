@@ -5,6 +5,7 @@
   "Version": "0.5.1",
   "AssemblyName": "RemoteDispatch.dll",
   "EntryMethod": "DvMod.RemoteDispatch.Main.Load",
+  "ManagerVersion": "0.27.3",
   "HomePage": "https://www.nexusmods.com/derailvalley/mods/328",
   "Repository": "https://raw.githubusercontent.com/mspielberg/dv-remote-dispatch/master/resources/repository.json"
 }

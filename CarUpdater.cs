@@ -1,16 +1,37 @@
+using DV.HUD;
+using DV.Utils;
 using HarmonyLib;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
+        private static readonly InteriorControlsManager.ControlType[] WatchedControlTypes = {
+            InteriorControlsManager.ControlType.IndBrake,
+            InteriorControlsManager.ControlType.TrainBrake,
+            InteriorControlsManager.ControlType.Throttle,
+            InteriorControlsManager.ControlType.Reverser
+        };
+
         public static void MarkCarAsDirty(TrainCar car)
         {
             Sessions.AddTag($"carguid-{car.CarGUID}");
+        }
+
+        [HarmonyPatch(typeof(InteriorControlsManager), nameof(InteriorControlsManager.Start))]
+        public static class ControlsUpdatedPatch
+        {
+            public static void Postfix(InteriorControlsManager __instance)
+            {
+                foreach (InteriorControlsManager.ControlType controlType in WatchedControlTypes)
+                    __instance.controls[controlType].controlImplBase.ValueChanged += args =>
+                    {
+                        if (Mathf.Abs(args.delta) > 0.01f)
+                            return;
+                        MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                    };
+            }
         }
 
         public static void MarkTrainsetAsDirty(Trainset trainset)
@@ -31,14 +52,24 @@ namespace DvMod.RemoteDispatch
 
         public static void Start()
         {
-            CarSpawner.CarSpawned += OnCarsChanged;
-            CarSpawner.CarAboutToBeDeleted += OnCarsChanged;
+            CarSpawner carSpawner = SingletonBehaviour<CarSpawner>.Instance;
+            if (carSpawner == null)
+            {
+                Main.DebugLog(() => $"Tried to start {nameof(CarUpdater)} before {nameof(CarSpawner)} was initialized!");
+                return;
+            }
+
+            carSpawner.CarSpawned += OnCarsChanged;
+            carSpawner.CarAboutToBeDeleted += OnCarsChanged;
         }
 
         public static void Stop()
         {
-            CarSpawner.CarSpawned -= OnCarsChanged;
-            CarSpawner.CarAboutToBeDeleted -= OnCarsChanged;
+            CarSpawner carSpawner = SingletonBehaviour<CarSpawner>.Instance;
+            if (carSpawner == null)
+                return;
+            carSpawner.CarSpawned -= OnCarsChanged;
+            carSpawner.CarAboutToBeDeleted -= OnCarsChanged;
         }
 
         private static void OnCarsChanged(TrainCar trainCar)
