@@ -62,7 +62,7 @@ namespace DvMod.RemoteDispatch
 
         public static Dictionary<RailTrack, IEnumerable<World.Position>> GetAllTrackPoints(float resolution = SIMPLIFIED_RESOLUTION)
         {
-            if (!WorldStreamingInit.IsLoaded)
+            if (!WorldStreamingInit.Instance || !WorldStreamingInit.IsLoaded)
                 throw new Exception("World not yet loaded");
             var tracks = Component.FindObjectsOfType<RailTrack>();
             Main.DebugLog(() => $"Found {tracks.Length} RailTracks.");
@@ -95,33 +95,51 @@ namespace DvMod.RemoteDispatch
         {
             if (trackPointJSON != null)
                 return trackPointJSON;
+            if (!WorldStreamingInit.Instance)
+                throw new Exception("World not yet loaded");
+
             if (WorldStreamingInit.IsLoaded)
-            {
                 return GenerateTrackPointJSON();
-            }
+
             var tcs = new TaskCompletionSource<string>();
             WorldStreamingInit.LoadingFinished += () => tcs.TrySetResult(GenerateTrackPointJSON());
             if (WorldStreamingInit.IsLoaded)
                 return GenerateTrackPointJSON();
+
             return await tcs.Task.ConfigureAwait(false);
         }
     }
 
     public static class Junctions
     {
-        private static readonly string junctionPointJSON = JsonConvert.SerializeObject(
-            SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j =>
-            {
-                var moved = j.position - WorldMover.currentMove;
-                return new JObject(
-                    new JProperty("position", new World.Position(moved.x, moved.z).ToLatLon().ToJson()),
-                    new JProperty("branches", j.outBranches.Select(b => b.track.logicTrack.ID.ToString()))
-                );
-            })
-        );
-        public static string GetJunctionPointJSON() => junctionPointJSON;
+        private static string junctionPointJSON = string.Empty;
 
-        public static IEnumerable<int> GetAllJunctionStates() => SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j => j.selectedBranch);
+        public static string GetJunctionPointJSON()
+        {
+            if (!WorldStreamingInit.Instance || !WorldStreamingInit.IsLoaded)
+                throw new Exception("World not yet loaded");
+            if (string.IsNullOrEmpty(junctionPointJSON))
+            {
+                junctionPointJSON = JsonConvert.SerializeObject(
+                    SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j =>
+                    {
+                        var moved = j.position - WorldMover.currentMove;
+                        return new JObject(
+                            new JProperty("position", new World.Position(moved.x, moved.z).ToLatLon().ToJson()),
+                            new JProperty("branches", j.outBranches.Select(b => b.track.logicTrack.ID.ToString()))
+                        );
+                    })
+                );
+            }
+            return junctionPointJSON;
+        }
+
+        public static IEnumerable<int> GetAllJunctionStates()
+        {
+            if (!WorldStreamingInit.Instance || !WorldStreamingInit.IsLoaded)
+                throw new Exception("World not yet loaded");
+            return SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j => j.selectedBranch);
+        }
 
         public static string GetJunctionStateJSON()
         {
