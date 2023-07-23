@@ -49,19 +49,35 @@ namespace DvMod.RemoteDispatch
             if (value)
             {
                 harmony.PatchAll();
-                if (Main.settings.startServerOnLoad)
-                    HttpServer.Create();
-                Updater.Create();
-                CarUpdater.Start();
+                WorldStreamingInit.LoadingFinished += Start;
+                UnloadWatcher.UnloadRequested += Stop;
+                if (WorldStreamingInit.Instance && WorldStreamingInit.IsLoaded)
+                {
+                    Start();
+                }
             }
             else
             {
-                CarUpdater.Stop();
-                Updater.Destroy();
-                HttpServer.Destroy();
+                Stop();
+                UnloadWatcher.UnloadRequested -= Stop;
+                WorldStreamingInit.LoadingFinished -= Start;
                 harmony.UnpatchAll(modEntry.Info.Id);
             }
             return true;
+        }
+
+        private static void Start()
+        {
+            HttpServer.Create();
+            Updater.Create();
+            CarUpdater.Start();
+        }
+
+        private static void Stop()
+        {
+            CarUpdater.Stop();
+            Updater.Destroy();
+            HttpServer.Destroy();
         }
 
         public static void DebugLog(TrainCar car, Func<string> message)
