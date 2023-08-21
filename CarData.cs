@@ -124,7 +124,7 @@ namespace DvMod.RemoteDispatch
             carType: trainCar.carType)
         {
             ILocomotiveRemoteControl controller = trainCar.GetComponent<ILocomotiveRemoteControl>();
-            canCouple = controller.IsCouplerInRange(LocoControl.CouplerRange);
+            canCouple = controller.IsCouplerInRange(ExternalCouplingHandler.COUPLING_RANGE);
             isSlipping = controller.IsWheelslipping();
             carsInFront = controller.GetNumberOfCarsInFront();
             carsInRear = controller.GetNumberOfCarsInRear();
