@@ -627,7 +627,7 @@ function updateCouplingControls(carData) {
   const options = [];
   for (let i = carsInFront; i >= 1; i--)
     options.push(i);
-  for (let i = 1; i <= -carsInRear; i++)
+  for (let i = 1; i <= carsInRear; i++)
     options.push(-i);
   locoControlUncoupleSelect.replaceChildren(...options.map(i => {
     const option = document.createElement('option');
