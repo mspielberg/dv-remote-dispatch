@@ -1,4 +1,4 @@
-using DV.HUD;
+using DV.RemoteControls;
 using DV.Utils;
 using HarmonyLib;
 using UnityEngine;
@@ -7,30 +7,26 @@ namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
-        private static readonly InteriorControlsManager.ControlType[] WatchedControlTypes = {
-            InteriorControlsManager.ControlType.IndBrake,
-            InteriorControlsManager.ControlType.TrainBrake,
-            InteriorControlsManager.ControlType.Throttle,
-            InteriorControlsManager.ControlType.Reverser
-        };
-
         public static void MarkCarAsDirty(TrainCar car)
         {
             Sessions.AddTag($"carguid-{car.CarGUID}");
         }
 
-        [HarmonyPatch(typeof(InteriorControlsManager), nameof(InteriorControlsManager.Start))]
-        public static class ControlsUpdatedPatch
+        [HarmonyPatch(typeof(RemoteControllerModule), nameof(RemoteControllerModule.Init))]
+        public static class RemoteControllerModuleInitPatch
         {
-            public static void Postfix(InteriorControlsManager __instance)
+            public static void Postfix(RemoteControllerModule __instance)
             {
-                foreach (InteriorControlsManager.ControlType controlType in WatchedControlTypes)
-                    __instance.controls[controlType].controlImplBase.ValueChanged += args =>
-                    {
-                        if (Mathf.Abs(args.delta) > 0.01f)
-                            return;
-                        MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
-                    };
+                void ControlChanged(float _newValue)
+                {
+                    MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
+                }
+
+                var overrider = __instance.controlsOverrider;
+                overrider.Brake.ControlUpdated += ControlChanged;
+                overrider.IndependentBrake.ControlUpdated += ControlChanged;
+                overrider.Reverser.ControlUpdated += ControlChanged;
+                overrider.Throttle.ControlUpdated += ControlChanged;
             }
         }
 
