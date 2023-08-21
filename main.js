@@ -591,12 +591,12 @@ function isReverserButtonActive(faButton) {
 
 function updateReverserButtons(reverser) {
   const reverseButton = document.querySelector('#locoControlReverserReverseButton svg');
-  const newReverseStyle = reverser < 0 ? 'fas' : 'far';
+  const newReverseStyle = reverser < 0.5 ? 'fas' : 'far';
   if (reverseButton.getAttribute('data-prefix') != newReverseStyle)
     reverseButton.setAttribute('data-prefix', newReverseStyle);
 
   const forwardButton = document.querySelector('#locoControlReverserForwardButton svg');
-  const newForwardStyle = reverser > 0 ? 'fas' : 'far';
+  const newForwardStyle = reverser > 0.5 ? 'fas' : 'far';
   if (forwardButton.getAttribute('data-prefix') != newForwardStyle)
     forwardButton.setAttribute('data-prefix', newForwardStyle);
 }
