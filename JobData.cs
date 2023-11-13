@@ -62,16 +62,18 @@ namespace DvMod.RemoteDispatch
                 for (int i = 1; i < sequence.Count; i++)
                 {
                     var task = sequence[i];
-                    if ((task.warehouseTaskType == WarehouseTaskType.Loading) || 
-                        (((int)task.type == 42) && ((dynamic)task).isLoading))
+                    bool isRuralTask = task.type == (TaskType)42;
+
+                    bool isRuralUnload = isRuralTask && !((dynamic)task).isLoading;
+                    if ((task.warehouseTaskType != WarehouseTaskType.Unloading) && !isRuralUnload)
                     {
-                        // skip loading tasks
+                        // skip everything but unload tasks
                         continue;
                     }
 
                     string destTrackId;
 
-                    if ((int)task.type == 42)
+                    if (isRuralTask)
                     {
                         destTrackId = ((dynamic)task).stationId;
                     }
