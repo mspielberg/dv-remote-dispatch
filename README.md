@@ -21,11 +21,6 @@ An example of what the targets file should look like is provided:
     <AssemblySearchPaths>$(AssemblySearchPaths);$(ReferencePath);</AssemblySearchPaths>
   </PropertyGroup>
   <Target Name="AfterBuild">
-    <PropertyGroup>
-      <PowerShellExe>
-        %WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe
-      </PowerShellExe>
-    </PropertyGroup>
     <Exec Command="powershell -executionPolicy bypass .\package.ps1 -NoArchive -OutputDirectory &quot;\&quot;c:/Program Files (x86)/Steam/steamapps/common/Derail Valley/Mods\&quot;&quot;" />
   </Target>
 </Project>

@@ -1,4 +1,7 @@
-﻿param (
+﻿#This file is from UMM Derail Valley Template 
+# https://github.com/derail-valley-modding/template-umm
+# It is MIT licensed copyright Derail Valley Modding github organization
+param (
 	[switch]$NoArchive,
 	[string]$OutputDirectory = $PSScriptRoot
 )
