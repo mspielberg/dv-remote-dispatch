@@ -112,7 +112,6 @@ namespace DvMod.RemoteDispatch
         {
             return JsonConvert.SerializeObject(GetAllJobData());
         }
-
         public static class JobPatches
         {
             [HarmonyPatch(typeof(JobChainController), nameof(JobChainController.UpdateTrainCarPlatesOfCarsOnJob))]
@@ -129,6 +128,11 @@ namespace DvMod.RemoteDispatch
                         Sessions.AddTag("jobs");
                     }
                 }
+            }
+            public static void UpdateJobsFromPersistentJobs(Job job)
+            {
+                Main.DebugLog(() => "Persistent Jobs sent update for job " + job.ID);
+                Sessions.AddTag("jobs");
             }
         }
     }

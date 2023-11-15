@@ -1,3 +1,4 @@
+using DV.Logic.Job;
 using HarmonyLib;
 using System;
 using UnityModManagerNet;
@@ -55,6 +56,7 @@ namespace DvMod.RemoteDispatch
                 {
                     Start();
                 }
+                PatchPersistentJobs();
             }
             else
             {
@@ -64,6 +66,37 @@ namespace DvMod.RemoteDispatch
                 harmony.UnpatchAll(modEntry.Info.Id);
             }
             return true;
+        }
+
+        private static void PatchPersistentJobs()
+        {
+            Type? persistentJobsModInteractionFeaturesType = GetPersistentJobsInteractionType();
+            if (persistentJobsModInteractionFeaturesType != null)
+            {
+                var jobTracksChanged = persistentJobsModInteractionFeaturesType.GetEvent("JobTracksChanged");
+                jobTracksChanged.AddEventHandler(null, new Action<Job>(JobData.JobPatches.UpdateJobsFromPersistentJobs));
+                DebugLog(() => "Persistent Jobs found and hooked");
+            }
+        }
+        /// <summary>
+        /// This will check to see if persistent jobs mod is currently installed and loaded
+        /// </summary>
+        /// <returns>
+        /// Persistent Jobs mod event interface if available, null otherwise.
+        /// </returns>
+        private static Type? GetPersistentJobsInteractionType()
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if (type.Name == "PersistentJobsModInteractionFeatures")
+                    {
+                        return type;
+                    }
+                }
+            }
+            return null;
         }
 
         private static void Start()
