@@ -165,10 +165,11 @@ function yardIdForTrack(trackId) {
 }
 
 function jobMatchesFilter(jobId, jobData) {
-  const testText = document.getElementById('jobSearchText').value.toUpperCase();
+    const testText = document.getElementById('jobSearchText').value.toUpperCase();
+    const activeOnly = document.getElementById('jobActiveOnly').checked;
   function taskFields(task) { return [task.startTrack, task.destinationTrack].concat(task.cars); }
   const fields = [jobId].concat(jobData.tasks.flatMap(taskFields));
-  return fields.some(field => field.includes(testText));
+  return fields.some(field => field.includes(testText)) && (!activeOnly || jobData.isActive);
 }
 
 function jobElem(jobId, jobData) {
@@ -288,11 +289,17 @@ function updateAllJobs(jobs) {
 }
 
 let jobSearchTimeoutId = null;
+function queueJobUpdate() {
+    if (jobSearchTimeoutId)
+        clearTimeout(jobSearchTimeoutId);
+    jobSearchTimeoutId = setTimeout(updateJobList, 100);
+}
 document.getElementById('jobSearchText').addEventListener('input', e => {
-  if (jobSearchTimeoutId)
-    clearTimeout(jobSearchTimeoutId);
-  jobSearchTimeoutId = setTimeout(updateJobList, 100);
+    queueJobUpdate();
 });
+document.getElementById('jobActiveOnly').addEventListener('change', e => {
+    queueJobUpdate();
+})
 
 /////////////////////
 // track

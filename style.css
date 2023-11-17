@@ -186,3 +186,14 @@ body {
 .locoControlButton:active {
   background-color: lightblue;
 }
+#jobsTab input {
+    float:left;
+    clear:left;
+}
+#jobsTab label {
+    float:left;
+    clear: left;
+}
+#jobList {
+    clear: left;
+}
