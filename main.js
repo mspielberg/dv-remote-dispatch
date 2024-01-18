@@ -146,6 +146,7 @@ function colorForJobType(jobId) {
   case 'LH': return 'khaki';
   case 'PC':
   case 'PE': return 'cornflowerblue';
+  case 'PR': return 'mediumpurple';
   case 'SL':
   case 'SU': return 'lightcoral';
   }
