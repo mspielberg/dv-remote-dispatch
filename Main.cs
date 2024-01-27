@@ -52,11 +52,11 @@ namespace DvMod.RemoteDispatch
                 harmony.PatchAll();
                 WorldStreamingInit.LoadingFinished += Start;
                 UnloadWatcher.UnloadRequested += Stop;
+                ConnectToPersistentJobs();
                 if (WorldStreamingInit.Instance && WorldStreamingInit.IsLoaded)
                 {
                     Start();
                 }
-                PatchPersistentJobs();
             }
             else
             {
@@ -68,7 +68,7 @@ namespace DvMod.RemoteDispatch
             return true;
         }
 
-        private static void PatchPersistentJobs()
+        private static void ConnectToPersistentJobs()
         {
             Type? persistentJobsModInteractionFeaturesType = GetPersistentJobsInteractionType();
             if (persistentJobsModInteractionFeaturesType != null)
@@ -86,15 +86,9 @@ namespace DvMod.RemoteDispatch
         /// </returns>
         private static Type? GetPersistentJobsInteractionType()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (type.Name == "PersistentJobsModInteractionFeatures")
-                    {
-                        return type;
-                    }
-                }
+            var persistentJobs = UnityModManager.FindMod("PersistentJobsMod");
+            if (persistentJobs != null) { 
+                return persistentJobs.Assembly.GetType("PersistentJobsModInteractionFeatures");
             }
             return null;
         }
