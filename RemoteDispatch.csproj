@@ -21,6 +21,7 @@
     <Reference Include="DV.PointSet"/>
     <Reference Include="DV.ThingTypes"/>
     <Reference Include="DV.Utils"/>
+    <Reference Include="Microsoft.CSharp"/>
     <Reference Include="Newtonsoft.Json"/>
     <Reference Include="net.smkd.vector3d"/>
   </ItemGroup>

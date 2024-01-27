@@ -53,6 +53,45 @@ namespace DvMod.RemoteDispatch
 
         public static Dictionary<string, JObject> GetAllJobData()
         {
+            static IEnumerable<JObject> PassengerJson(TaskData sequenceTask)
+            {
+                var sequence = sequenceTask.nestedTasks.Select(task => task.GetTaskData()).ToList();
+
+                string startTrackId = sequence[0].destinationTrack.ID.FullDisplayID;
+
+                for (int i = 1; i < sequence.Count; i++)
+                {
+                    var task = sequence[i];
+                    bool isRuralTask = task.type == (TaskType)42;
+
+                    bool isRuralUnload = isRuralTask && !((dynamic)task).isLoading;
+                    if ((task.warehouseTaskType != WarehouseTaskType.Unloading) && !isRuralUnload)
+                    {
+                        // skip everything but unload tasks
+                        continue;
+                    }
+
+                    string destTrackId;
+
+                    if (isRuralTask)
+                    {
+                        destTrackId = ((dynamic)task).stationId;
+                    }
+                    else
+                    {
+                        destTrackId = task.destinationTrack.ID.FullDisplayID;
+                    }
+
+                    yield return new JObject()
+                    {
+                        { "startTrack", startTrackId },
+                        { "destinationTrack", destTrackId },
+                        { "cars", new JArray(task.cars.Select(car => car.ID)) }
+                    };
+
+                    startTrackId = destTrackId;
+                }
+            }
             static IEnumerable<TaskData> FlattenToTransport(TaskData data)
             {
                 if (data.type == TaskType.Transport)
@@ -88,17 +127,34 @@ namespace DvMod.RemoteDispatch
 
             static JObject JobToJson(Job job)
             {
-                var flattenedTasks = FlattenMany(job.tasks.Select(task => task.GetTaskData())).ToArray();
-                var mainTask = job.jobType == JobType.ShuntingLoad ? flattenedTasks.Last() : flattenedTasks.First();
-                var length = TotalLength(mainTask);
+                IEnumerable<JObject> taskJson;
+                TaskData mainTask;
+
+                if (job.jobType <= JobType.ComplexTransport)
+                {
+                    // normal job
+                    var flattenedTasks = FlattenMany(job.tasks.Select(task => task.GetTaskData())).ToArray();
+                    mainTask = job.jobType == JobType.ShuntingLoad ? flattenedTasks.Last() : flattenedTasks.First();
+
+                    taskJson = flattenedTasks.Select(TaskToJson);
+                }
+                else
+                {
+                    // passenger
+                    var sequenceTask = job.tasks[0].GetTaskData();
+                    mainTask = sequenceTask.nestedTasks[0].GetTaskData();
+                    taskJson = PassengerJson(sequenceTask);
+                }
+
                 return new JObject(
                     new JProperty("originYardId", job.chainData.chainOriginYardId),
                     new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
-                    new JProperty("tasks", flattenedTasks.Select(TaskToJson)),
+                    new JProperty("tasks", taskJson),
                     new JProperty("requiredLicenses", RequiredLicenses(job)),
                     new JProperty("length", TotalLength(mainTask)),
                     new JProperty("mass", TotalMass(mainTask) / 1000),
-                    new JProperty("basePayment", job.GetBasePaymentForTheJob()));
+                    new JProperty("basePayment", job.GetBasePaymentForTheJob()),
+                    new JProperty("isActive", job.State == JobState.InProgress));
             }
 
             // ensure cache is updated
@@ -112,6 +168,7 @@ namespace DvMod.RemoteDispatch
         {
             return JsonConvert.SerializeObject(GetAllJobData());
         }
+
         public static class JobPatches
         {
             [HarmonyPatch(typeof(JobChainController), nameof(JobChainController.UpdateTrainCarPlatesOfCarsOnJob))]
@@ -133,6 +190,19 @@ namespace DvMod.RemoteDispatch
             {
                 Main.DebugLog(() => "Persistent Jobs sent update for job " + job.ID);
                 Sessions.AddTag("jobs");
+            }
+            [HarmonyPatch(typeof(Job))]
+            public static class UpdateJobStatePatches
+            {
+                [HarmonyPostfix]
+                [HarmonyPatch(nameof(Job.TakeJob))]
+                public static void TakeJobPostfix(Job __instance, bool takenViaLoadGame)
+                {
+                    if (!takenViaLoadGame)
+                    {
+                        Sessions.AddTag("jobs");
+                    }
+                }
             }
         }
     }
