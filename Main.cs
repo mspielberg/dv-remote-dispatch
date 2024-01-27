@@ -78,6 +78,7 @@ namespace DvMod.RemoteDispatch
                 DebugLog(() => "Persistent Jobs found and hooked");
             }
         }
+
         /// <summary>
         /// This will check to see if persistent jobs mod is currently installed and loaded
         /// </summary>
