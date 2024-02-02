@@ -186,6 +186,11 @@ namespace DvMod.RemoteDispatch
                     }
                 }
             }
+            public static void UpdateJobsFromPersistentJobs(Job job)
+            {
+                Main.DebugLog(() => "Persistent Jobs sent update for job " + job.ID);
+                Sessions.AddTag("jobs");
+            }
             [HarmonyPatch(typeof(Job))]
             public static class UpdateJobStatePatches
             {

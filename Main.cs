@@ -1,5 +1,7 @@
+using DV.Logic.Job;
 using HarmonyLib;
 using System;
+using System.Reflection;
 using UnityModManagerNet;
 
 namespace DvMod.RemoteDispatch
@@ -10,6 +12,7 @@ namespace DvMod.RemoteDispatch
         public static UnityModManager.ModEntry? mod;
         public static Settings settings = new Settings();
         public static bool enabled;
+        private static Action<Job>? attachedJobChangedHandler;
 
         static public bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -51,6 +54,7 @@ namespace DvMod.RemoteDispatch
                 harmony.PatchAll();
                 WorldStreamingInit.LoadingFinished += Start;
                 UnloadWatcher.UnloadRequested += Stop;
+                ConnectToPersistentJobs();
                 if (WorldStreamingInit.Instance && WorldStreamingInit.IsLoaded)
                 {
                     Start();
@@ -61,9 +65,48 @@ namespace DvMod.RemoteDispatch
                 Stop();
                 UnloadWatcher.UnloadRequested -= Stop;
                 WorldStreamingInit.LoadingFinished -= Start;
+                DisconnectFromPersistentJobs();
                 harmony.UnpatchAll(modEntry.Info.Id);
             }
             return true;
+        }
+
+        private static void DisconnectFromPersistentJobs()
+        {
+            EventInfo? jobTracksChanged = GetPersistentJobsTrackChangedEvent();
+            if (jobTracksChanged != null && attachedJobChangedHandler != null)
+            {
+                jobTracksChanged.RemoveEventHandler(null, attachedJobChangedHandler);
+                attachedJobChangedHandler = null;
+                DebugLog(() => "Persistent Jobs event handler removed");
+            }
+        }
+
+        private static void ConnectToPersistentJobs()
+        {
+            EventInfo? jobTracksChanged = GetPersistentJobsTrackChangedEvent();
+            if (jobTracksChanged != null)
+            {
+                attachedJobChangedHandler = new Action<Job>(JobData.JobPatches.UpdateJobsFromPersistentJobs);
+                jobTracksChanged.AddEventHandler(null, attachedJobChangedHandler);
+                DebugLog(() => "Persistent Jobs found and hooked");
+            }
+        }
+
+        /// <summary>
+        /// This will check to see if persistent jobs mod is currently installed and loaded, and if so will extract the event it exposes for modifying jobs
+        /// </summary>
+        /// <returns>
+        /// Persistent Jobs mod track changed event if installed, otherwise null
+        /// </returns>
+        private static EventInfo? GetPersistentJobsTrackChangedEvent()
+        {
+            var persistentJobs = UnityModManager.FindMod("PersistentJobsMod");
+            if (persistentJobs != null) { 
+                var persistentJobsInteractionFeaturesType = persistentJobs.Assembly.GetType("PersistentJobsModInteractionFeatures");
+                return persistentJobsInteractionFeaturesType?.GetEvent("JobTracksChanged");
+            }
+            return null;
         }
 
         private static void Start()
