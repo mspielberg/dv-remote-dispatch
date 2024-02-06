@@ -2,11 +2,11 @@
   "Id": "RemoteDispatch",
   "DisplayName": "Remote Dispatch",
   "Author": "Zeibach",
-  "Version": "1.0.1",
+  "Version": "1.0.2",
   "AssemblyName": "RemoteDispatch.dll",
   "EntryMethod": "DvMod.RemoteDispatch.Main.Load",
+  "LoadAfter": [ "PersistentJobsMod" ],
   "ManagerVersion": "0.27.3",
   "HomePage": "https://www.nexusmods.com/derailvalley/mods/328",
-  "Repository": "https://raw.githubusercontent.com/mspielberg/dv-remote-dispatch/master/resources/repository.json",
-  "LoadAfter": [ "PersistentJobsMod" ]
+  "Repository": "https://raw.githubusercontent.com/mspielberg/dv-remote-dispatch/master/resources/repository.json"
 }

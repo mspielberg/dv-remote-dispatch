@@ -93,20 +93,13 @@ namespace DvMod.RemoteDispatch
             }
         }
 
-        /// <summary>
-        /// This will check to see if persistent jobs mod is currently installed and loaded, and if so will extract the event it exposes for modifying jobs
-        /// </summary>
-        /// <returns>
-        /// Persistent Jobs mod track changed event if installed, otherwise null
-        /// </returns>
+        /// <summary>Gets event exposed by Persistent Jobs for notifications when jobs are modified.</summary>
+        /// <returns>Persistent Jobs mod track changed event if installed, otherwise null.</returns>
         private static EventInfo? GetPersistentJobsTrackChangedEvent()
         {
-            var persistentJobs = UnityModManager.FindMod("PersistentJobsMod");
-            if (persistentJobs != null) { 
-                var persistentJobsInteractionFeaturesType = persistentJobs.Assembly.GetType("PersistentJobsModInteractionFeatures");
-                return persistentJobsInteractionFeaturesType?.GetEvent("JobTracksChanged");
-            }
-            return null;
+            return UnityModManager.FindMod("PersistentJobsMod")
+                ?.Assembly.GetType("PersistentJobsModInteractionFeatures")
+                ?.GetEvent("JobTracksChanged");
         }
 
         private static void Start()
