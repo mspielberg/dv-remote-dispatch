@@ -540,7 +540,7 @@ function removePlayerOverlay(id) {
 
 function createPlayerOverlay(id, playerData) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', '-10 -10 20 20');
+  svg.setAttribute('viewBox', '-15 -15 30 30');
   const polygon = document.createElementNS(svg.namespaceURI, 'polygon');
   polygon.setAttribute('id', `playerPolygon-${id}`);
   polygon.setAttribute('fill', playerData.color);
