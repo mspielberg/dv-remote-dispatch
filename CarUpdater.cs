@@ -1,6 +1,8 @@
 using DV.RemoteControls;
+using DV.Simulation.Controllers;
 using DV.Utils;
 using HarmonyLib;
+using System.Linq;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -17,16 +19,20 @@ namespace DvMod.RemoteDispatch
         {
             public static void Postfix(RemoteControllerModule __instance)
             {
-                void ControlChanged(float _newValue)
-                {
-                    MarkCarAsDirty(TrainCar.Resolve(__instance.gameObject));
-                }
-
+                var trainCar = TrainCar.Resolve(__instance.gameObject);
                 var overrider = __instance.controlsOverrider;
-                overrider.Brake.ControlUpdated += ControlChanged;
-                overrider.IndependentBrake.ControlUpdated += ControlChanged;
-                overrider.Reverser.ControlUpdated += ControlChanged;
-                overrider.Throttle.ControlUpdated += ControlChanged;
+                var controls = new OverridableBaseControl[]
+                {
+                    overrider.Brake,
+                    overrider.IndependentBrake,
+                    overrider.Reverser,
+                    overrider.Throttle,
+                };
+
+                foreach (var control in controls.Where(c => c != null))
+                {
+                    control.ControlUpdated += _ => MarkCarAsDirty(trainCar);
+                }
             }
         }
 
