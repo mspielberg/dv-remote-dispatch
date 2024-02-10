@@ -12,6 +12,7 @@ namespace DvMod.RemoteDispatch
 {
     public class CarData
     {
+        public readonly string guid;
         public readonly float length;
         public readonly World.LatLon latlon;
         public readonly float rotation;
@@ -19,8 +20,9 @@ namespace DvMod.RemoteDispatch
         public readonly string? destinationYardId;
         public readonly TrainCarType carType;
 
-        protected CarData(float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId, TrainCarType carType)
+        protected CarData(string guid, float length, World.LatLon latlon, float rotation, string? jobId, string? destinationYardId, TrainCarType carType)
         {
+            this.guid = guid;
             this.latlon = latlon;
             this.rotation = rotation;
             this.length = length;
@@ -35,6 +37,7 @@ namespace DvMod.RemoteDispatch
                 return new ControllableLocoData(trainCar);
 
             return new CarData(
+                trainCar.CarGUID,
                 trainCar.InterCouplerDistance,
                 latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
                 rotation: trainCar.transform.eulerAngles.y,
@@ -46,6 +49,7 @@ namespace DvMod.RemoteDispatch
         public virtual JObject ToJson()
         {
             return new JObject(
+                new JProperty("guid", guid),
                 new JProperty("length", (int)length),
                 new JProperty("position", latlon.ToJson()),
                 new JProperty("rotation", Math.Round(rotation, 2))
@@ -116,6 +120,7 @@ namespace DvMod.RemoteDispatch
 
         public ControllableLocoData(TrainCar trainCar)
         : base(
+            trainCar.CarGUID,
             trainCar.InterCouplerDistance,
             latlon: new World.Position(trainCar.transform.TransformPoint(trainCar.Bounds.center) - WorldMover.currentMove).ToLatLon(),
             rotation: trainCar.transform.eulerAngles.y,
