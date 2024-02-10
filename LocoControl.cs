@@ -32,16 +32,16 @@ namespace DvMod.RemoteDispatch
                 switch (key)
                 {
                 case "trainBrake":
-                    controller.controlsOverrider.Brake.Set(value01);
+                    controller.controlsOverrider.Brake?.Set(value01);
                     break;
                 case "independentBrake":
-                    controller.controlsOverrider.IndependentBrake.Set(value01);
+                    controller.controlsOverrider.IndependentBrake?.Set(value01);
                     break;
                 case "reverser":
-                    controller.controlsOverrider.Reverser.Set(value01);
+                    controller.controlsOverrider.Reverser?.Set(value01);
                     break;
                 case "throttle":
-                    controller.controlsOverrider.Throttle.Set(value01);
+                    controller.controlsOverrider.Throttle?.Set(value01);
                     break;
                 case "couple":
                     controller.RemoteControllerCouple();
