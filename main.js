@@ -33,7 +33,7 @@ function setMarkerToFollow(marker) {
 }
 
 function stopFollowing() {
-  markerToFollow = null;
+  markerToFollow = undefined;
 }
 
 function zoomToAllPlayers() {
@@ -289,7 +289,7 @@ function updateAllJobs(jobs) {
   updateCarJobs();
 }
 
-let jobSearchTimeoutId = null;
+let jobSearchTimeoutId;
 function queueJobUpdate() {
     if (jobSearchTimeoutId)
         clearTimeout(jobSearchTimeoutId);
@@ -692,8 +692,18 @@ function updateLocoDisplay() {
   });
 }
 
+let locoControlRefreshIntervalId;
 locoIdSelect.addEventListener('change', updateLocoDisplay);
-setInterval(updateLocoDisplay, 1000 / 9);
+sidebar.on("content", e => {
+  clearInterval(locoControlRefreshIntervalId);
+  if (e.id == "locoControlTab") {
+    locoControlRefreshIntervalId = setInterval(updateLocoDisplay, 1000 / 9);
+  }
+});
+sidebar.on("closing", e => {
+  clearInterval(locoControlRefreshIntervalId);
+  locoControlRefreshIntervalId = undefined;
+})
 
 function sendLocoCommand(command) {
   const guid = getControlledLocoGuid();
