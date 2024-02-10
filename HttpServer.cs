@@ -135,6 +135,18 @@ namespace DvMod.RemoteDispatch
                 Render200(context, allCarDataJson);
                 return;
             }
+
+            if (segments.Length == 3 && context.Request.HttpMethod == "GET")
+            {
+                var carGuid = segments[2].TrimEnd('/');
+                var carDataJson = CarData.GetCarGuidDataJson(carGuid);
+                if (carDataJson == null)
+                    RenderEmpty(context, 404);
+                else
+                    Render200(context, carDataJson);
+                return;
+            }
+
             if (segments.Length == 4 && segments[3] == "control" && context.Request.HttpMethod == "POST")
             {
                 var carGuid = segments[2].TrimEnd('/');

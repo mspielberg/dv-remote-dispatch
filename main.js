@@ -645,16 +645,16 @@ function updateCouplingControls(carData) {
   }));
 }
 
-function getControlledLocoId() {
-  return `L-${locoIdSelect.value}`;
-}
-
 function getControlledLocoGuid() {
   return allCarData.get(`L-${locoIdSelect.value}`)?.guid;
 }
 
 function getControlledLocoData() {
-  return allCarData.get(getControlledLocoId());
+  const guid = getControlledLocoGuid();
+  if (guid) {
+    return fetch(`/car/${guid}`, location)
+    .then(resp => resp.json());
+  }
 }
 
 let locoTrainBrakeEditing = false;
@@ -664,30 +664,24 @@ let locoThrottleEditing = false;
 function updateLocoTrainBrakeInput(carData) {
   if (locoTrainBrakeEditing)
     return;
-  if (!carData)
-    carData = getControlledLocoData();
   locoTrainBrakeInput.value = carData.trainBrake * 100;
 }
 
 function updateLocoIndependentBrakeInput(carData) {
   if (locoIndependentBrakeEditing)
     return;
-  if (!carData)
-    carData = getControlledLocoData();
   locoIndependentBrakeInput.value = carData.independentBrake * 100;
 }
 
 function updateLocoThrottleInput(carData) {
   if (locoThrottleEditing)
     return;
-  if (!carData)
-    carData = getControlledLocoData();
   locoThrottleInput.value = carData.throttle * 100;
 }
 
 function updateLocoDisplay() {
-  const carData = getControlledLocoData();
-  if (carData) {
+  getControlledLocoData()
+  .then(carData => {
     locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
     locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
     updateLocoTrainBrakeInput(carData);
@@ -695,7 +689,7 @@ function updateLocoDisplay() {
     updateReverserButtons(carData.reverser);
     updateLocoThrottleInput(carData);
     updateCouplingControls(carData);
-  }
+  });
 }
 
 locoIdSelect.addEventListener('change', updateLocoDisplay);
@@ -727,17 +721,17 @@ locoControlUncoupleButton.addEventListener('click', e =>
 locoTrainBrakeInput.addEventListener("mousedown", () => locoTrainBrakeEditing = true);
 locoTrainBrakeInput.addEventListener("mouseup", () => {
   locoTrainBrakeEditing = false;
-  updateLocoTrainBrakeInput();
+  updateLocoDisplay();
 });
 locoIndependentBrakeInput.addEventListener("mousedown", () => locoIndependentBrakeEditing = true);
 locoIndependentBrakeInput.addEventListener("mouseup", () => {
   locoIndependentBrakeEditing = false;
-  updateLocoIndependentBrakeInput();
+  updateLocoDisplay();
 });
 locoThrottleInput.addEventListener("mousedown", () => locoThrottleEditing = true);
 locoThrottleInput.addEventListener("mouseup", () => {
   locoThrottleEditing = false;
-  updateLocoThrottleInput();
+  updateLocoDisplay();
 });
 
 
