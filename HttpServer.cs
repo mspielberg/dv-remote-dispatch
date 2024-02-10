@@ -1,5 +1,7 @@
 using DV.Utils;
 using DV;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.IO.Compression;
 using System.IO;
 using System.Linq;
@@ -283,6 +285,11 @@ namespace DvMod.RemoteDispatch
                     _ => "",
                 };
             }
+        }
+
+        private static void Render200(HttpListenerContext context, JToken json)
+        {
+            Render200(context, ContentTypes.Json, JsonConvert.SerializeObject(json));
         }
 
         private static void Render200(HttpListenerContext context, string contentType, string s)
