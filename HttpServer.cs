@@ -131,13 +131,14 @@ namespace DvMod.RemoteDispatch
             var segments = context.Request.Url.Segments;
             if (segments.Length == 2 && context.Request.HttpMethod == "GET")
             {
-                Render200(context, ContentTypes.Json, CarData.GetAllCarDataJson());
+                var allCarDataJson = CarData.GetAllCarDataJson();
+                Render200(context, ContentTypes.Json, allCarDataJson);
                 return;
             }
             if (segments.Length == 4 && segments[3] == "control" && context.Request.HttpMethod == "POST")
             {
-                var carId = segments[2].TrimEnd('/');
-                var controller = LocoControl.GetLocoController(carId);
+                var carGuid = segments[2].TrimEnd('/');
+                var controller = LocoControl.GetLocoController(carGuid);
                 if (controller == null)
                 {
                     RenderEmpty(context, 404);
@@ -198,7 +199,7 @@ namespace DvMod.RemoteDispatch
                         junction.Switch(Junction.SwitchMode.REGULAR);
                         return junction.selectedBranch;
                     }).ConfigureAwait(false);
-                    Render200(context, ContentTypes.Json, newSelectedBranch.ToString());
+                    Render200(context, new JValue(newSelectedBranch));
                     return;
                 }
                 RenderEmpty(context, 404);

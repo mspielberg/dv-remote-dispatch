@@ -14,11 +14,11 @@ namespace DvMod.RemoteDispatch
             return trainCar.GetComponent<RemoteControllerModule>() != null;
         }
         
-        public static RemoteControllerModule? GetLocoController(string id)
+        public static RemoteControllerModule? GetLocoController(string guid)
         {
-            return SingletonBehaviour<IdGenerator>.Instance.logicCarToTrainCar.Values
-                .FirstOrDefault(c => c.ID == id)?
-                .GetComponent<RemoteControllerModule>();
+            return SingletonBehaviour<IdGenerator>.Instance
+                .GetTrainCarByCarGuid(guid)
+                ?.GetComponent<RemoteControllerModule>();
         }
 
         public static bool RunCommand(RemoteControllerModule controller, NameValueCollection queryString)

@@ -649,6 +649,10 @@ function getControlledLocoId() {
   return `L-${locoIdSelect.value}`;
 }
 
+function getControlledLocoGuid() {
+  return allCarData.get(`L-${locoIdSelect.value}`)?.guid;
+}
+
 function getControlledLocoData() {
   return allCarData.get(getControlledLocoId());
 }
@@ -698,9 +702,9 @@ locoIdSelect.addEventListener('change', updateLocoDisplay);
 setInterval(updateLocoDisplay, 1000 / 9);
 
 function sendLocoCommand(command) {
-  const locoId = `L-${locoIdSelect.value}`;
-  if (allCarData.has(locoId)) {
-    fetch(new URL(`/car/${locoId}/control?${command}`, location), { method: 'POST' });
+  const guid = getControlledLocoGuid();
+  if (guid) {
+    fetch(new URL(`/car/${guid}/control?${command}`, location), { method: 'POST' });
   }
 }
 
