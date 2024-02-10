@@ -3,10 +3,9 @@ using DV.RemoteControls;
 using DV.ThingTypes;
 using DV.Utils;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace DvMod.RemoteDispatch
 {
@@ -56,9 +55,9 @@ namespace DvMod.RemoteDispatch
             );
         }
 
-        public static string GetAllCarDataJson()
+        public static JObject GetAllCarDataJson()
         {
-            return JsonConvert.SerializeObject(
+            return JObject.FromObject(
                 GetAllCarData().ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson()));
         }
 
@@ -84,7 +83,8 @@ namespace DvMod.RemoteDispatch
             {
                 return SingletonBehaviour<IdGenerator>.Instance
                     .logicCarToTrainCar
-                    .ToDictionary(kvp => kvp.Key.ID, kvp => From(kvp.Value));
+                    .Values
+                    .ToDictionary(car => car.ID, car => From(car));
             }).Result;
         }
 
@@ -99,9 +99,9 @@ namespace DvMod.RemoteDispatch
             }).Result;
         }
 
-        public static string GetTrainsetDataJson(int id)
+        public static JObject GetTrainsetDataJson(int id)
         {
-            return JsonConvert.SerializeObject(GetTrainsetData(id));
+            return JObject.FromObject(GetTrainsetData(id));
         }
     }
 

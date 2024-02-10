@@ -132,7 +132,7 @@ namespace DvMod.RemoteDispatch
             if (segments.Length == 2 && context.Request.HttpMethod == "GET")
             {
                 var allCarDataJson = CarData.GetAllCarDataJson();
-                Render200(context, ContentTypes.Json, allCarDataJson);
+                Render200(context, allCarDataJson);
                 return;
             }
             if (segments.Length == 4 && segments[3] == "control" && context.Request.HttpMethod == "POST")
@@ -219,8 +219,7 @@ namespace DvMod.RemoteDispatch
                 return;
             }
             var trainsetId = int.Parse(request.Url.Segments[2]);
-            var carsJson = CarData.GetTrainsetDataJson(trainsetId);
-            Render200(context, ContentTypes.Json, carsJson);
+            Render200(context, CarData.GetTrainsetDataJson(trainsetId));
         }
 
         public static void Create()
