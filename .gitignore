@@ -3,4 +3,6 @@
 /obj/
 /dv
 /.idea/
+/res/
 Directory.Build.targets
+dv-remote-dispatch.sln

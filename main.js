@@ -620,6 +620,8 @@ const locoControlCoupleButton = document.getElementById('locoControlCoupleButton
 const locoControlUncoupleButton = document.getElementById('locoControlUncoupleButton');
 const locoControlUncoupleSelect = document.getElementById('locoControlUncoupleSelect');
 
+const locoControlHorn = document.getElementById('locoControlHorn');
+
 function updateCouplingControls(carData) {
   const canCouple = carData.canCouple;
   const carsInFront = carData.carsInFront;
@@ -743,6 +745,9 @@ locoThrottleInput.addEventListener("mouseup", () => {
   locoThrottleEditing = false;
   updateLocoDisplay();
 });
+
+locoControlHorn.addEventListener('mousedown',e => sendLocoCommand('horn=1'));
+locoControlHorn.addEventListener('mouseup',e => sendLocoCommand('horn=0'));
 
 
 /////////////////////
