@@ -580,6 +580,10 @@ fetch(new URL('/player', location))
 
 const locoIdSelect = document.getElementById('locoControlLocoId');
 function updateLocoList() {
+  var currLoco="000";
+  if(locoIdSelect.length>0){
+    currLoco=locoIdSelect.options[locoIdSelect.selectedIndex].text;//save current loco
+  }
   for (const elem of Array.from(locoIdSelect.children))
     elem.remove();
   const locoIds = Array.from(allCarData.entries())
@@ -590,6 +594,13 @@ function updateLocoList() {
     const option = document.createElement('option');
     option.textContent = id;
     locoIdSelect.appendChild(option);
+  }
+  //restore previous selection
+  var i;
+  for (i=0;i<locoIdSelect.length;i++){
+    if(locoIdSelect.options[i].text==currLoco){
+      locoIdSelect.options.selectedIndex=i;
+    }
   }
 }
 
@@ -690,20 +701,20 @@ function updateLocoHornDisplay(carData) {
 }
 
 function updateLocoDisplay() {
-  try{
-    getControlledLocoData()
-    .then(carData => {
-      locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
-      locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
-      updateLocoTrainBrakeInput(carData);
-      updateLocoIndependentBrakeInput(carData);
-      updateReverserButtons(carData.reverser);
-      updateLocoThrottleInput(carData);
-      updateCouplingControls(carData);
-      updateLocoHornDisplay(carData);
-  });} catch(e){
-    return;
-  }
+    try{
+      getControlledLocoData()
+      .then(carData => {
+        locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
+        locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
+        updateLocoTrainBrakeInput(carData);
+        updateLocoIndependentBrakeInput(carData);
+        updateReverserButtons(carData.reverser);
+        updateLocoThrottleInput(carData);
+        updateCouplingControls(carData);
+        updateLocoHornDisplay(carData);});
+    }catch(e){
+      console.warn("Couldn't load current loco data");
+    }
 }
 
 let locoControlRefreshIntervalId;
