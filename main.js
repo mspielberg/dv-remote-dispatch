@@ -621,6 +621,7 @@ const locoControlUncoupleButton = document.getElementById('locoControlUncoupleBu
 const locoControlUncoupleSelect = document.getElementById('locoControlUncoupleSelect');
 
 const locoControlHorn = document.getElementById('locoControlHorn');
+const locoHornDisplay = document.getElementById('locoHornDisplay');
 
 function updateCouplingControls(carData) {
   const canCouple = carData.canCouple;
@@ -662,6 +663,7 @@ function getControlledLocoData() {
 let locoTrainBrakeEditing = false;
 let locoIndependentBrakeEditing = false;
 let locoThrottleEditing = false;
+let locoHornEditing = false;
 
 function updateLocoTrainBrakeInput(carData) {
   if (locoTrainBrakeEditing)
@@ -681,17 +683,27 @@ function updateLocoThrottleInput(carData) {
   locoThrottleInput.value = carData.throttle * 100;
 }
 
+function updateLocoHornDisplay(carData) {
+  if (locoHornEditing)
+    return;
+  locoHornDisplay.value = carData.horn;
+}
+
 function updateLocoDisplay() {
-  getControlledLocoData()
-  .then(carData => {
-    locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
-    locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
-    updateLocoTrainBrakeInput(carData);
-    updateLocoIndependentBrakeInput(carData);
-    updateReverserButtons(carData.reverser);
-    updateLocoThrottleInput(carData);
-    updateCouplingControls(carData);
-  });
+  try{
+    getControlledLocoData()
+    .then(carData => {
+      locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
+      locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
+      updateLocoTrainBrakeInput(carData);
+      updateLocoIndependentBrakeInput(carData);
+      updateReverserButtons(carData.reverser);
+      updateLocoThrottleInput(carData);
+      updateCouplingControls(carData);
+      updateLocoHornDisplay(carData);
+  });} catch(e){
+    return;
+  }
 }
 
 let locoControlRefreshIntervalId;
