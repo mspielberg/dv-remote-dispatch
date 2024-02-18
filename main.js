@@ -633,7 +633,8 @@ const locoControlUncoupleButton = document.getElementById('locoControlUncoupleBu
 const locoControlUncoupleSelect = document.getElementById('locoControlUncoupleSelect');
 
 const locoControlHorn = document.getElementById('locoControlHorn');
-const locoHornDisplay = document.getElementById('locoHornDisplay');
+const locoWheelslipDisplay = document.getElementById('locoWheelslipDisplay');
+const locoControlSander = document.getElementById('locoControlSander');
 
 function updateCouplingControls(carData) {
   const canCouple = carData.canCouple;
@@ -675,7 +676,7 @@ function getControlledLocoData() {
 let locoTrainBrakeEditing = false;
 let locoIndependentBrakeEditing = false;
 let locoThrottleEditing = false;
-let locoHornEditing = false;
+let locoSanderEditing = false;
 
 function updateLocoTrainBrakeInput(carData) {
   if (locoTrainBrakeEditing)
@@ -695,10 +696,12 @@ function updateLocoThrottleInput(carData) {
   locoThrottleInput.value = carData.throttle * 100;
 }
 
-function updateLocoHornDisplay(carData) {
-  if (locoHornEditing)
-    return;
-  locoHornDisplay.value = carData.horn;
+function updateWheelslipDisplay(carData){
+  locoWheelslipDisplay.checked=carData.isSlipping;
+}
+
+function updateSanderDisplay(carData){
+  locoControlSander.checked=carData.isSandOn;
 }
 
 function updateLocoDisplay() {
@@ -712,7 +715,8 @@ function updateLocoDisplay() {
         updateReverserButtons(carData.reverser);
         updateLocoThrottleInput(carData);
         updateCouplingControls(carData);
-        updateLocoHornDisplay(carData);});
+        updateWheelslipDisplay(carData);
+        updateSanderDisplay(carData);});
     }catch(e){
       console.warn("Couldn't load current loco data");
     }
@@ -772,7 +776,8 @@ locoThrottleInput.addEventListener("mouseup", () => {
 
 locoControlHorn.addEventListener('mousedown',e => sendLocoCommand('horn=1'));
 locoControlHorn.addEventListener('mouseup',e => sendLocoCommand('horn=0'));
-
+locoControlHorn.addEventListener('mouseout',e => sendLocoCommand('horn=0'));
+locoControlSander.addEventListener('click',e=> sendLocoCommand(`sander=${locoControlSander.checked ? 1 : 0}`))
 
 /////////////////////
 // cars

@@ -52,6 +52,9 @@ namespace DvMod.RemoteDispatch
                 case "horn":
                     controller.controlsOverrider.Horn?.Set(value01);
                     break;
+                case "sander":
+                    controller.controlsOverrider.Sander?.Set(value01);
+                    break;
                 default:
                     return false;
                 }
