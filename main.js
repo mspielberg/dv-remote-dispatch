@@ -580,9 +580,10 @@ fetch(new URL('/player', location))
 
 const locoIdSelect = document.getElementById('locoControlLocoId');
 function updateLocoList() {
+  //save current loco
   var currLoco="000";
   if(locoIdSelect.length>0){
-    currLoco=locoIdSelect.options[locoIdSelect.selectedIndex].text;//save current loco
+    currLoco=locoIdSelect.options[locoIdSelect.selectedIndex].text;
   }
   for (const elem of Array.from(locoIdSelect.children))
     elem.remove();
