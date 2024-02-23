@@ -98,7 +98,8 @@ namespace DvMod.RemoteDispatch
         private static EventInfo? GetPersistentJobsTrackChangedEvent()
         {
             return UnityModManager.FindMod("PersistentJobsMod")
-                ?.Assembly.GetType("PersistentJobsModInteractionFeatures")
+                ?.Assembly
+                ?.GetType("PersistentJobsModInteractionFeatures")
                 ?.GetEvent("JobTracksChanged");
         }
 
