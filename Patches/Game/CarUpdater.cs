@@ -5,7 +5,7 @@ using HarmonyLib;
 using System.Linq;
 using UnityEngine;
 
-namespace DvMod.RemoteDispatch
+namespace DvMod.RemoteDispatch.Patches.Game
 {
     public static class CarUpdater
     {

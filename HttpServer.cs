@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System;
 using UnityEngine;
+using DvMod.RemoteDispatch.Patches.Game;
 
 namespace DvMod.RemoteDispatch
 {
@@ -20,13 +21,37 @@ namespace DvMod.RemoteDispatch
 
         public async void Start()
         {
+            string[] prefixes = new string[]
+            {
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://[::1]",
+        "http://*",
+        "http://[::]"
+            };
+
             if (!listener.IsListening)
             {
-                listener.Prefixes.Add($"http://*:{Main.settings.serverPort}/");
+                foreach (string prefix in prefixes)
+                {
+                    listener.Prefixes.Add(prefix + ':' + Main.settings.serverPort + '/');
+                    Main.DebugLog(() => $"Added prefix: {prefix + ':' + Main.settings.serverPort + '/'}");
+                }
+
                 listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous | AuthenticationSchemes.Basic;
                 listener.Realm = "DV Remote Dispatch";
+
                 Main.DebugLog(() => $"Starting HTTP server on port {Main.settings.serverPort}");
-                listener.Start();
+                try
+                {
+                    listener.Start();
+                    Main.DebugLog(() => "HTTP server started successfully");
+                }
+                catch (Exception e)
+                {
+                    Main.DebugLog(() => $"Failed to start HTTP server: {e.Message}");
+                    return;
+                }
             }
 
             while (listener.IsListening)
@@ -34,6 +59,8 @@ namespace DvMod.RemoteDispatch
                 try
                 {
                     var context = await listener.GetContextAsync().ConfigureAwait(true);
+                    Main.DebugLog(() => $"Received connection from: {context.Request.RemoteEndPoint}, URL: {context.Request.Url}, Local endpoint: {context.Request.LocalEndPoint}");
+
                     if (CheckAuthentication(context))
                     {
                         _ = Task.Run(async () =>
@@ -52,11 +79,16 @@ namespace DvMod.RemoteDispatch
                     {
                         context.Response.Headers.Add("WWW-Authenticate", "Basic");
                         RenderEmpty(context, 401);
+                        Main.DebugLog(() => $"Authentication failed for request from: {context.Request.RemoteEndPoint}");
                     }
                 }
                 catch (ObjectDisposedException e) when (e.ObjectName == "listener")
                 {
-                    // ignore when OnDestroy() is called to shutdown the server
+                    Main.DebugLog(() => "HTTP server stopped");
+                }
+                catch (Exception e)
+                {
+                    Main.DebugLog(() => $"Unexpected error in server loop: {e}");
                 }
             }
         }
@@ -80,6 +112,7 @@ namespace DvMod.RemoteDispatch
         private static async Task HandleRequest(HttpListenerContext context)
         {
             var request = context.Request;
+            context.Response.AddHeader("morm-debug", context.Request.RemoteEndPoint.Address.ToString());
             if (request.Url.Segments.Length < 2)
             {
                 context.Response.ContentType = ContentTypes.Html;

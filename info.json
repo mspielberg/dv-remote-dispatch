@@ -2,7 +2,7 @@
   "Id": "RemoteDispatch",
   "DisplayName": "Remote Dispatch",
   "Author": "Zeibach",
-  "Version": "1.0.4",
+  "Version": "1.0.5",
   "AssemblyName": "RemoteDispatch.dll",
   "EntryMethod": "DvMod.RemoteDispatch.Main.Load",
   "LoadAfter": [ "PersistentJobsMod" ],

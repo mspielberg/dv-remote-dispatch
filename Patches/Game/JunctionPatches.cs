@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace DvMod.RemoteDispatch
+namespace DvMod.RemoteDispatch.Patches.Game
 {
     public static class JunctionPatches
     {
