@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-namespace DvMod.RemoteDispatch
+namespace DvMod.RemoteDispatch.Patches.Game
 {
     public static class JobData
     {
@@ -65,7 +65,7 @@ namespace DvMod.RemoteDispatch
                     bool isRuralTask = task.type == (TaskType)42;
 
                     bool isRuralUnload = isRuralTask && !((dynamic)task).isLoading;
-                    if ((task.warehouseTaskType != WarehouseTaskType.Unloading) && !isRuralUnload)
+                    if (task.warehouseTaskType != WarehouseTaskType.Unloading && !isRuralUnload)
                     {
                         // skip everything but unload tasks
                         continue;
@@ -121,7 +121,7 @@ namespace DvMod.RemoteDispatch
             );
             static float TotalLength(TaskData task) => task.cars.Sum(car => car.length);
             static float TotalMass(TaskData task) => task.cars.Sum(car => car.carType.parentType.mass)
-                + ((task.cargoTypePerCar == null)
+                + (task.cargoTypePerCar == null
                 ? 0f
                 : task.cars.Zip(task.cargoTypePerCar, (car, cargoType) => car.capacity * cargoType.ToV2().massPerUnit).Sum());
 

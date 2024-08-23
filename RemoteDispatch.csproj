@@ -1,43 +1,47 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
-    <InformationalVersion>1.0.4</InformationalVersion>
+    <InformationalVersion>1.0.5</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Krafs.Publicizer" Version="2.2.1"/>
-    <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
+    <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
+    <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false" />
+    <Publicize Include="System" IncludeCompilerGeneratedMembers="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Assembly-CSharp"/>
-    <Reference Include="DV.BrakeSystem"/>
-    <Reference Include="DV.Simulation"/>
-    <Reference Include="DV.Common"/>
-    <Reference Include="DV.Interaction"/>
-    <Reference Include="DV.PointSet"/>
-    <Reference Include="DV.ThingTypes"/>
-    <Reference Include="DV.Utils"/>
-    <Reference Include="Microsoft.CSharp"/>
-    <Reference Include="Newtonsoft.Json"/>
-    <Reference Include="net.smkd.vector3d"/>
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="DV.BrakeSystem" />
+    <Reference Include="DV.Simulation" />
+    <Reference Include="DV.Common" />
+    <Reference Include="DV.Interaction" />
+    <Reference Include="DV.PointSet" />
+    <Reference Include="DV.ThingTypes" />
+    <Reference Include="DV.Utils" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="net.smkd.vector3d" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="UnityEngine.CoreModule"/>
-    <Reference Include="UnityEngine.IMGUIModule"/>
-    <PackageReference Include="UnityModManager" Version="0.27.2"/>
+    <Reference Include="UnityEngine.CoreModule" />
+    <Reference Include="UnityEngine.IMGUIModule" />
+    <Reference Include="System">
+		<HintPath>$(DvManagedDir)\System.dll</HintPath>
+	</Reference>
+    <PackageReference Include="UnityModManager" Version="0.27.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="icon.svg"/>
-    <EmbeddedResource Include="index.html"/>
-    <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
-    <EmbeddedResource Include="licenses/*.png"/>
-    <EmbeddedResource Include="main.js"/>
-    <EmbeddedResource Include="style.css"/>
+    <EmbeddedResource Include="icon.svg" />
+    <EmbeddedResource Include="index.html" />
+    <EmbeddedResource Include="leaflet.rotatedImageOverlay.js" />
+    <EmbeddedResource Include="licenses/*.png" />
+    <EmbeddedResource Include="main.js" />
+    <EmbeddedResource Include="style.css" />
   </ItemGroup>
 </Project>

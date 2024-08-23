@@ -1,4 +1,5 @@
 using DV.Logic.Job;
+using DvMod.RemoteDispatch.Patches.Game;
 using HarmonyLib;
 using System;
 using System.Reflection;
@@ -47,11 +48,19 @@ namespace DvMod.RemoteDispatch
 
         private static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
+            //EndPointListenerPatch.CompareHost("[::]", "[2001:8003:a947:a00:ed03:2329:ddd4:de3c]");
             Harmony harmony = new Harmony(modEntry.Info.Id);
 
             if (value)
             {
+                /*System.Uri uri = new System.Uri("google.com");
+                Main.DebugLog(() => $"newUri: {uri.Host}");*/
                 harmony.PatchAll();
+                var methods = harmony.GetPatchedMethods();
+                foreach (var method in methods)
+                {
+                    Main.DebugLog(() => $"patched: {method.DeclaringType?.FullName}.{method.Name}");
+                }
                 WorldStreamingInit.LoadingFinished += Start;
                 UnloadWatcher.UnloadRequested += Stop;
                 ConnectToPersistentJobs();
