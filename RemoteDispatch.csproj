@@ -31,7 +31,7 @@
     <Reference Include="UnityEngine.CoreModule" />
     <Reference Include="UnityEngine.IMGUIModule" />
     <Reference Include="System">
-		<HintPath>G:\SteamLibrary\steamapps\common\Derail Valley\DerailValley_Data\Managed\System.dll</HintPath>
+		<HintPath>$(DvManagedDir)\System.dll</HintPath>
 	</Reference>
     <PackageReference Include="UnityModManager" Version="0.27.2" />
   </ItemGroup>
