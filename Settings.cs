@@ -11,6 +11,7 @@ namespace DvMod.RemoteDispatch
         public int serverPort = 7245;
         public string serverPassword = "";
         public Permissions permissions = new Permissions();
+        public bool showUndiscoveredLocomotives = false;
         public bool enableLogging = false;
 
         public readonly string? version = Main.mod?.Info.Version;
@@ -41,6 +42,8 @@ namespace DvMod.RemoteDispatch
             GUILayout.EndHorizontal();
 
             permissions.Draw();
+
+            showUndiscoveredLocomotives = GUILayout.Toggle(showUndiscoveredLocomotives, "Show undiscovered locomotives");
 
             enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
 

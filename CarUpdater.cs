@@ -40,7 +40,8 @@ namespace DvMod.RemoteDispatch
 
         public static void MarkTrainsetAsDirty(Trainset trainset)
         {
-            Sessions.AddTag($"trainset-{trainset.id}");
+            if (trainset.cars.Find(CarData.ShouldReturnTrainCar) != null)
+                Sessions.AddTag($"trainset-{trainset.id}");
         }
 
         [HarmonyPatch(typeof(TrainCar), nameof(TrainCar.Update))]
@@ -89,9 +90,11 @@ namespace DvMod.RemoteDispatch
 
         private static void OnRestorationStateChanged(LocoRestorationController controller, TrainCarLivery livery, LocoRestorationController.RestorationState newState)
         {
-            MarkCarAsDirty(controller.loco);
-            if (controller.secondCar != null)
-                MarkCarAsDirty(controller.secondCar);
+            if (Main.settings.showUndiscoveredLocomotives)
+                return; // already sent to client during initialization
+
+            if (newState == LocoRestorationController.RestorationState.S3_RerailedCars)
+                OnCarsChanged(controller.loco);
         }
     }
 }

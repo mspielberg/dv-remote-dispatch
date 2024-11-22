@@ -1,5 +1,5 @@
+using DV.LocoRestoration;
 using DV.Logic.Job;
-using DV.RemoteControls;
 using DV.ThingTypes;
 using DV.Utils;
 using Newtonsoft.Json.Linq;
@@ -66,7 +66,7 @@ namespace DvMod.RemoteDispatch
             var (carId, carData) = Updater.RunOnMainThread(() =>
             {
                 var car = SingletonBehaviour<IdGenerator>.Instance.GetTrainCarByCarGuid(guid);
-                if (car == null)
+                if (car == null || !ShouldReturnTrainCar(car))
                     return default;
                 return (car.ID, From(car));
             }).Result;
@@ -84,6 +84,7 @@ namespace DvMod.RemoteDispatch
                 return SingletonBehaviour<IdGenerator>.Instance
                     .logicCarToTrainCar
                     .Values
+                    .Where(ShouldReturnTrainCar)
                     .ToDictionary(car => car.ID, car => From(car));
             }).Result;
         }
@@ -95,13 +96,24 @@ namespace DvMod.RemoteDispatch
                 var trainset = Trainset.allSets.Find(set => set.id == id);
                 if (trainset == null)
                     return new Dictionary<string, JObject>();
-                return trainset.cars.ToDictionary(car => car.ID, car => From(car).ToJson());
+                return trainset.cars
+                    .Where(ShouldReturnTrainCar)
+                    .ToDictionary(car => car.ID, car => From(car).ToJson());
             }).Result;
         }
 
         public static JObject GetTrainsetDataJson(int id)
         {
             return JObject.FromObject(GetTrainsetData(id));
+        }
+
+        public static bool ShouldReturnTrainCar(TrainCar trainCar)
+        {
+            if (Main.settings.showUndiscoveredLocomotives)
+                return true;
+            var state = LocoRestorationController.GetForTrainCar(trainCar)?.State;
+            return !state.HasValue
+                || state.Value >= LocoRestorationController.RestorationState.S3_RerailedCars;
         }
     }
 
