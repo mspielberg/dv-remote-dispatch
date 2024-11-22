@@ -1,5 +1,7 @@
+using DV.LocoRestoration;
 using DV.RemoteControls;
 using DV.Simulation.Controllers;
+using DV.ThingTypes;
 using DV.Utils;
 using HarmonyLib;
 using System.Linq;
@@ -63,6 +65,9 @@ namespace DvMod.RemoteDispatch
 
             carSpawner.CarSpawned += OnCarsChanged;
             carSpawner.CarAboutToBeDeleted += OnCarsChanged;
+
+            foreach (var controller in LocoRestorationController.allLocoRestorationControllers)
+                controller.StateChanged += OnRestorationStateChanged;
         }
 
         public static void Stop()
@@ -72,11 +77,21 @@ namespace DvMod.RemoteDispatch
                 return;
             carSpawner.CarSpawned -= OnCarsChanged;
             carSpawner.CarAboutToBeDeleted -= OnCarsChanged;
+
+            foreach (var controller in LocoRestorationController.allLocoRestorationControllers)
+                controller.StateChanged -= OnRestorationStateChanged;
         }
 
         private static void OnCarsChanged(TrainCar trainCar)
         {
             Sessions.AddTag("cars");
+        }
+
+        private static void OnRestorationStateChanged(LocoRestorationController controller, TrainCarLivery livery, LocoRestorationController.RestorationState newState)
+        {
+            MarkCarAsDirty(controller.loco);
+            if (controller.secondCar != null)
+                MarkCarAsDirty(controller.secondCar);
         }
     }
 }
