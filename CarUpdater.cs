@@ -11,6 +11,11 @@ namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
+        public static void ForceCarRefresh()
+        {
+            Sessions.AddTag("cars");
+        }
+
         public static void MarkCarAsDirty(TrainCar car)
         {
             Sessions.AddTag($"carguid-{car.CarGUID}");

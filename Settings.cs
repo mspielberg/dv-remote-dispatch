@@ -43,7 +43,14 @@ namespace DvMod.RemoteDispatch
 
             permissions.Draw();
 
-            showUndiscoveredLocomotives = GUILayout.Toggle(showUndiscoveredLocomotives, "Show undiscovered locomotives");
+            var newShowUndiscoveredLocomotives = GUILayout.Toggle(
+                showUndiscoveredLocomotives,
+                "Show undiscovered locomotives");
+            if (newShowUndiscoveredLocomotives != showUndiscoveredLocomotives)
+            {
+                showUndiscoveredLocomotives = newShowUndiscoveredLocomotives;
+                CarUpdater.ForceCarRefresh();
+            }
 
             enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
 
