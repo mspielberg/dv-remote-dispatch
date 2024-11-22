@@ -134,7 +134,7 @@ namespace DvMod.RemoteDispatch
             return junctionPointJSON;
         }
 
-        public static IEnumerable<int> GetAllJunctionStates()
+        public static IEnumerable<byte> GetAllJunctionStates()
         {
             if (!WorldStreamingInit.Instance || !WorldStreamingInit.IsLoaded)
                 throw new Exception("World not yet loaded");
