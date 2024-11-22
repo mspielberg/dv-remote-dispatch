@@ -512,9 +512,41 @@ function followCar(carId, shouldScroll) {
 // player
 
 const playerMarkers = new Map();
+const playerMarkersPositions = new Map();
+
+var zoomMarker = document.getElementById('zoomMarkerCheckBox').checked;
+var markerFactor = 1;
+
+document.getElementById('zoomMarkerCheckBox')
+  .addEventListener('input', e => {
+    zoomMarker = e.target.checked;
+    updateMarkerFactor();
+  });
+
+map.on('zoomend', function () {
+  updateMarkerFactor();
+})
+
+function updateMarkerFactor() {
+  if (zoomMarker) {
+    const zoom = map.getZoom();
+    markerFactor = zoom > initialZoom ? 1 : 1 << (initialZoom - zoom);
+    console.info('Zoom Marker:', zoomMarker, 'Map Zoom:', zoom, 'Marker Factor:', markerFactor);
+  }
+  else {
+    markerFactor = 1;
+    console.info('Zoom Marker:', zoomMarker, 'Marker Factor:', markerFactor);
+  }
+
+  Array.from(playerMarkers.keys())
+    .forEach(id => {
+      playerMarkers.get(id)
+        .setBounds(getPlayerOverlayBounds(playerMarkersPositions.get(id)));
+    });
+}
 
 function getPlayerOverlayBounds(position) {
-  const size = metersToDegrees * 2;
+  const size = metersToDegrees * markerFactor * 2;
   return [ [ position[0] - size, position[1] - size], [position[0] + size, position[1] + size] ];
 }
 
@@ -536,12 +568,14 @@ function updatePlayerOverlays(data) {
     const polygonElem = document.getElementById(`playerPolygon-${id}`);
     polygonElem.setAttribute('transform', `rotate(${playerData.rotation})`);
     playerMarkers.get(id).setBounds(getPlayerOverlayBounds(playerData.position));
+    playerMarkersPositions.set(id, playerData.position);
   });
 }
 
 function removePlayerOverlay(id) {
   document.getElementById(`playerPolygon-${id}`)?.remove();
   playerMarkers.delete(id);
+  playerMarkersPositions.delete(id);
 }
 
 function createPlayerOverlay(id, playerData) {
@@ -565,6 +599,7 @@ function createPlayerMarker(id, playerData) {
     { interactive: true, bubblingMouseEvents: false })
     .addEventListener('click', e => setMarkerToFollow(e.target))
     .addTo(map));
+  playerMarkersPositions.set(id, playerData.position);
 }
 
 function scrollToTrack(trackId) {
