@@ -315,26 +315,28 @@ const trackPolyLines = new Map();
 
 function colorForYardId(yardId) {
   switch (yardId) {
-  case 'SM'  : return '#9899a3';
-  case 'FM'  : return '#ffcb69';
-  case 'FF'  : return '#9ac9f9';
-  case 'GF'  : return '#f09ebb';
-  case 'CSW' : return '#c7c1b7';
-  case 'HB'  :
-  case 'HMB' :
-    return '#9b7fa0';
-  case 'MF'  :
-  case 'MFMB':
-    return '#ffa96e';
-  case 'CM'  : return '#807b73';
-  case 'IME' : return '#d97f73';
-  case 'IMW' : return '#b76e59';
-  case 'FRC' : return '#afd57b';
-  case 'FRS' : return '#7caa6f';
-  case 'SW'  : return '#f6ce9f';
-  case 'OWN' : return '#786f61';
-  case 'OWC' : return '#6c6c6f';
-  case 'MB'  : return '#b6a46f';
+    case 'CME': return '#686868';
+    case 'CMS': return '#4e554e';
+    case 'CP': return '#583d3d';
+    case 'CS': return '#97adc2';
+    case 'CW': return '#a7a7a7';
+    case 'FF': return '#77a6e3';
+    case 'FM': return '#ddaa4d';
+    case 'FRC': return '#92b66a';
+    case 'FRS': return '#609161';
+    case 'GF': return '#c97fa2';
+    case 'HB': return '#816c94';
+    case 'HMB': return '#816c94';
+    case 'IME': return '#b66861';
+    case 'IMW': return '#9a5847';
+    case 'MB': return '#988c5f';
+    case 'MF': return '#dc885b';
+    case 'MFMB': return '#dc885b';
+    case 'OR': return '#935478';
+    case 'OWC': return '#555a62';
+    case 'OWN': return '#625d55';
+    case 'SM': return '#7b8394';
+    case 'SW': return '#cda888';
   }
 }
 
