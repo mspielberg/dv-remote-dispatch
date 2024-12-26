@@ -11,6 +11,7 @@ namespace DvMod.RemoteDispatch
         public int serverPort = 7245;
         public string serverPassword = "";
         public Permissions permissions = new Permissions();
+        public bool showUndiscoveredLocomotives = false;
         public bool enableLogging = false;
 
         public readonly string? version = Main.mod?.Info.Version;
@@ -41,6 +42,15 @@ namespace DvMod.RemoteDispatch
             GUILayout.EndHorizontal();
 
             permissions.Draw();
+
+            var newShowUndiscoveredLocomotives = GUILayout.Toggle(
+                showUndiscoveredLocomotives,
+                "Show undiscovered locomotives");
+            if (newShowUndiscoveredLocomotives != showUndiscoveredLocomotives)
+            {
+                showUndiscoveredLocomotives = newShowUndiscoveredLocomotives;
+                CarUpdater.ForceCarRefresh();
+            }
 
             enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
 

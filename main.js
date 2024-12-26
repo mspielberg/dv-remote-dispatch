@@ -26,6 +26,12 @@ const zoomHome = new L.Control.ZoomHome({
 
 let markerToFollow;
 map.addEventListener('mousedown', stopFollowing);
+map.on('drag', () => {
+    map.fitBounds(map.getBounds());
+});
+map.on('zoomanim', () => {
+    map.fitBounds(map.getBounds());
+});
 
 function setMarkerToFollow(marker) {
   markerToFollow = marker;

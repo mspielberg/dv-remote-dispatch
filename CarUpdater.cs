@@ -1,5 +1,7 @@
+using DV.LocoRestoration;
 using DV.RemoteControls;
 using DV.Simulation.Controllers;
+using DV.ThingTypes;
 using DV.Utils;
 using HarmonyLib;
 using System.Linq;
@@ -9,6 +11,11 @@ namespace DvMod.RemoteDispatch
 {
     public static class CarUpdater
     {
+        public static void ForceCarRefresh()
+        {
+            Sessions.AddTag("cars");
+        }
+
         public static void MarkCarAsDirty(TrainCar car)
         {
             Sessions.AddTag($"carguid-{car.CarGUID}");
@@ -38,7 +45,8 @@ namespace DvMod.RemoteDispatch
 
         public static void MarkTrainsetAsDirty(Trainset trainset)
         {
-            Sessions.AddTag($"trainset-{trainset.id}");
+            if (trainset.cars.Find(CarData.ShouldReturnTrainCar) != null)
+                Sessions.AddTag($"trainset-{trainset.id}");
         }
 
         [HarmonyPatch(typeof(TrainCar), nameof(TrainCar.Update))]
@@ -63,6 +71,9 @@ namespace DvMod.RemoteDispatch
 
             carSpawner.CarSpawned += OnCarsChanged;
             carSpawner.CarAboutToBeDeleted += OnCarsChanged;
+
+            foreach (var controller in LocoRestorationController.allLocoRestorationControllers)
+                controller.StateChanged += OnRestorationStateChanged;
         }
 
         public static void Stop()
@@ -72,11 +83,23 @@ namespace DvMod.RemoteDispatch
                 return;
             carSpawner.CarSpawned -= OnCarsChanged;
             carSpawner.CarAboutToBeDeleted -= OnCarsChanged;
+
+            foreach (var controller in LocoRestorationController.allLocoRestorationControllers)
+                controller.StateChanged -= OnRestorationStateChanged;
         }
 
         private static void OnCarsChanged(TrainCar trainCar)
         {
             Sessions.AddTag("cars");
+        }
+
+        private static void OnRestorationStateChanged(LocoRestorationController controller, TrainCarLivery livery, LocoRestorationController.RestorationState newState)
+        {
+            if (Main.settings.showUndiscoveredLocomotives)
+                return; // already sent to client during initialization
+
+            if (newState == LocoRestorationController.RestorationState.S3_RerailedCars)
+                OnCarsChanged(controller.loco);
         }
     }
 }
