@@ -154,6 +154,7 @@ body {
   position: relative;
   display: inline flow-root;
   margin-right: 4px;
+  height: 100%;
 }
 .jobList-licenseBackground {
   position: absolute;
