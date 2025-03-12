@@ -46,7 +46,8 @@ table td {
   text-align:left;
   border-top:2px solid #ddd;
 }
-table th {
+table th,
+.jobList-grid-metadata {
   background:#eee;
   background:-webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#eee));
   background:-moz-linear-gradient(top, #f6f6f6, #eee);
@@ -57,8 +58,9 @@ table td {
   vertical-align:top;
 }
 table thead:first-child tr th,
-table thead:first-child tr td {
-  border-top:0;
+table thead:first-child tr td,
+.jobList-grid:first-child div.jobList-jobHeader {
+  border-top: 0;
 }
 table tbody + tbody {
   border-top:2px solid #ddd;
@@ -118,10 +120,12 @@ table tbody:first-child > tr:first-child td {
 .interactive {
   cursor: pointer;
 }
-tbody.following {
+tbody.following,
+.jobList-grid.following {
   box-shadow: -4px 0px steelblue;
 }
-td.following {
+td.following,
+.jobList-grid > div.following {
   background: lightsteelblue;
 }
 img.leaflet-sidebar-tab-icon32 {
@@ -134,14 +138,30 @@ body {
   margin: 0px;
 }
 
+.jobList-grid > * {
+  padding: 3px;
+}
+.jobList-metadata-start {
+  grid-column-start: 1;
+}
+.jobList-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  gap: 1px;
+}
 .jobList-trackSeparator {
   text-align: center;
 }
 .jobList-jobHeader {
+  grid-column: 1 / -1;
+  font-weight: bold;
   position: relative;
   border-top: black solid 4px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding: 5px 3px;
+}
+.jobList-grid > *:not(:first-child) {
+  outline: 1px solid #ddd;
 }
 .jobList-licenses {
   position: absolute;
