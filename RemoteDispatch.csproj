@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
@@ -19,11 +19,13 @@
     <Reference Include="DV.Common"/>
     <Reference Include="DV.Interaction"/>
     <Reference Include="DV.PointSet"/>
+    <Reference Include="DV.RailTrack" />
     <Reference Include="DV.ThingTypes"/>
     <Reference Include="DV.Utils"/>
     <Reference Include="Microsoft.CSharp"/>
     <Reference Include="Newtonsoft.Json"/>
     <Reference Include="net.smkd.vector3d"/>
+    <Reference Include="WorldStreamer" />
   </ItemGroup>
 
   <ItemGroup>

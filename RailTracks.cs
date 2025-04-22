@@ -1,6 +1,4 @@
 using DV.PointSet;
-using DV.Utils;
-using DV;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -71,7 +69,7 @@ namespace DvMod.RemoteDispatch
 
         private static IEnumerable<World.Position> GetTrackPoints(RailTrack track, float resolution = SIMPLIFIED_RESOLUTION)
         {
-            var pointSet = track.GetPointSet();
+            var pointSet = track.GetKinkedPointSet();
             EquiPointSet simplified = EquiPointSet.ResampleEquidistant(
                 pointSet,
                 Mathf.Min(resolution, (float)pointSet.span / 3));
@@ -86,7 +84,7 @@ namespace DvMod.RemoteDispatch
         {
             trackPointJSON = JsonConvert.SerializeObject(
                 GetNormalizedTrackCoordinates().ToDictionary(
-                    kvp => kvp.Key.logicTrack.ID,
+                    kvp => kvp.Key.LogicTrack().ID,
                     kvp => kvp.Value.Select(ll => ll.ToJson())));
             return trackPointJSON;
         }
@@ -121,12 +119,12 @@ namespace DvMod.RemoteDispatch
             if (string.IsNullOrEmpty(junctionPointJSON))
             {
                 junctionPointJSON = JsonConvert.SerializeObject(
-                    SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j =>
+                    RailTrackRegistry.Instance.OrderedJunctions.Select(j =>
                     {
                         var moved = j.position - WorldMover.currentMove;
                         return new JObject(
                             new JProperty("position", new World.Position(moved.x, moved.z).ToLatLon().ToJson()),
-                            new JProperty("branches", j.outBranches.Select(b => b.track.logicTrack.ID.ToString()))
+                            new JProperty("branches", j.outBranches.Select(b => b.track.LogicTrack().ID.ToString()))
                         );
                     })
                 );
@@ -138,7 +136,7 @@ namespace DvMod.RemoteDispatch
         {
             if (!WorldStreamingInit.Instance || !WorldStreamingInit.IsLoaded)
                 throw new Exception("World not yet loaded");
-            return SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Select(j => j.selectedBranch);
+            return RailTrackRegistry.Instance.OrderedJunctions.Select(j => j.selectedBranch);
         }
 
         public static string GetJunctionStateJSON()

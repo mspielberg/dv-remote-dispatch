@@ -1,8 +1,5 @@
-using DV.Logic.Job;
 using DV.RemoteControls;
-using DV.Utils;
 using System.Collections.Specialized;
-using System.Linq;
 using UnityEngine;
 
 namespace DvMod.RemoteDispatch
@@ -16,7 +13,7 @@ namespace DvMod.RemoteDispatch
         
         public static RemoteControllerModule? GetLocoController(string guid)
         {
-            return SingletonBehaviour<IdGenerator>.Instance
+            return TrainCarRegistry.Instance
                 .GetTrainCarByCarGuid(guid)
                 ?.GetComponent<RemoteControllerModule>();
         }

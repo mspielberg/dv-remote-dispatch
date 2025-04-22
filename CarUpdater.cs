@@ -1,11 +1,11 @@
 using DV.LocoRestoration;
 using DV.RemoteControls;
+using DV.Simulation.Cars;
 using DV.Simulation.Controllers;
 using DV.ThingTypes;
 using DV.Utils;
 using HarmonyLib;
 using System.Linq;
-using UnityEngine;
 
 namespace DvMod.RemoteDispatch
 {
@@ -49,14 +49,14 @@ namespace DvMod.RemoteDispatch
                 Sessions.AddTag($"trainset-{trainset.id}");
         }
 
-        [HarmonyPatch(typeof(TrainCar), nameof(TrainCar.Update))]
+        [HarmonyPatch(typeof(SimController), nameof(SimController.Update))]
         public static class UpdatePatch
         {
-            public static void Postfix(TrainCar __instance)
+            public static void Postfix(SimController __instance)
             {
-                if (__instance.logicCar == null || __instance.isStationary)
+                if (__instance.train == null || __instance.train.logicCar == null || __instance.train.isStationary)
                     return;
-                MarkTrainsetAsDirty(__instance.trainset);
+                MarkTrainsetAsDirty(__instance.train.trainset);
             }
         }
 
