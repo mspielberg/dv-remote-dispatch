@@ -1,7 +1,5 @@
 using DV.LocoRestoration;
-using DV.Logic.Job;
 using DV.ThingTypes;
-using DV.Utils;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -65,7 +63,7 @@ namespace DvMod.RemoteDispatch
         {
             var (carId, carData) = Updater.RunOnMainThread(() =>
             {
-                var car = SingletonBehaviour<IdGenerator>.Instance.GetTrainCarByCarGuid(guid);
+                var car = TrainCarRegistry.Instance.GetTrainCarByCarGuid(guid);
                 if (car == null || !ShouldReturnTrainCar(car))
                     return default;
                 return (car.ID, From(car));
@@ -81,7 +79,7 @@ namespace DvMod.RemoteDispatch
         {
             return Updater.RunOnMainThread(() =>
             {
-                return SingletonBehaviour<IdGenerator>.Instance
+                return TrainCarRegistry.Instance
                     .logicCarToTrainCar
                     .Values
                     .Where(ShouldReturnTrainCar)

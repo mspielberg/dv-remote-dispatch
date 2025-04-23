@@ -38,8 +38,8 @@ namespace DvMod.RemoteDispatch
         private static Dictionary<TrainCar, string> InitializeJobIdForCar()
         {
             return SingletonBehaviour<JobsManager>.Instance.jobToJobCars
-                .SelectMany(kvp => kvp.Value.Select(car => (car, job: kvp.Key)))
-                .ToDictionary(p => p.car, p => p.job.ID);
+                .SelectMany(kvp => kvp.Value.Select(car => (trainCar: car.TrainCar(), job: kvp.Key)))
+                .ToDictionary(p => p.trainCar, p => p.job.ID);
         }
 
         public static Job? JobForId(string jobId)
@@ -176,12 +176,14 @@ namespace DvMod.RemoteDispatch
             {
                 public static void Postfix(JobChainController __instance, string jobId)
                 {
-                    foreach (TrainCar car in __instance.trainCarsForJobChain)
+                    foreach (Car car in __instance.carsForJobChain)
                     {
+                        var trainCar = car.TrainCar();
+
                         if (jobId.Length == 0)
-                            jobIdForCar.Remove(car);
+                            jobIdForCar.Remove(trainCar);
                         else
-                            jobIdForCar[car] = jobId;
+                            jobIdForCar[trainCar] = jobId;
                         Sessions.AddTag("jobs");
                     }
                 }

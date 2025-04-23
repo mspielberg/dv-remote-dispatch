@@ -1,5 +1,3 @@
-using DV.Utils;
-using DV;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.IO.Compression;
@@ -184,7 +182,7 @@ namespace DvMod.RemoteDispatch
 
         private static bool IsValidJunctionId(int junctionId)
         {
-            return junctionId >= 0 && junctionId < SingletonBehaviour<WorldData>.Instance.OrderedJunctions.Length;
+            return junctionId >= 0 && junctionId < RailTrackRegistry.Instance.OrderedJunctions.Length;
         }
 
         private static async void HandleJunctionRequest(HttpListenerContext context)
@@ -207,7 +205,7 @@ namespace DvMod.RemoteDispatch
                     var newSelectedBranch = await Updater.RunOnMainThread(() =>
                     {
                         Main.DebugLog(() => $"Toggling J-{junctionId}.");
-                        var junction = SingletonBehaviour<WorldData>.Instance.OrderedJunctions[junctionId];
+                        var junction = RailTrackRegistry.Instance.OrderedJunctions[junctionId];
                         junction.Switch(Junction.SwitchMode.REGULAR);
                         return junction.selectedBranch;
                     }).ConfigureAwait(false);

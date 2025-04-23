@@ -1,7 +1,8 @@
 {
   "Releases":
   [
-      {"Id": "RemoteDispatch", "Version": "1.1.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.1.0/RemoteDispatch_1.1.0.zip"},
+      {"Id": "RemoteDispatch", "Version": "1.2.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.2.0/RemoteDispatch_1.2.0.zip"},
+	  {"Id": "RemoteDispatch", "Version": "1.1.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.1.0/RemoteDispatch_1.1.0.zip"},
       {"Id": "RemoteDispatch", "Version": "1.0.4", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.4/RemoteDispatch_1.0.4.zip"},
       {"Id": "RemoteDispatch", "Version": "1.0.3", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.3/RemoteDispatch_1.0.3.zip"},
       {"Id": "RemoteDispatch", "Version": "1.0.2", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.2/RemoteDispatch_1.0.2.zip"},
