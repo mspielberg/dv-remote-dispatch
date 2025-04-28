@@ -11,6 +11,7 @@ namespace DvMod.RemoteDispatch
         public void Start()
         {
             StartCoroutine(CheckPlayerTransformCoro());
+            StartCoroutine(CheckTrainsetsCoro());
             StartCoroutine(DeferredEventsCoro());
         }
 
@@ -41,6 +42,21 @@ namespace DvMod.RemoteDispatch
             {
                 yield return WaitFor.Seconds(0.1f);
                 PlayerData.CheckTransform();
+            }
+        }
+
+        private IEnumerator CheckTrainsetsCoro()
+        {
+            while (true)
+            {
+                foreach (var trainset in Trainset.allSets)
+                {
+                    if (!trainset.firstCar.isStationary)
+                    {
+                        CarUpdater.MarkTrainsetAsDirty(trainset);
+                    }
+                }
+                yield return null;
             }
         }
 

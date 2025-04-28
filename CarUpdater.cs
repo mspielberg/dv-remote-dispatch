@@ -49,17 +49,6 @@ namespace DvMod.RemoteDispatch
                 Sessions.AddTag($"trainset-{trainset.id}");
         }
 
-        [HarmonyPatch(typeof(SimController), nameof(SimController.Update))]
-        public static class UpdatePatch
-        {
-            public static void Postfix(SimController __instance)
-            {
-                if (__instance.train == null || __instance.train.logicCar == null || __instance.train.isStationary)
-                    return;
-                MarkTrainsetAsDirty(__instance.train.trainset);
-            }
-        }
-
         public static void Start()
         {
             CarSpawner carSpawner = SingletonBehaviour<CarSpawner>.Instance;
