@@ -119,6 +119,7 @@ namespace DvMod.RemoteDispatch
     {
         public readonly bool canCouple;
         public readonly bool isSlipping;
+        public readonly bool isSandOn;
         public readonly int carsInFront;
         public readonly int carsInRear;
         public readonly float brakePipe;
@@ -141,6 +142,7 @@ namespace DvMod.RemoteDispatch
             ILocomotiveRemoteControl controller = trainCar.GetComponent<ILocomotiveRemoteControl>();
             canCouple = controller.IsCouplerInRange(ExternalCouplingHandler.COUPLING_RANGE);
             isSlipping = controller.IsWheelslipping();
+            isSandOn = controller.IsSandOn();
             carsInFront = controller.GetNumberOfCarsInFront();
             carsInRear = controller.GetNumberOfCarsInRear();
             forwardSpeed = trainCar.GetForwardSpeed();
@@ -157,6 +159,7 @@ namespace DvMod.RemoteDispatch
             carObj.Add("canBeControlled", true);
             carObj.Add("canCouple", canCouple);
             carObj.Add("isSlipping", isSlipping);
+            carObj.Add("isSandOn", isSandOn);
             carObj.Add("carsInFront", carsInFront);
             carObj.Add("carsInRear", carsInRear);
             carObj.Add("forwardSpeed", forwardSpeed * 60 * 60 / 1000);

@@ -46,6 +46,12 @@ namespace DvMod.RemoteDispatch
                 case "uncouple":
                     controller.Uncouple((int)value);
                     break;
+                case "horn":
+                    controller.controlsOverrider.Horn?.Set(value01);
+                    break;
+                case "sander":
+                    controller.controlsOverrider.Sander?.Set(value01);
+                    break;
                 default:
                     return false;
                 }

@@ -588,6 +588,11 @@ fetch(new URL('/player', location))
 
 const locoIdSelect = document.getElementById('locoControlLocoId');
 function updateLocoList() {
+  //save current loco
+  var currLoco="000";
+  if(locoIdSelect.length>0){
+    currLoco=locoIdSelect.options[locoIdSelect.selectedIndex].text;
+  }
   for (const elem of Array.from(locoIdSelect.children))
     elem.remove();
   const locoIds = Array.from(allCarData.entries())
@@ -598,6 +603,13 @@ function updateLocoList() {
     const option = document.createElement('option');
     option.textContent = id;
     locoIdSelect.appendChild(option);
+  }
+  //restore previous selection
+  var i;
+  for (i=0;i<locoIdSelect.length;i++){
+    if(locoIdSelect.options[i].text==currLoco){
+      locoIdSelect.options.selectedIndex=i;
+    }
   }
 }
 
@@ -627,6 +639,10 @@ const locoThrottleInput = document.getElementById('locoControlThrottleInput');
 const locoControlCoupleButton = document.getElementById('locoControlCoupleButton');
 const locoControlUncoupleButton = document.getElementById('locoControlUncoupleButton');
 const locoControlUncoupleSelect = document.getElementById('locoControlUncoupleSelect');
+
+const locoControlHorn = document.getElementById('locoControlHorn');
+const locoWheelslipDisplay = document.getElementById('locoWheelslipDisplay');
+const locoControlSander = document.getElementById('locoControlSander');
 
 function updateCouplingControls(carData) {
   const canCouple = carData.canCouple;
@@ -668,6 +684,7 @@ function getControlledLocoData() {
 let locoTrainBrakeEditing = false;
 let locoIndependentBrakeEditing = false;
 let locoThrottleEditing = false;
+let locoSanderEditing = false;
 
 function updateLocoTrainBrakeInput(carData) {
   if (locoTrainBrakeEditing)
@@ -687,17 +704,30 @@ function updateLocoThrottleInput(carData) {
   locoThrottleInput.value = carData.throttle * 100;
 }
 
+function updateWheelslipDisplay(carData){
+  locoWheelslipDisplay.checked=carData.isSlipping;
+}
+
+function updateSanderDisplay(carData){
+  locoControlSander.checked=carData.isSandOn;
+}
+
 function updateLocoDisplay() {
-  getControlledLocoData()
-  .then(carData => {
-    locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
-    locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
-    updateLocoTrainBrakeInput(carData);
-    updateLocoIndependentBrakeInput(carData);
-    updateReverserButtons(carData.reverser);
-    updateLocoThrottleInput(carData);
-    updateCouplingControls(carData);
-  });
+    try{
+      getControlledLocoData()
+      .then(carData => {
+        locoBrakePipeDisplay.textContent = carData.brakePipe.toFixed(1);
+        locoSpeedDisplay.textContent = carData.forwardSpeed.toFixed(0);
+        updateLocoTrainBrakeInput(carData);
+        updateLocoIndependentBrakeInput(carData);
+        updateReverserButtons(carData.reverser);
+        updateLocoThrottleInput(carData);
+        updateCouplingControls(carData);
+        updateWheelslipDisplay(carData);
+        updateSanderDisplay(carData);});
+    }catch(e){
+      console.warn("Couldn't load current loco data");
+    }
 }
 
 let locoControlRefreshIntervalId;
@@ -752,6 +782,10 @@ locoThrottleInput.addEventListener("mouseup", () => {
   updateLocoDisplay();
 });
 
+locoControlHorn.addEventListener('mousedown',e => sendLocoCommand('horn=1'));
+locoControlHorn.addEventListener('mouseup',e => sendLocoCommand('horn=0'));
+locoControlHorn.addEventListener('mouseout',e => sendLocoCommand('horn=0'));
+locoControlSander.addEventListener('click',e=> sendLocoCommand(`sander=${locoControlSander.checked ? 1 : 0}`))
 
 /////////////////////
 // cars
