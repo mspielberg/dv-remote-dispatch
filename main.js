@@ -111,7 +111,6 @@ function updateCarRow(carId) {
 /////////////////////
 // jobs
 
-const CarsPerRow = 3;
 const allJobData = new Map();
 const carJobIds = new Map();
 const jobListBody = document.getElementById('jobListBody');
@@ -182,13 +181,12 @@ function jobMatchesFilter(jobId, jobData) {
 function jobElem(jobId, jobData) {
   function replaceHyphens(s) { return s.replaceAll('-', '\u2011'); }
 
-  const tbody = document.createElement('tbody');
-  tbody.setAttribute('id', `jobList-${jobId}`);
+  const jobContainer = document.createElement('div');
+  jobContainer.setAttribute('id', `jobList-${jobId}`);
+  jobContainer.classList.add('jobList-grid');
 
-  let row = document.createElement('tr');
-  const jobIdCell = document.createElement('th'); 
-  jobIdCell.setAttribute('colspan', CarsPerRow);
-  jobIdCell.classList.add("jobList-jobHeader");
+  const jobIdCell = document.createElement('div');
+  jobIdCell.classList.add('jobList-jobHeader');
   jobIdCell.style.background = colorForJobId(jobId);
   jobIdCell.textContent = jobId;
 
@@ -198,64 +196,51 @@ function jobElem(jobId, jobData) {
       jobLicensesDiv.innerHTML += `<span class="jobList-license"><div class="jobList-licenseBackground"></div><img src="res/licenses.${license}.png" title="${license}"></span>`;
   }
   jobIdCell.appendChild(jobLicensesDiv);
+  jobContainer.appendChild(jobIdCell);
 
-  row.appendChild(jobIdCell);
-  tbody.appendChild(row);
-
-  row = document.createElement('tr');
-  jobMassCell = document.createElement('th');
+  const jobMassCell = document.createElement('div');
+  jobMassCell.classList.add('jobList-grid-metadata', 'jobList-metadata-start');
   jobMassCell.textContent = `${jobData.mass.toFixed(0)} t`;
-  jobLengthCell = document.createElement('th');
+  const jobLengthCell = document.createElement('div');
+  jobLengthCell.classList.add('jobList-grid-metadata');
   jobLengthCell.textContent = `${jobData.length.toFixed(0)} m`;
-  jobPaymentCell = document.createElement('th');
+  const jobPaymentCell = document.createElement('div');
+  jobPaymentCell.classList.add('jobList-grid-metadata');
   jobPaymentCell.textContent =
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
     .format(jobData.basePayment);
-  row.append(jobMassCell, jobLengthCell, jobPaymentCell);
-  tbody.appendChild(row);
+  jobContainer.append(jobMassCell, jobLengthCell, jobPaymentCell);
 
   jobData.tasks.forEach(task => {
-    row = document.createElement('tr');
-    const startTrackCell = document.createElement('th');
-    startTrackCell.classList.add('interactive');
+    const startTrackCell = document.createElement('div');
+    startTrackCell.classList.add('interactive', 'jobList-grid-metadata', 'jobList-metadata-start');
     startTrackCell.textContent = replaceHyphens(task.startTrack);
     startTrackCell.style.background = colorForYardId(yardIdForTrack(task.startTrack));
     startTrackCell.addEventListener('click', () => scrollToTrack(task.startTrack));
-    row.appendChild(startTrackCell);
+    jobContainer.appendChild(startTrackCell);
 
-    const arrowCell = document.createElement('th');
+    const arrowCell = document.createElement('div');
     arrowCell.textContent = "\u279C";
-    arrowCell.classList.add('jobList-trackSeparator');
-    row.appendChild(arrowCell);
+    arrowCell.classList.add('jobList-trackSeparator', 'jobList-grid-metadata');
+    jobContainer.appendChild(arrowCell);
 
-    const destinationTrackCell = document.createElement('th');
-    destinationTrackCell.classList.add('interactive');
+    const destinationTrackCell = document.createElement('div');
+    destinationTrackCell.classList.add('interactive', 'jobList-grid-metadata');
     destinationTrackCell.textContent = replaceHyphens(task.destinationTrack);
     destinationTrackCell.style.background = colorForYardId(yardIdForTrack(task.destinationTrack));
     destinationTrackCell.addEventListener('click', () => scrollToTrack(task.destinationTrack));
-    row.appendChild(destinationTrackCell);
+    jobContainer.appendChild(destinationTrackCell);
 
-    for (let carIndex = 0; carIndex < task.cars.length; carIndex++) {
-      if (carIndex % CarsPerRow == 0) {
-        tbody.appendChild(row);
-        row = document.createElement('tr');
-      }
-      const carId = task.cars[carIndex];
-      const carCell = document.createElement('td');
-      carCell.classList.add(`jobList-carCell-${carId}`);
-      carCell.classList.add('interactive');
+    task.cars.forEach(carId => {
+      const carCell = document.createElement('div');
+      carCell.classList.add(`jobList-carCell-${carId}`, 'interactive');
       carCell.textContent = carId;
       carCell.addEventListener('click', () => followCar(carId, false));
-      row.appendChild(carCell);
-    }
-    if (row.children.length < CarsPerRow)
-      // add filler cells
-      for (let i = 0; i < CarsPerRow - (task.cars.length % CarsPerRow); i++)
-        row.appendChild(document.createElement('td'));
-    tbody.appendChild(row);
+      jobContainer.appendChild(carCell);
+    });
   });
 
-  return tbody;
+  return jobContainer;
 }
 
 function updateCarJobs() {
@@ -504,7 +489,7 @@ function followCar(carId, shouldScroll) {
   const jobListElems = jobListBody.querySelectorAll(`.jobList-carCell-${carId}`);
   for (const elem of jobListElems) {
     elem.classList.add('following');
-    elem.closest('tbody').classList.add('following');
+    elem.parentElement.classList.add('following');
   }
   if (shouldScroll && jobListElems.length > 0)
     jobListElems[0].scrollIntoView({ block: 'center' });
