@@ -53,10 +53,10 @@ namespace DvMod.RemoteDispatch
             );
         }
 
-        public static JObject GetAllCarDataJson()
+        public static JObject GetAllCarDataJson(bool withLocomotives)
         {
             return JObject.FromObject(
-                GetAllCarData().ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson()));
+                GetAllCarData(withLocomotives).ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToJson()));
         }
 
         public static JObject? GetCarGuidDataJson(string guid)
@@ -64,7 +64,7 @@ namespace DvMod.RemoteDispatch
             var (carId, carData) = Updater.RunOnMainThread(() =>
             {
                 var car = TrainCarRegistry.Instance.GetTrainCarByCarGuid(guid);
-                if (car == null || !ShouldReturnTrainCar(car))
+                if (car == null || !ShouldReturnTrainCar(car, true))
                     return default;
                 return (car.ID, From(car));
             }).Result;
@@ -75,14 +75,14 @@ namespace DvMod.RemoteDispatch
             return obj;
         }
 
-        public static Dictionary<string, CarData> GetAllCarData()
+        public static Dictionary<string, CarData> GetAllCarData(bool? withLocomotives)
         {
             return Updater.RunOnMainThread(() =>
             {
                 return TrainCarRegistry.Instance
                     .logicCarToTrainCar
                     .Values
-                    .Where(ShouldReturnTrainCar)
+                    .Where(car => ShouldReturnTrainCar(car, withLocomotives))
                     .ToDictionary(car => car.ID, car => From(car));
             }).Result;
         }
@@ -95,7 +95,7 @@ namespace DvMod.RemoteDispatch
                 if (trainset == null)
                     return new Dictionary<string, JObject>();
                 return trainset.cars
-                    .Where(ShouldReturnTrainCar)
+                    .Where(car => ShouldReturnTrainCar(car, true))
                     .ToDictionary(car => car.ID, car => From(car).ToJson());
             }).Result;
         }
@@ -105,8 +105,9 @@ namespace DvMod.RemoteDispatch
             return JObject.FromObject(GetTrainsetData(id));
         }
 
-        public static bool ShouldReturnTrainCar(TrainCar trainCar)
+        public static bool ShouldReturnTrainCar(TrainCar trainCar, bool? withLocomotives)
         {
+            if(!(withLocomotives ?? false) && trainCar.IsLoco) return false;
             if (Main.settings.showUndiscoveredLocomotives)
                 return true;
             var state = LocoRestorationController.GetForTrainCar(trainCar)?.State;

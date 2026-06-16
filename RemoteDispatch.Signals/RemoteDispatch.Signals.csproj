@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>8.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<RootNamespace>DvMod.RemoteDispatch.Signals</RootNamespace>
+		<SignalsDllPath>$(DvInstallDir)\Mods\DVSignals\Signals.API.dll</SignalsDllPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="UnityEngine.CoreModule" />
+		<Reference Include="Newtonsoft.Json" />
+		<PackageReference Include="UnityModManager" Version="0.27.2" />
+	</ItemGroup>
+
+	<!-- Signals -->
+	<ItemGroup>
+		<Reference Include="Signals.API">
+			<HintPath>$(SignalsDllPath)</HintPath>
+			<!-- Do not copy Signals.API.dll to the output directory, we just need it for compile time reference. -->
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</Reference>
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
+		<!-- Drop the output DLL into the root build\ folder -->
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildThisFileDirectory)..\build\" />
+	</Target>
+
+</Project>

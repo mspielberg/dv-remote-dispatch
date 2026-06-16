@@ -1,0 +1,17 @@
+<Project>
+	<PropertyGroup>
+		<!-- Note, this will fail if you have not setup your Directory.Build.props file
+		Sets up assembly paths to find required binaries from DerailValley install-->
+		<AssemblySearchPaths>
+			$(AssemblySearchPaths);$(DvInstallDir)\DerailValley_Data\Managed\;$(DvInstallDir)\DerailValley_Data\Managed\UnityModManager\;
+		</AssemblySearchPaths>
+
+		<!-- Suppress NU1701 warnings for referencing non standard assemblies, we are doing it intentionally to access the game's code. -->
+		<NoWarn>$(NoWarn);NU1701</NoWarn>
+	</PropertyGroup>
+
+	<!-- Packaging -->
+	<Target Name="PackageMod" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT' AND '$(MSBuildProjectName)' == 'RemoteDispatch'">
+		<Exec Command="powershell -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)package.ps1&quot; -Configuration $(Configuration) -DVPath &quot;$(DvInstallDir)&quot;" StandardOutputImportance="High" />
+	</Target>
+</Project>

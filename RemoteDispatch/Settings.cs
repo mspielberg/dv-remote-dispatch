@@ -1,8 +1,8 @@
-using System.Linq;
-using UnityModManagerNet;
-using UnityEngine;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityModManagerNet;
 
 namespace DvMod.RemoteDispatch
 {
@@ -11,6 +11,7 @@ namespace DvMod.RemoteDispatch
         public int serverPort = 7245;
         public string serverPassword = "";
         public Permissions permissions = new Permissions();
+        public FeatureFlags featureFlags = new FeatureFlags();
         public bool showUndiscoveredLocomotives = false;
         public bool enableLogging = false;
 
@@ -54,6 +55,8 @@ namespace DvMod.RemoteDispatch
 
             enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
 
+            featureFlags.Draw();
+
             GUILayout.EndVertical();
         }
 
@@ -65,13 +68,16 @@ namespace DvMod.RemoteDispatch
 
     public class Permissions
     {
-        public class PlayerPermissions
-        {
-            public string name;
-            public bool canToggleJunctions;
-            public bool canControlLocomotives;
+		public class PlayerPermissions
+		{
+			public string name;
+			public bool canToggleJunctions;
+			public bool canControlLocomotives;
+			public bool canSeePlayerBlips;
+			public bool canSeeLocomotives;
+			public bool canControlSignals;
 
-            public PlayerPermissions()
+			public PlayerPermissions()
             {
                 name = "";
             }
@@ -80,9 +86,22 @@ namespace DvMod.RemoteDispatch
             {
                 this.name = name;
             }
+
+            public PlayerPermissions ShallowCopy()
+            {
+                return (PlayerPermissions)MemberwiseClone();
+            }
         }
 
         public readonly List<PlayerPermissions> permissions = new List<PlayerPermissions>();
+	public PlayerPermissions defaultPermissions = new PlayerPermissions{
+		name = "Default",
+		canToggleJunctions =  true,
+		canControlLocomotives = true,
+		canSeePlayerBlips = true,
+		canSeeLocomotives = true,
+		canControlSignals = false
+	};
 
         public Permissions()
         {
@@ -94,35 +113,55 @@ namespace DvMod.RemoteDispatch
             return permissions.Find(p => p.name == username)?.canToggleJunctions ?? false;
         }
 
-        public bool HasLocoControlPermission(string username)
+		public bool HasLocoControlPermission(string username)
+		{
+			return permissions.Find(p => p.name == username)?.canControlLocomotives ?? false;
+		}
+
+		public bool HasSignalControlPermission(string username)
+		{
+			return permissions.Find(p => p.name == username)?.canControlSignals ?? false;
+		}
+		public bool CanSeePlayerBlips(string username)
         {
-            return permissions.Find(p => p.name == username)?.canControlLocomotives ?? false;
+            return permissions.Find(p => p.name == username)?.canSeePlayerBlips ?? false;
+        }
+        public bool CanSeeLocomotives(string username)
+        {
+            return permissions.Find(p => p.name == username)?.canSeeLocomotives ?? false;
         }
 
         private void OnSessionStarted(string username)
         {
             if (!permissions.Any(p => p.name == username))
             {
-                permissions.Add(new PlayerPermissions(username));
+                var clonedPermissions = defaultPermissions.ShallowCopy();
+                clonedPermissions.name = username;
+
+                permissions.Add(clonedPermissions);
                 permissions.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.name, b.name));
             }
         }
 
         public void Draw()
         {
-            GUILayout.Label("Dispatcher permissions:");
-            GUILayout.BeginHorizontal("box", GUILayout.ExpandWidth(false));
-            DrawNamesColumn();
-            DrawConnectedColumn();
-            DrawJunctionsColumn();
-            DrawLocoControlColumn();
-            GUILayout.EndHorizontal();
-        }
+			GUILayout.Label("Dispatcher permissions:");
+			GUILayout.BeginHorizontal("box", GUILayout.ExpandWidth(false));
+			DrawNamesColumn();
+			DrawConnectedColumn();
+			DrawJunctionsColumn();
+			DrawLocoControlColumn();
+			DrawSignalControlColumn();
+			DrawPlayerBlipsColumn();
+			DrawSeeLocomotivesColumn();
+			GUILayout.EndHorizontal();
+		}
 
         private void DrawColumn(string label, Action<PlayerPermissions> action)
         {
             GUILayout.BeginVertical();
             GUILayout.Label(label);
+            action(defaultPermissions);
             foreach (var p in permissions)
                 action(p);
             GUILayout.EndVertical();
@@ -144,9 +183,37 @@ namespace DvMod.RemoteDispatch
             DrawColumn("Junctions", p => p.canToggleJunctions = GUILayout.Toggle(p.canToggleJunctions, ""));
         }
 
-        private void DrawLocoControlColumn()
+		private void DrawLocoControlColumn()
+		{
+			DrawColumn("Locomotive Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
+		}
+
+		private void DrawSignalControlColumn()
+		{
+			DrawColumn("Signal Control", p => p.canControlSignals = GUILayout.Toggle(p.canControlSignals, ""));
+		}
+		private void DrawPlayerBlipsColumn()
         {
-            DrawColumn("Locomotive Control", p => p.canControlLocomotives = GUILayout.Toggle(p.canControlLocomotives, ""));
+            DrawColumn("Player Blips", p => p.canSeePlayerBlips = GUILayout.Toggle(p.canSeePlayerBlips, ""));
+        }
+        private void DrawSeeLocomotivesColumn()
+        {
+            DrawColumn("Locomotive Visibility", p => p.canSeeLocomotives = GUILayout.Toggle(p.canSeeLocomotives, ""));
+        }
+    }
+
+    public class FeatureFlags
+    {
+        public bool enableSignals = false;
+
+        public void Draw()
+        {
+            GUILayout.Label("Feature Flags:");
+            GUILayout.BeginHorizontal("box", GUILayout.ExpandWidth(false));
+            GUILayout.BeginVertical();
+            enableSignals = GUILayout.Toggle(enableSignals, "Enable signals");
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
         }
     }
 }

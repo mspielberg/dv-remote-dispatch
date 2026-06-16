@@ -10,6 +10,7 @@ namespace DvMod.RemoteDispatch
     public static class Main
     {
         public static UnityModManager.ModEntry? mod;
+
         public static Settings settings = new Settings();
         public static bool enabled;
         private static Action<Job>? attachedJobChangedHandler;
@@ -43,6 +44,7 @@ namespace DvMod.RemoteDispatch
         private static void OnSaveGUI(UnityModManager.ModEntry modEntry)
         {
             settings.Save(modEntry);
+            Sessions.AddTag("cars");
         }
 
         private static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
@@ -78,7 +80,7 @@ namespace DvMod.RemoteDispatch
             {
                 jobTracksChanged.RemoveEventHandler(null, attachedJobChangedHandler);
                 attachedJobChangedHandler = null;
-                DebugLog(() => "Persistent Jobs event handler removed");
+                DebugLog("Persistent Jobs event handler removed");
             }
         }
 
@@ -89,7 +91,7 @@ namespace DvMod.RemoteDispatch
             {
                 attachedJobChangedHandler = new Action<Job>(JobData.JobPatches.UpdateJobsFromPersistentJobs);
                 jobTracksChanged.AddEventHandler(null, attachedJobChangedHandler);
-                DebugLog(() => "Persistent Jobs found and hooked");
+                DebugLog("Persistent Jobs found and hooked");
             }
         }
 
@@ -105,9 +107,11 @@ namespace DvMod.RemoteDispatch
 
         private static void Start()
         {
+            // Start() is only called once WorldStreamingInit.IsLoaded is true
             HttpServer.Create();
             Updater.Create();
             CarUpdater.Start();
+            SignalsShim.Initialize();
         }
 
         private static void Stop()
@@ -115,18 +119,23 @@ namespace DvMod.RemoteDispatch
             CarUpdater.Stop();
             Updater.Destroy();
             HttpServer.Destroy();
+            SignalsShim.Teardown();
         }
 
-        public static void DebugLog(TrainCar car, Func<string> message)
+        public static void Log(string message)
         {
-            if (car == PlayerManager.Car)
-                DebugLog(message);
+            mod?.Logger.Log(message);
         }
 
-        public static void DebugLog(Func<string> message)
+        public static void DebugLog(string message)
         {
             if (settings.enableLogging)
-                mod?.Logger.Log(message());
+                mod?.Logger.Log(message);
+        }
+
+        public static void Warning(string message)
+        {
+            mod?.Logger.Warning(message);
         }
     }
 }

@@ -36,8 +36,8 @@ table {
   border:1px solid #ddd;
   border-collapse:separate;
   -webkit-box-shadow:0 0 4px rgba(0,0,0,0.10);
-     -moz-box-shadow:0 0 4px rgba(0,0,0,0.10);
-          box-shadow:0 0 4px rgba(0,0,0,0.10);
+	 -moz-box-shadow:0 0 4px rgba(0,0,0,0.10);
+		  box-shadow:0 0 4px rgba(0,0,0,0.10);
 }
 table th,
 table td {
@@ -76,7 +76,8 @@ table tbody:first-child > tr:first-child td {
 }
 
 .leaflet-sidebar.collapsed {
-  max-height: 160px;
+  /* Each icon is 40 px in height */
+  max-height: 240px;
 }
 .leaflet-sidebar {
   max-height: 100%;
@@ -187,13 +188,120 @@ body {
   background-color: lightblue;
 }
 #jobsTab input {
-    float:left;
-    clear:left;
+	float:left;
+	clear:left;
 }
 #jobsTab label {
-    float:left;
-    clear: left;
+	float:left;
+	clear: left;
 }
 #jobList {
-    clear: left;
+	clear: left;
+}
+
+#search {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 1000;
+	background: rgba(244, 244, 244,0.75);
+	border-radius: 6px;
+	padding: 6px;
+	min-width: 200px;
+}
+
+#searchInput {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 4px 8px;
+	font-size: 14px;
+	border: none;
+	border-radius: 4px;
+	background: #222;
+	color: white;
+}
+
+#searchResults {
+	list-style: none;
+	margin: 4px 0 0;
+	padding: 0;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+#searchResults li {
+	padding: 4px 8px;
+	color: black;
+	cursor: pointer;
+	border-radius: 4px;
+	font-size: 13px;
+}
+
+#searchResults li:hover, #searchResults li.active {
+	background: rgba(255,255,255,0.2);
+}
+
+.sig-filter-section {
+	padding: 10px 14px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+	.sig-filter-section:last-child {
+		border-bottom: none;
+	}
+
+.sig-filter-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 0;
+	cursor: pointer;
+	font-size: 0.88rem;
+	user-select: none;
+	line-height: 1.3;
+}
+
+	.sig-filter-label input[type="checkbox"] {
+		flex-shrink: 0;
+		width: 14px;
+		height: 14px;
+		cursor: pointer;
+		accent-color: #3a7bd5;
+	}
+
+.sig-filter-master {
+	font-weight: 600;
+	font-size: 0.9rem;
+	padding: 2px 0 6px;
+}
+
+.sig-filter-divider {
+	margin: 10px 0 6px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	color: #888;
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 4px;
+}
+
+.sig-filter-yard-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+	gap: 2px 4px;
+}
+
+	.sig-filter-yard-grid .sig-filter-label {
+		padding: 3px 4px;
+		border-radius: 3px;
+		transition: background 0.1s;
+	}
+
+		.sig-filter-yard-grid .sig-filter-label:hover {
+			background: rgba(0, 0, 0, 0.05);
+		}
+
+#sig-filter-sub {
+	transition: opacity 0.15s ease;
 }

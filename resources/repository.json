@@ -1,19 +1,114 @@
 {
-  "Releases":
-  [
-      {"Id": "RemoteDispatch", "Version": "1.2.1", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.2.1/RemoteDispatch_1.2.1.zip"},
-      {"Id": "RemoteDispatch", "Version": "1.2.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.2.0/RemoteDispatch_1.2.0.zip"},
-      {"Id": "RemoteDispatch", "Version": "1.1.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.1.0/RemoteDispatch_1.1.0.zip"},
-      {"Id": "RemoteDispatch", "Version": "1.0.4", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.4/RemoteDispatch_1.0.4.zip"},
-      {"Id": "RemoteDispatch", "Version": "1.0.3", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.3/RemoteDispatch_1.0.3.zip"},
-      {"Id": "RemoteDispatch", "Version": "1.0.2", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.2/RemoteDispatch_1.0.2.zip"},
-      {"Id": "RemoteDispatch", "Version": "1.0.1", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.1/RemoteDispatch_1.0.1.zip"},
-      {"Id": "RemoteDispatch", "Version": "1.0.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.0/RemoteDispatch_1.0.0.zip"},
-      {"Id": "RemoteDispatch", "Version": "0.5.1", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.5.1/RemoteDispatch_0.5.1.zip"},
-      {"Id": "RemoteDispatch", "Version": "0.5.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.5.0/RemoteDispatch_0.5.0.zip"},
-      {"Id": "RemoteDispatch", "Version": "0.4.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.4.0/RemoteDispatch_0.4.0.zip"},
-      {"Id": "RemoteDispatch", "Version": "0.3.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.3.0/RemoteDispatch_0.3.0.zip"},
-      {"Id": "RemoteDispatch", "Version": "0.2.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.2.0/RemoteDispatch_0.2.0.zip"},
-      {"Id": "RemoteDispatch", "Version": "0.1.0", "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.1.0/RemoteDispatch_0.1.0.zip"}
+  "Releases": [
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.7.0",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.7.0/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.6.1",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.6.1/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.6.0",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.6.0/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.5.1",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.5.1/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.5.0",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.5.0/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.4.1",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.4.1/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.4.0",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.4.0/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.3.0",
+      "DownloadUrl": "https://github.com/domroutley/dv-remote-dispatch/releases/download/1.3.0/RemoteDispatch.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.2.1",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.2.1/RemoteDispatch_1.2.1.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.2.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.2.0/RemoteDispatch_1.2.0.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.1.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.1.0/RemoteDispatch_1.1.0.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.0.4",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.4/RemoteDispatch_1.0.4.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.0.3",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.3/RemoteDispatch_1.0.3.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.0.2",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.2/RemoteDispatch_1.0.2.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.0.1",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.1/RemoteDispatch_1.0.1.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "1.0.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v1.0.0/RemoteDispatch_1.0.0.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "0.5.1",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.5.1/RemoteDispatch_0.5.1.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "0.5.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.5.0/RemoteDispatch_0.5.0.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "0.4.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.4.0/RemoteDispatch_0.4.0.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "0.3.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.3.0/RemoteDispatch_0.3.0.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "0.2.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.2.0/RemoteDispatch_0.2.0.zip"
+    },
+    {
+      "Id": "RemoteDispatch",
+      "Version": "0.1.0",
+      "DownloadUrl": "https://github.com/mspielberg/dv-remote-dispatch/releases/download/v0.1.0/RemoteDispatch_0.1.0.zip"
+    }
   ]
 }

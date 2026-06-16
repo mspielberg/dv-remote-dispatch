@@ -1,6 +1,6 @@
-using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace DvMod.RemoteDispatch
 {
@@ -33,16 +33,31 @@ namespace DvMod.RemoteDispatch
             return delta > -1e-3 && delta < 1e-3;
         }
 
+        private static string GetLocalSteamName()
+        {
+            try
+            {
+                // https://wiki.facepunch.com/steamworks/SteamClient
+                return Steamworks.SteamClient.Name ?? "steam name unknown";
+            }
+            catch
+            {
+                return "unknown";
+            }
+        }
+
         public static JObject GetPlayerData()
         {
             CheckTransform();
-            return new JObject(
-                new JProperty("player", new JObject(
-                    new JProperty("color", "aqua"),
-                    new JProperty("position", previousPosition.ToLatLon().ToJson()),
-                    new JProperty("rotation", Math.Round(previousRotation, 2))
-                ))
+            var res = new JObject();
+
+            res[GetLocalSteamName()] = new JObject(
+                // Do not change this format, it gets patched by the MP mod to add all client players
+                new JProperty("color", "aqua"),
+                new JProperty("position", previousPosition.ToLatLon().ToJson()),
+                new JProperty("rotation", Math.Round(previousRotation, 2))
             );
+            return res;
         }
 
         public static string GetPlayerDataJson()

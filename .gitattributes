@@ -1,0 +1,44 @@
+# ============================================================
+# Git Attributes for dv-remote-dispatch
+# Ensures consistent line endings and binary file handling
+# ============================================================
+
+# --- C# Source Files: Unix-style LF only ---
+*.cs eol=lf
+*.xproj text eol=lf
+*.csproj text eol=lf
+*.sln text eol=lf
+
+# --- Build Output: Binary (never convert or format) ---
+build/*.dll binary
+build/*.exe binary
+build/*.pdb -binary
+build/*.xml -binary
+build/*.pdb -binary
+
+# --- Distribution Package: Preserve binary files ---
+dist/*.dll binary
+dist/*.exe binary
+
+# --- Unity Assets: Binary by default ---
+Assets/Unity/*.asset -binary
+*.prefab -binary
+*.unity -binary
+
+# --- Visual Studio & Editor Configs: Don't format these ---
+.vscode/** exclude
+.idea/** exclude
+.gitignore text eol=lf
+.editorconfig text eol=lf
+
+# --- Gitignore files: LF only ---
+.gitignore text eol=lf
+
+# --- JSON/XML configs: Text, LF preferred but don't aggressively convert binaries ---
+*.json -binary  # Keep original formatting for config files
+*.xml -binary   # Preserve XML structure
+
+# --- PowerShell Scripts: Windows allows both, prefer consistent formatting ---
+*.ps1 text eol=nfc  # Natural (can be LF or CRLF)
+
+# ============================================================

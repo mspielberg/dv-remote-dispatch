@@ -1,3 +1,19 @@
+# ============================================================
+# EditorConfig for dv-remote-dispatch (C# UnityModManager)
+# Ensures consistent indentation, line endings, and formatting
+# ============================================================
+
+[**]
+# Global settings - inherited by all files (except specified)
+insert_final_newline = true           # Always add newline at end of file
+trim_trailing_whitespace = true       # Remove trailing whitespace automatically
+
 [*.cs]
-csharp_indent_switch_labels = false
-dotnet_diagnostic.RCS1197.severity = none
+charset = utf-8
+end_of_line = lf   # Unix-style line endings (LF) only
+indent_style = tab
+tab_width = 4      # Visual equivalent of 4 spaces
+
+# K&R brace style - opening braces on same line as control statement
+csharp_newline_between_using_statements = whenever
+csharp_pre_brace_on_same_line = collapse

@@ -1,13 +1,13 @@
 using DV.Logic.Job;
-using DV.ThingTypes.TransitionHelpers;
 using DV.ThingTypes;
+using DV.ThingTypes.TransitionHelpers;
 using DV.Utils;
 using HarmonyLib;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace DvMod.RemoteDispatch
 {
@@ -190,7 +190,7 @@ namespace DvMod.RemoteDispatch
             }
             public static void UpdateJobsFromPersistentJobs(Job job)
             {
-                Main.DebugLog(() => "Persistent Jobs sent update for job " + job.ID);
+                Main.DebugLog("Persistent Jobs sent update for job " + job.ID);
                 Sessions.AddTag("jobs");
             }
             [HarmonyPatch(typeof(Job))]

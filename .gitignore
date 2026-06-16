@@ -1,6 +1,9 @@
 /.vs/
-/bin/
-/obj/
-/dv
-/.idea/
-Directory.Build.targets
+**/bin/
+**/obj/
+**/dv
+**/.idea/
+Directory.Build.props
+**/build
+**/dist/**
+*.drawio.bkp

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="RemoteDispatch/RemoteDispatch.csproj" />
+  <Project Path="RemoteDispatch.Signals/RemoteDispatch.Signals.csproj" Id="96331027-9539-4bb8-8282-c58dc1c72825" />
+</Solution>

@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>8.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<RootNamespace>DvMod.RemoteDispatch</RootNamespace>
+		<InformationalVersion>1.6.1</InformationalVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
+		<Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="Assembly-CSharp" />
+		<Reference Include="DV.BrakeSystem" />
+		<Reference Include="DV.Simulation" />
+		<Reference Include="DV.Common" />
+		<Reference Include="DV.Interaction" />
+		<Reference Include="DV.PointSet" />
+		<Reference Include="DV.RailTrack" />
+		<Reference Include="DV.ThingTypes" />
+		<Reference Include="DV.Utils" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="Newtonsoft.Json" />
+		<Reference Include="net.smkd.vector3d" />
+		<Reference Include="WorldStreamer" />
+		<Reference Include="Facepunch.Steamworks.Win64" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="UnityEngine.CoreModule" />
+		<Reference Include="UnityEngine.IMGUIModule" />
+		<PackageReference Include="UnityModManager" Version="0.27.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\RemoteDispatch.Signals\RemoteDispatch.Signals.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="frontend/icon.svg" />
+		<EmbeddedResource Include="frontend/index.html" />
+		<EmbeddedResource Include="frontend/*.js" />
+		<EmbeddedResource Include="frontend/style.css" />
+		<EmbeddedResource Include="frontend/licenses/*.png" />
+		<EmbeddedResource Include="frontend/signals/*.webp" />
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
+		<!-- Drop the output DLL into the root build\ folder -->
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(MSBuildThisFileDirectory)..\build\" />
+	</Target>
+</Project>

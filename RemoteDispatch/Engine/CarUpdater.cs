@@ -1,6 +1,5 @@
 using DV.LocoRestoration;
 using DV.RemoteControls;
-using DV.Simulation.Cars;
 using DV.Simulation.Controllers;
 using DV.ThingTypes;
 using DV.Utils;
@@ -45,7 +44,7 @@ namespace DvMod.RemoteDispatch
 
         public static void MarkTrainsetAsDirty(Trainset trainset)
         {
-            if (trainset.cars.Find(CarData.ShouldReturnTrainCar) != null)
+            if (trainset.cars.Find(car => CarData.ShouldReturnTrainCar(car, true)) != null)
                 Sessions.AddTag($"trainset-{trainset.id}");
         }
 
@@ -54,7 +53,7 @@ namespace DvMod.RemoteDispatch
             CarSpawner carSpawner = SingletonBehaviour<CarSpawner>.Instance;
             if (carSpawner == null)
             {
-                Main.DebugLog(() => $"Tried to start {nameof(CarUpdater)} before {nameof(CarSpawner)} was initialized!");
+                Main.DebugLog($"Tried to start {nameof(CarUpdater)} before {nameof(CarSpawner)} was initialized!");
                 return;
             }
 

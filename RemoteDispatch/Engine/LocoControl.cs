@@ -10,7 +10,7 @@ namespace DvMod.RemoteDispatch
         {
             return trainCar.GetComponent<RemoteControllerModule>() != null;
         }
-        
+
         public static RemoteControllerModule? GetLocoController(string guid)
         {
             return TrainCarRegistry.Instance
