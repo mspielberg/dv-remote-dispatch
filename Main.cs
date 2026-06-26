@@ -54,7 +54,6 @@ namespace DvMod.RemoteDispatch
                 harmony.PatchAll();
                 WorldStreamingInit.LoadingFinished += Start;
                 UnloadWatcher.UnloadRequested += Stop;
-                ConnectToPersistentJobs();
                 if (WorldStreamingInit.Instance && WorldStreamingInit.IsLoaded)
                 {
                     Start();
@@ -65,7 +64,6 @@ namespace DvMod.RemoteDispatch
                 Stop();
                 UnloadWatcher.UnloadRequested -= Stop;
                 WorldStreamingInit.LoadingFinished -= Start;
-                DisconnectFromPersistentJobs();
                 harmony.UnpatchAll(modEntry.Info.Id);
             }
             return true;
@@ -105,6 +103,7 @@ namespace DvMod.RemoteDispatch
 
         private static void Start()
         {
+            ConnectToPersistentJobs();
             HttpServer.Create();
             Updater.Create();
             CarUpdater.Start();
@@ -115,6 +114,7 @@ namespace DvMod.RemoteDispatch
             CarUpdater.Stop();
             Updater.Destroy();
             HttpServer.Destroy();
+            DisconnectFromPersistentJobs();
         }
 
         public static void DebugLog(TrainCar car, Func<string> message)
