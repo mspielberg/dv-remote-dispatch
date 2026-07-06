@@ -1,45 +1,89 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
-    <InformationalVersion>1.2.1</InformationalVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
+        <InformationalVersion>1.2.1</InformationalVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Krafs.Publicizer" Version="2.2.1"/>
-    <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
-  </ItemGroup>
+    <PropertyGroup>
+        <!-- Change this path if your Steam library is on a different drive -->
+        <DerailValleyDir>C:\Program Files (x86)\Steam\steamapps\common\Derail Valley</DerailValleyDir>
+        <AssemblySearchPaths>
+            $(DerailValleyDir)\DerailValley_Data\Managed;
+            $(DerailValleyDir)\DerailValley_Data\Managed\UnityModManager;
+            $(AssemblySearchPaths)
+        </AssemblySearchPaths>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Assembly-CSharp"/>
-    <Reference Include="DV.BrakeSystem"/>
-    <Reference Include="DV.Simulation"/>
-    <Reference Include="DV.Common"/>
-    <Reference Include="DV.Interaction"/>
-    <Reference Include="DV.PointSet"/>
-    <Reference Include="DV.RailTrack" />
-    <Reference Include="DV.ThingTypes"/>
-    <Reference Include="DV.Utils"/>
-    <Reference Include="Microsoft.CSharp"/>
-    <Reference Include="Newtonsoft.Json"/>
-    <Reference Include="net.smkd.vector3d"/>
-    <Reference Include="WorldStreamer" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Krafs.Publicizer" Version="2.2.1"/>
+        <Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="UnityEngine.CoreModule"/>
-    <Reference Include="UnityEngine.IMGUIModule"/>
-    <PackageReference Include="UnityModManager" Version="0.27.2"/>
-  </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.BrakeSystem">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.BrakeSystem.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.Simulation">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.Simulation.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.Common">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.Common.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.Interaction">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.Interaction.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.PointSet">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.PointSet.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.RailTrack">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.RailTrack.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.ThingTypes">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.ThingTypes.dll</HintPath>
+        </Reference>
+        <Reference Include="DV.Utils">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\DV.Utils.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.CSharp"/>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="net.smkd.vector3d">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\net.smkd.vector3d.dll</HintPath>
+        </Reference>
+        <Reference Include="WorldStreamer">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\WorldStreamer.dll</HintPath>
+        </Reference>
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="icon.svg"/>
-    <EmbeddedResource Include="index.html"/>
-    <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
-    <EmbeddedResource Include="licenses/*.png"/>
-    <EmbeddedResource Include="main.js"/>
-    <EmbeddedResource Include="style.css"/>
-  </ItemGroup>
+    <ItemGroup>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+            <HintPath>$(DerailValleyDir)\DerailValley_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+        </Reference>
+        <PackageReference Include="UnityModManager" Version="0.27.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="UnityEngine.CoreModule"/>
+        <Reference Include="UnityEngine.IMGUIModule"/>
+        <PackageReference Include="UnityModManager" Version="0.27.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="icon.svg"/>
+        <EmbeddedResource Include="index.html"/>
+        <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
+        <EmbeddedResource Include="licenses/*.png"/>
+        <EmbeddedResource Include="main.js"/>
+        <EmbeddedResource Include="style.css"/>
+    </ItemGroup>
 </Project>

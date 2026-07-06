@@ -129,13 +129,20 @@ namespace DvMod.RemoteDispatch
             {
                 IEnumerable<JObject> taskJson;
                 TaskData mainTask;
-
+                float length = 0;
+                float mass = 0;
+                
                 if (job.jobType <= JobType.ComplexTransport)
                 {
                     // normal job
                     var flattenedTasks = FlattenMany(job.tasks.Select(task => task.GetTaskData())).ToArray();
-                    mainTask = job.jobType == JobType.ShuntingLoad ? flattenedTasks.Last() : flattenedTasks.First();
-
+                    if(flattenedTasks.Length > 0)
+                    {
+                        mainTask = job.jobType == JobType.ShuntingLoad ? flattenedTasks.Last() : flattenedTasks.First();
+                        length = TotalLength(mainTask);
+                        mass = TotalMass(mainTask) / 1000;
+                    }
+                    
                     taskJson = flattenedTasks.Select(TaskToJson);
                 }
                 else
@@ -143,6 +150,8 @@ namespace DvMod.RemoteDispatch
                     // passenger
                     var sequenceTask = job.tasks[0].GetTaskData();
                     mainTask = sequenceTask.nestedTasks[0].GetTaskData();
+                    length = TotalLength(mainTask);
+                    mass = TotalMass(mainTask) / 1000;
                     taskJson = PassengerJson(sequenceTask);
                 }
 
@@ -151,8 +160,8 @@ namespace DvMod.RemoteDispatch
                     new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
                     new JProperty("tasks", taskJson),
                     new JProperty("requiredLicenses", RequiredLicenses(job)),
-                    new JProperty("length", TotalLength(mainTask)),
-                    new JProperty("mass", TotalMass(mainTask) / 1000),
+                    new JProperty("length", length),
+                    new JProperty("mass", mass),
                     new JProperty("basePayment", job.GetBasePaymentForTheJob()),
                     new JProperty("isActive", job.State == JobState.InProgress));
             }
