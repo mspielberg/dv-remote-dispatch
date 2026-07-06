@@ -4,3 +4,7 @@
 /dv
 /.idea/
 Directory.Build.targets
+*.user
+RemoteDispatch.csproj
+RemoteDispatch.csproj
+*.csproj
