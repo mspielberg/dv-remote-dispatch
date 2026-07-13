@@ -12,7 +12,13 @@ namespace DvMod.RemoteDispatch
         public static UnityModManager.ModEntry? mod;
         public static Settings settings = new Settings();
         public static bool enabled;
-        private static Action<Job>? attachedJobChangedHandler;
+        public static bool PersistentJobsHooked;
+        private static object[]? attachedJobChangedHandler;
+        public static MethodInfo? PersJobsJobTrackChangedEventRegMethod;
+        public static MethodInfo? PersJobsJobTrackChangedEventUnregMethod;
+        public static FieldInfo? PersJobsSuspendedCarObjectsDict;
+        public static FieldInfo? PersJobsSuspendedCarGUIDToJobChainControllerDict;
+        public static FieldInfo? PersJobsTrainCarTypeToInterCouplerDistanceDict;
 
         static public bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -71,34 +77,32 @@ namespace DvMod.RemoteDispatch
 
         private static void DisconnectFromPersistentJobs()
         {
-            EventInfo? jobTracksChanged = GetPersistentJobsTrackChangedEvent();
-            if (jobTracksChanged != null && attachedJobChangedHandler != null)
-            {
-                jobTracksChanged.RemoveEventHandler(null, attachedJobChangedHandler);
-                attachedJobChangedHandler = null;
-                DebugLog(() => "Persistent Jobs event handler removed");
-            }
+            PersJobsJobTrackChangedEventUnregMethod?.Invoke(null, attachedJobChangedHandler);
+            attachedJobChangedHandler = null;
+            PersistentJobsHooked = false;
+            DebugLog(() => "Persistent Jobs event handler removed"); 
         }
 
         private static void ConnectToPersistentJobs()
         {
-            EventInfo? jobTracksChanged = GetPersistentJobsTrackChangedEvent();
-            if (jobTracksChanged != null)
+            try
             {
-                attachedJobChangedHandler = new Action<Job>(JobData.JobPatches.UpdateJobsFromPersistentJobs);
-                jobTracksChanged.AddEventHandler(null, attachedJobChangedHandler);
+                PersJobsJobTrackChangedEventRegMethod = AccessTools.Method(AccessTools.TypeByName("PersistentJobsMod.ModInteraction.PersistentJobsModInteractionFeatures"), "RegisterJobTracksChangedListener", new[] { typeof(Action<Job>) });
+                PersJobsJobTrackChangedEventUnregMethod = AccessTools.Method(AccessTools.TypeByName("PersistentJobsMod.ModInteraction.PersistentJobsModInteractionFeatures"), "UnregisterJobTracksChangedListener", new[] { typeof(Action<Job>) });
+                attachedJobChangedHandler = new[] {new Action<Job>(JobData.JobPatches.UpdateJobsFromPersistentJobs)};
+                PersJobsJobTrackChangedEventRegMethod.Invoke(null, attachedJobChangedHandler);
+
+                PersJobsSuspendedCarObjectsDict = AccessTools.Field(AccessTools.TypeByName("PersistentJobsMod.Optimization.FarCarOpt"), "SuspendedCarObjects");
+                PersJobsSuspendedCarGUIDToJobChainControllerDict = AccessTools.Field(AccessTools.TypeByName("PersistentJobsMod.Optimization.FarCarOpt"), "SuspendedCarGUIDToJobChainController");
+                PersJobsTrainCarTypeToInterCouplerDistanceDict = AccessTools.Field(AccessTools.TypeByName("PersistentJobsMod.Optimization.FarCarOpt"), "TrainCarTypeToInterCouplerDistance");
+                
+                PersistentJobsHooked = true;
                 DebugLog(() => "Persistent Jobs found and hooked");
             }
-        }
-
-        /// <summary>Gets event exposed by Persistent Jobs for notifications when jobs are modified.</summary>
-        /// <returns>Persistent Jobs mod track changed event if installed, otherwise null.</returns>
-        private static EventInfo? GetPersistentJobsTrackChangedEvent()
-        {
-            return UnityModManager.FindMod("PersistentJobsMod")
-                ?.Assembly
-                ?.GetType("PersistentJobsModInteractionFeatures")
-                ?.GetEvent("JobTracksChanged");
+            catch (Exception ex) 
+            {
+                Main.DebugLog(() => $"Couldn´t connect to Presistent Jobs - exception thrown: \n{ex}");
+            }
         }
 
         private static void Start()
