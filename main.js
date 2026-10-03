@@ -15,6 +15,8 @@ const map = L.map('map', {
   zoomControl: false,
 })
 .fitBounds(mapBounds);
+map.createPane('dispatchVehicles').style.zIndex = '420';
+map.createPane('dispatchJunctions').style.zIndex = '430';
 L.control.scale().addTo(map);
 const zoomHome = new L.Control.ZoomHome({
   position: 'topleft',
@@ -425,10 +427,18 @@ const junctionsReady = tracksReady
 );
 
 function toggleJunction(junctionId) {
+  if (typeof dispatchLocks !== 'undefined' && dispatchLocks.has(junctionId)) {
+    routeMessage('This switch is locked by a Fahrstraße.', true);
+    return;
+  }
   fetch(new URL(`/junction/${junctionId}/toggle`, location), { method: 'POST' })
-  .then(resp => resp.json())
+  .then(async resp => {
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || `Switch request failed (${resp.status}).`);
+    return data;
+  })
   .then(selectedBranch => updateJunctionOverlay(junctionId, selectedBranch))
-  .catch(err => {});
+  .catch(err => { if (typeof routeMessage === 'function') routeMessage(err.message, true); });
 }
 
 const junctionCanvasSize = 30;
@@ -458,13 +468,15 @@ function createJunctionOverlay(junctionId) {
 
 function updateJunctionOverlay(junctionId, selectedBranch) {
   const junction = junctions[junctionId]
+  if (!junction || junction.selectedBranch === selectedBranch) return;
+  junction.selectedBranch = selectedBranch;
   junction.marker.getElement().innerHTML = createJunctionShape(selectedBranch) + createJunctionLabel(junctionId);
-  const selectedTrackId = junction.branches[selectedBranch]
-  trackPolyLines.get(selectedTrackId).setStyle({ color: 'steelblue', dashArray: null });
-  const unselectedTrackPolyLine = trackPolyLines.get(junction.branches[1-selectedBranch]);
-  unselectedTrackPolyLine
-    .setStyle({ color: 'lightsteelblue', dashArray: "6 12" })
-    .bringToBack();
+  junction.branches.forEach((trackId, branch) => {
+    const polyline = trackPolyLines.get(trackId);
+    if (!polyline) return;
+    polyline.setStyle({ color: branch === selectedBranch ? 'steelblue' : 'lightsteelblue', dashArray: branch === selectedBranch ? null : '6 12' });
+    if (branch !== selectedBranch) polyline.bringToBack();
+  });
 }
 
 function getJunctionOverlayBounds(position) {
@@ -476,7 +488,7 @@ function createJunctionMarker(p, junctionId) {
   return L.svgOverlay(
     createJunctionOverlay(junctionId),
     getJunctionOverlayBounds(p),
-    { interactive: true, renderer: canvasRenderer })
+    { interactive: true, renderer: canvasRenderer, pane: 'dispatchJunctions' })
     .addEventListener('click', () => toggleJunction(junctionId) )
     .addTo(map)
     .setZIndex(Math.floor(p[0] * 100000 + p[1] * 100000));
@@ -564,7 +576,7 @@ function createPlayerMarker(id, playerData) {
   playerMarkers.set(id, L.svgOverlay(
     createPlayerOverlay(id, playerData),
     getPlayerOverlayBounds(playerData.position),
-    { interactive: true, bubblingMouseEvents: false })
+    { interactive: true, bubblingMouseEvents: false, pane: 'dispatchVehicles' })
     .addEventListener('click', e => setMarkerToFollow(e.target))
     .addTo(map));
 }
@@ -854,7 +866,7 @@ function createNewCar(carId, carData) {
   const overlay = L.svgOverlay(
     createCarOverlay(carId, carData),
     getCarOverlayBounds(carData),
-    { interactive: true, bubblingMouseEvents: false })
+    { interactive: true, bubblingMouseEvents: false, pane: 'dispatchVehicles' })
     .addEventListener('mouseup', e => followCar(carId, true))
     .addTo(map);
   carMarkers.set(carId, overlay);
@@ -926,6 +938,15 @@ function updateOnce() {
       case 'player':
         updatePlayerOverlays(data);
         break;
+      case 'signals':
+        updateDispatchSignals(data);
+        break;
+      case 'signalStates':
+        updateDispatchSignalStates(data);
+        break;
+      case 'routes':
+        updateDispatchRoutes(data);
+        break;
       default:
         const segments = tag.split('-');
         switch (segments[0]) {
@@ -946,6 +967,10 @@ function updateLoop() {
   .then(_ => {
     const timeToNextUpdate = (updateStart + updateInterval) - performance.now();
     setTimeout(updateLoop, timeToNextUpdate);
+  })
+  .catch(err => {
+    if (typeof routeMessage === 'function') routeMessage('Connection lost; retrying…', true);
+    setTimeout(updateLoop, 2000);
   });
 }
 

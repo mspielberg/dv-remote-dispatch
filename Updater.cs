@@ -15,6 +15,11 @@ namespace DvMod.RemoteDispatch
             StartCoroutine(DeferredEventsCoro());
         }
 
+        public void Update()
+        {
+            RouteManager.Tick();
+        }
+
         private static GameObject? rootObject;
 
         public static void Create()

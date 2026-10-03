@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <!-- Copy to Directory.Build.targets and set your local installation paths. -->
+    <DvInstallDir Condition="'$(DvInstallDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Derail Valley</DvInstallDir>
+    <DvSignalsDir Condition="'$(DvSignalsDir)' == ''">$(DvInstallDir)\Mods\DVSignals</DvSignalsDir>
+    <DvManagedDir>$(DvInstallDir)\DerailValley_Data\Managed</DvManagedDir>
+    <AssemblySearchPaths>{HintPathFromItem};{TargetFrameworkDirectory};{RawFileName};$(DvManagedDir);$(DvManagedDir)\UnityModManager</AssemblySearchPaths>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Update="*">
+      <Private>false</Private>
+      <HintPath Condition="Exists('$(DvManagedDir)\%(Identity).dll')">$(DvManagedDir)\%(Identity).dll</HintPath>
+    </Reference>
+    <Reference Update="Signals.Game;Signals.Common">
+      <HintPath>$(DvSignalsDir)\%(Identity).dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

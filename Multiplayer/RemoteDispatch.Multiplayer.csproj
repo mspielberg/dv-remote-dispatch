@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>RemoteDispatch.Multiplayer</AssemblyName>
+    <InformationalVersion>1.4.3</InformationalVersion>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteDispatch.csproj" />
+    <PackageReference Include="DVMultiplayerAPI" Version="1.1.0" ExcludeAssets="runtime" />
+    <PackageReference Include="Lib.Harmony" Version="2.3.1.1" />
+    <PackageReference Include="UnityModManager" Version="0.31.1" />
+    <Reference Include="DV.RailTrack" />
+    <Reference Include="UnityEngine.CoreModule" />
+  </ItemGroup>
+</Project>

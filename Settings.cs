@@ -13,6 +13,8 @@ namespace DvMod.RemoteDispatch
         public Permissions permissions = new Permissions();
         public bool showUndiscoveredLocomotives = false;
         public bool enableLogging = false;
+        public int auxiliaryReleaseSeconds = 90;
+        public float routeClearanceMeters = 8;
 
         public readonly string? version = Main.mod?.Info.Version;
 
@@ -53,6 +55,10 @@ namespace DvMod.RemoteDispatch
             }
 
             enableLogging = GUILayout.Toggle(enableLogging, "Enable logging");
+            GUILayout.Label("Hilfsauflösung delay (seconds)");
+            if (int.TryParse(GUILayout.TextField(auxiliaryReleaseSeconds.ToString(), 4), out var releaseDelay))
+                auxiliaryReleaseSeconds = Math.Max(1, Math.Min(3600, releaseDelay));
+            GUILayout.Label("Route release clearance beyond destination: " + routeClearanceMeters + " m");
 
             GUILayout.EndVertical();
         }
@@ -70,6 +76,8 @@ namespace DvMod.RemoteDispatch
             public string name;
             public bool canToggleJunctions;
             public bool canControlLocomotives;
+            public bool canSetRoutes;
+            public bool canAuxiliaryRelease;
 
             public PlayerPermissions()
             {
@@ -99,6 +107,9 @@ namespace DvMod.RemoteDispatch
             return permissions.Find(p => p.name == username)?.canControlLocomotives ?? false;
         }
 
+        public bool HasRoutePermission(string username) => permissions.Find(p => p.name == username)?.canSetRoutes ?? false;
+        public bool HasAuxiliaryReleasePermission(string username) => permissions.Find(p => p.name == username)?.canAuxiliaryRelease ?? false;
+
         private void OnSessionStarted(string username)
         {
             if (!permissions.Any(p => p.name == username))
@@ -116,6 +127,8 @@ namespace DvMod.RemoteDispatch
             DrawConnectedColumn();
             DrawJunctionsColumn();
             DrawLocoControlColumn();
+            DrawColumn("Fahrstraßen", p => p.canSetRoutes = GUILayout.Toggle(p.canSetRoutes, ""));
+            DrawColumn("Hilfsauflösung", p => p.canAuxiliaryRelease = GUILayout.Toggle(p.canAuxiliaryRelease, ""));
             GUILayout.EndHorizontal();
         }
 

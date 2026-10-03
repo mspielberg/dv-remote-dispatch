@@ -20,10 +20,28 @@
       <li><a href="#carsTab" role="tab"><i class="fas fa-train" title="Cars"></i></a></li>
       <li><a href="#jobsTab" role="tab"><i class="fas fa-clipboard-list" title="Jobs"></i></a></li>
       <li><a href="#locoControlTab" role="tab"><i class="fas fa-gamepad" title="Loco Control"></i></a></li>
+      <li><a href="#routesTab" role="tab"><i class="fas fa-traffic-light" title="Fahrstraßen"></i></a></li>
       <li><a href="#settingsTab" role="tab"><i class="fas fa-cog" title="Settings"></i></a></li>
     </ul>
   </div>
   <div class="leaflet-sidebar-content">
+    <div class="leaflet-sidebar-pane" id="routesTab">
+      <h2>Fahrstraßen</h2>
+      <label for="routeMode">Route type</label>
+      <select id="routeMode"><option value="normal">Fahrstraße</option><option value="shunting">Rangierfahrstraße</option><option value="manualShunting">Rangierfahrt frei (ohne Fahrstraße)</option></select>
+      <p id="routeStatus" role="status">Waiting for DV Signals…</p>
+      <p>Click the entrance signal, then the destination signal in the direction of travel. Choose a path below to preview it.</p>
+      <p id="routeEndpoints">No signals selected.</p>
+      <button id="routeReset" type="button">Clear selection</button>
+      <div id="routeCandidates"></div>
+      <h3>Manual shunting permissions</h3>
+      <div id="manualShuntingList">No manual shunting permissions.</div>
+      <p id="trackOccupancy" class="route-help"></p>
+      <h3>Active routes</h3>
+      <div id="routeList">No active routes.</div>
+      <p class="route-help">Switches unlock after the whole train clears the last switch. Red tracks are occupied and block normal Fahrstraßen. In “Rangierfahrt frei” mode, click a main or shunting signal to toggle permission; no route is set and no switches are checked or locked. Permission stays set until Rangierhalt.</p>
+      <p class="route-help">Zoom in to show signals. Arrows indicate the train's direction of travel.</p>
+    </div>
     <div class="leaflet-sidebar-pane" id="carsTab">
       <table id="carList">
         <thead>
@@ -101,5 +119,6 @@
 </div>
 <div id="map" class="dark" style="height:100vh"></div>
 <script src="res/main.js"></script>
+<script src="res/signal-dispatch.js"></script>
 </body>
 </html>

@@ -21,8 +21,7 @@ namespace DvMod.RemoteDispatch
             try
             {
                 var loaded = Settings.Load<Settings>(modEntry);
-                if (loaded.version == modEntry.Info.Version)
-                    settings = loaded;
+                settings = loaded;
             }
             catch
             {
@@ -51,7 +50,9 @@ namespace DvMod.RemoteDispatch
 
             if (value)
             {
+                enabled = true;
                 harmony.PatchAll();
+                DispatchNetwork.Initialise();
                 WorldStreamingInit.LoadingFinished += Start;
                 UnloadWatcher.UnloadRequested += Stop;
                 ConnectToPersistentJobs();
@@ -62,11 +63,19 @@ namespace DvMod.RemoteDispatch
             }
             else
             {
+                if (RouteManager.HasLocks)
+                {
+                    modEntry.Logger.Warning("Remote Dispatch cannot be disabled while routes are locked. Release them or use Hilfsauflösung first.");
+                    return false;
+                }
                 Stop();
+                enabled = false;
+                DispatchNetwork.Stop();
                 UnloadWatcher.UnloadRequested -= Stop;
                 WorldStreamingInit.LoadingFinished -= Start;
                 DisconnectFromPersistentJobs();
                 harmony.UnpatchAll(modEntry.Info.Id);
+                SignalIntegration.Reset();
             }
             return true;
         }
@@ -105,6 +114,7 @@ namespace DvMod.RemoteDispatch
 
         private static void Start()
         {
+            RouteManager.Start();
             HttpServer.Create();
             Updater.Create();
             CarUpdater.Start();
@@ -112,6 +122,7 @@ namespace DvMod.RemoteDispatch
 
         private static void Stop()
         {
+            RouteManager.Stop();
             CarUpdater.Stop();
             Updater.Destroy();
             HttpServer.Destroy();

@@ -4,3 +4,11 @@
 /dv
 /.idea/
 Directory.Build.targets
+/tests/node_modules/
+/tests/bin/
+/tests/obj/
+/tests/native/bin/
+/tests/native/obj/
+/Multiplayer/bin/
+/Multiplayer/obj/
+/dist/

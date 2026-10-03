@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>DvMod.RemoteDispatch</RootNamespace>
-    <InformationalVersion>1.2.1</InformationalVersion>
+    <InformationalVersion>1.4.3</InformationalVersion>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests\node_modules\**;tests\**\bin\**;tests\**\obj\**;Multiplayer\bin\**;Multiplayer\obj\**;dist\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,7 +32,13 @@
   <ItemGroup>
     <Reference Include="UnityEngine.CoreModule"/>
     <Reference Include="UnityEngine.IMGUIModule"/>
-    <PackageReference Include="UnityModManager" Version="0.27.2"/>
+    <PackageReference Include="UnityModManager" Version="0.31.1"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Signals.Game"><HintPath>$(MSBuildProjectDirectory)\..\DVSignals\Signals.Game.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Signals.Common"><HintPath>$(MSBuildProjectDirectory)\..\DVSignals\Signals.Common.dll</HintPath><Private>false</Private></Reference>
+    <Compile Remove="Multiplayer\**\*.cs;tests\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +47,7 @@
     <EmbeddedResource Include="leaflet.rotatedImageOverlay.js"/>
     <EmbeddedResource Include="licenses/*.png"/>
     <EmbeddedResource Include="main.js"/>
+    <EmbeddedResource Include="signal-dispatch.js"/>
     <EmbeddedResource Include="style.css"/>
   </ItemGroup>
 </Project>

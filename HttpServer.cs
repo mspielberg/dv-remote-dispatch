@@ -87,6 +87,12 @@ namespace DvMod.RemoteDispatch
 
             switch (request.Url.Segments[1].TrimEnd('/'))
             {
+            case "signal":
+                Render200(context, await Updater.RunOnMainThread(RouteManager.GetSignals).ConfigureAwait(false));
+                break;
+            case "route":
+                await HandleRouteRequest(context).ConfigureAwait(false);
+                break;
             case "car":
                 HandleCarRequest(context);
                 break;
@@ -121,6 +127,67 @@ namespace DvMod.RemoteDispatch
             default:
                 RenderEmpty(context, 404);
                 break;
+            }
+        }
+
+        private static async Task HandleRouteRequest(HttpListenerContext context)
+        {
+            var segments = context.Request.Url.Segments;
+            var user = context.User?.Identity?.Name ?? "";
+            try
+            {
+                if (segments.Length == 2 && context.Request.HttpMethod == "GET")
+                {
+                    Render200(context, await Updater.RunOnMainThread(RouteManager.GetState).ConfigureAwait(false));
+                    return;
+                }
+                if (context.Request.HttpMethod != "POST") { RenderEmpty(context, 405); return; }
+                bool auxiliary = segments.Length == 4 && segments[3] == "auxiliaryRelease";
+                if (!(auxiliary ? Main.settings.permissions.HasAuxiliaryReleasePermission(user) : Main.settings.permissions.HasRoutePermission(user)))
+                { RenderEmpty(context, 403); return; }
+                if (segments.Length == 3 && segments[2] == "preview")
+                {
+                    var query = context.Request.QueryString;
+                    if (!int.TryParse(query["start"], out int start) || !int.TryParse(query["end"], out int end) ||
+                        (query["mode"] != "normal" && query["mode"] != "shunting"))
+                        throw new DispatchException("Invalid route endpoints or mode.", 400);
+                    Render200(context, await Updater.RunOnMainThread(() => RouteManager.Preview(start, end, query["mode"] == "shunting")).ConfigureAwait(false));
+                    return;
+                }
+                if (segments.Length == 4)
+                {
+                    string id = segments[2].TrimEnd('/');
+                    if (segments[3] == "shunting")
+                    {
+                        if (!int.TryParse(id, out var signalId) || !bool.TryParse(context.Request.QueryString["allowed"], out var allowed))
+                            throw new DispatchException("Invalid shunting signal command.", 400);
+                        Render200(context, await Updater.RunOnMainThread(() => RouteManager.SetManualShunting(signalId, allowed, user)).ConfigureAwait(false));
+                        return;
+                    }
+                    if (segments[3] == "set")
+                    {
+                        Render200(context, await Updater.RunOnMainThread(() => RouteManager.Establish(id, user)).ConfigureAwait(false));
+                        return;
+                    }
+                    if (segments[3] == "cancel" || auxiliary)
+                    {
+                        await Updater.RunOnMainThread(() => RouteManager.Cancel(id, auxiliary, user)).ConfigureAwait(false);
+                        RenderEmpty(context, 204);
+                        return;
+                    }
+                }
+                RenderEmpty(context, 404);
+            }
+            catch (DispatchException e)
+            {
+                context.Response.StatusCode = e.Status;
+                Render200(context, new JObject { ["error"] = e.Message });
+            }
+            catch (Exception e)
+            {
+                Main.mod?.Logger.Error("Route request failed: " + e);
+                context.Response.StatusCode = 500;
+                Render200(context, new JObject { ["error"] = "Route request failed; check the game mod log." });
             }
         }
 
@@ -197,19 +264,26 @@ namespace DvMod.RemoteDispatch
                 var junctionIdString = url.Segments[2].TrimEnd('/');
                 if (int.TryParse(junctionIdString, out var junctionId) && url.Segments[3] == "toggle" && IsValidJunctionId(junctionId))
                 {
+                    if (context.Request.HttpMethod != "POST") { RenderEmpty(context, 405); return; }
                     if (!Main.settings.permissions.HasJunctionPermission(context.User.Identity.Name))
                     {
                         RenderEmpty(context, 403);
                         return;
                     }
-                    var newSelectedBranch = await Updater.RunOnMainThread(() =>
+                    var result = await Updater.RunOnMainThread(() =>
                     {
                         Main.DebugLog(() => $"Toggling J-{junctionId}.");
                         var junction = RailTrackRegistry.Instance.OrderedJunctions[junctionId];
+                        if (RouteManager.TryGetLock(junction, out _)) return (locked: true, branch: junction.selectedBranch);
                         junction.Switch(Junction.SwitchMode.REGULAR);
-                        return junction.selectedBranch;
+                        return (locked: false, branch: junction.selectedBranch);
                     }).ConfigureAwait(false);
-                    Render200(context, new JValue(newSelectedBranch));
+                    if (result.locked)
+                    {
+                        context.Response.StatusCode = 409;
+                        Render200(context, new JObject { ["error"] = "This switch is locked by a Fahrstraße." });
+                    }
+                    else Render200(context, new JValue(result.branch));
                     return;
                 }
                 RenderEmpty(context, 404);

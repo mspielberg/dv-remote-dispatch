@@ -76,7 +76,7 @@ table tbody:first-child > tr:first-child td {
 }
 
 .leaflet-sidebar.collapsed {
-  max-height: 160px;
+  max-height: 200px;
 }
 .leaflet-sidebar {
   max-height: 100%;
@@ -197,3 +197,21 @@ body {
 #jobList {
     clear: left;
 }
+
+.dispatch-signal { cursor: pointer; }
+.dispatch-signal svg { width: 100%; height: 100%; }
+.dispatch-signal.selected { background: #ffd16666; border-radius: 50%; outline: 2px solid #ffd166; }
+.junction-route-locked { filter: drop-shadow(0 0 3px #52d6a4); outline: 2px solid #52d6a4; }
+#routesTab h2 { margin-top: 4px; font-size: 20px; }
+#routesTab p { line-height: 1.4; }
+#routesTab button, #routesTab select { padding: 6px 8px; margin: 3px 4px 3px 0; cursor: pointer; }
+#routesTab button:disabled { cursor: default; opacity: 0.55; }
+#routeMode { width: 100%; }
+.route-card { border: 1px solid #ccc; border-radius: 5px; padding: 8px; margin-top: 10px; overflow-wrap: anywhere; }
+.route-card p { margin: 6px 0; }
+.route-preview-button { width: 100%; text-align: left; }
+.route-preview-button[aria-pressed=true] { background: #ffe5a1; border: 1px solid #c68a00; }
+.route-path-details, .route-help { color: #555; font-size: 12px; }
+.route-error { color: #a02020; }
+.route-auxiliary { color: #9b1919; }
+.route-countdown { font-weight: bold; }
